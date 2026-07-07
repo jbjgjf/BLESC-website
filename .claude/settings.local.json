@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/jasper/Downloads/blesc/**)",
+      "Bash(npm -v)",
+      "Read(//usr/local/**)",
+      "Read(//Users/jasper/.nvm/versions/**)",
+      "Bash(brew --version)",
+      "Read(//opt/homebrew/**)",
+      "Bash(curl -sI https://nodejs.org --max-time 5)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh)",
+      "Bash(bash)",
+      "Bash(cat)",
+      "Bash(npx -v)",
+      "Bash(touch /usr/local/bin/testwrite)",
+      "Bash(rm /usr/local/bin/testwrite)"
+    ]
+  }
+}
