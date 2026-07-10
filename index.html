@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>blesc ── 生徒のSOSを可視化する。</title>
+  <meta name="description" content="日常の会話に現れる早期のサインをAIが捉え、支援が必要な生徒を、孤立する前に可視化します。京都大学の臨床心理学研究との協働開発。">
+  
+  <!-- Font and Icon Imports -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Noto Sans JP for Japanese content -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+  <!-- Material Symbols Outlined for Clean Google Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="is-locked">
+
+  <!-- Intro Animation Overlay -->
+  <div id="intro-overlay">
+    <!-- White expanding curtain behind the blooming flower -->
+    <div id="intro-white-curtain"></div>
+    
+    <!-- Flower Blooming Container -->
+    <div id="intro-flower-container">
+      <img src="assets/flower.png" id="intro-flower" alt="blesc flower logo">
+    </div>
+    
+    <!-- Wordmark Logo Container -->
+    <div id="intro-logo-container">
+      <img src="assets/logo_with_flower.png" id="intro-wordmark" alt="blesc logo">
+    </div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header>
+    <div class="header-inner">
+      <div class="header-logo">
+        <img src="assets/flower.png" class="header-flower-icon" alt="blesc flower logo">
+        <img src="assets/logo_with_flower.png" class="header-wordmark" alt="blesc logo type">
+      </div>
+      
+      <nav class="nav-desktop">
+        <a href="#reality">現実</a>
+        <a href="#how-it-works">仕組み</a>
+        <a href="#why-blesc">選ばれる理由</a>
+        <a href="#technology">テクノロジー</a>
+        <a href="#philosophy">理念</a>
+        <a href="#team">チーム</a>
+      </nav>
+      
+      <div class="header-ctas">
+        <a href="#contact" class="btn-outline">資料請求</a>
+        <a href="#contact" class="btn-solid">導入のご相談</a>
+      </div>
+      
+      <!-- Mobile menu trigger -->
+      <button class="menu-trigger" aria-label="メニューを開く">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Overlay Navigation -->
+  <div id="mobile-nav-overlay">
+    <button class="menu-close" aria-label="メニューを閉じる">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <nav class="nav-mobile">
+      <a href="#reality">現実</a>
+      <a href="#how-it-works">仕組み</a>
+      <a href="#why-blesc">選ばれる理由</a>
+      <a href="#technology">テクノロジー</a>
+      <a href="#philosophy">理念</a>
+      <a href="#team">チーム</a>
+      <div class="mobile-ctas">
+        <a href="#contact" class="btn-outline">資料請求</a>
+        <a href="#contact" class="btn-solid">導入のご相談</a>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Main Website Content -->
+  <main id="main-content">
+    
+    <!-- Hero Section -->
+    <section id="hero">
+      <div class="hero-inner">
+        <!-- Main Flower Icon at top of screen -->
+        <div class="hero-flower-wrapper">
+          <img src="assets/flower.png" class="hero-flower" alt="blesc flower motif">
+        </div>
+        
+        <h1 class="hero-title">Hearing the unspoken.<br>Preventing the unseen.</h1>
+        <p class="hero-subtitle">生徒のSOSを可視化する。</p>
+        
+        <div class="hero-ctas">
+          <a href="#contact" class="btn-outline btn-large">資料請求</a>
+          <a href="#contact" class="btn-solid btn-large">導入のご相談</a>
+        </div>
+        
+        <div class="hero-scroll-indicator">
+          <span class="material-symbols-outlined">keyboard_double_arrow_down</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reality Section -->
+    <section id="reality">
+      <div class="section-container">
+        <h2 class="section-title">学校が直面している現実</h2>
+        
+        <div class="reality-highlight">
+          <p class="text-lead">
+            危機が起きてからでは、遅い。<br>
+            生徒の不調に気づくのが<strong>「何かが起きた後」</strong>になってしまう。Blescは、そのタイミングを根本から変えます。
+          </p>
+          <p class="text-lead">
+            日常の会話に現れる早期のサインをAIが捉え、支援が必要な生徒を、<strong>孤立する前に可視化</strong>します。
+          </p>
+        </div>
+
+        <!-- Clean Grid layout (No cards, on the same surface) -->
+        <div class="reality-stats-grid">
+          <div class="stat-item">
+            <span class="stat-number">1st / 37th</span>
+            <p class="stat-text">
+              日本の子どもは、身体的健康で<strong>世界1位</strong>である一方、精神的幸福度は38カ国中<strong>37位</strong>にとどまっています。
+            </p>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">350,000+</span>
+            <p class="stat-text">
+              不登校の児童・生徒は<strong>35万人を超え</strong>、現在も増加を続けています。
+            </p>
+          </div>
+        </div>
+
+        <div class="limits-divider"></div>
+
+        <h3 class="subsection-title">既存の仕組みには、構造的な限界があります。</h3>
+        
+        <div class="limits-grid">
+          <div class="limit-item">
+            <h4 class="limit-title">アンケートでは本音が表れない。</h4>
+            <p class="limit-desc">
+              「はい／いいえ」形式では、生徒は<strong>大人が望む無難な回答</strong>を選びます。
+            </p>
+          </div>
+          <div class="limit-item">
+            <h4 class="limit-title">深刻なケースほど見えなくなる。</h4>
+            <p class="limit-desc">
+              追い詰められた生徒ほど周囲を拒み、孤立します。<strong>SOSを待つ仕組みでは間に合いません。</strong>
+            </p>
+          </div>
+          <div class="limit-item">
+            <h4 class="limit-title">教員のリソースには限界がある。</h4>
+            <p class="limit-desc">
+              40名を一人ひとり見守り、<strong>心の機微まで捉えることは現実的ではありません。</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works">
+      <div class="section-container">
+        <h2 class="section-title">blescの仕組み</h2>
+        
+        <div class="how-text-block">
+          <p class="text-body">
+            月に一度、ホームルームの時間に、生徒は<strong>AIと30往復ほどの自然な対話</strong>を行います。チャットのように、構えずに話せる設計です。
+          </p>
+          <p class="text-body">
+            会話に含まれる言葉のニュアンスや入力のためらいといった微細なシグナルから、<strong>AIが心理的リスクを検知</strong>します。
+          </p>
+          <p class="text-body">
+            会話の内容そのものが教員に公開されることはありません。届くのは、対応が必要な生徒を示す<strong>要点のみのレポート</strong>です。
+          </p>
+        </div>
+
+        <!-- Interactive Animated Pipeline (No cards, on the same surface) -->
+        <div class="pipeline-container">
+          <div class="pipeline-line">
+            <div class="pipeline-flow-dot"></div>
+          </div>
+          <div class="pipeline-steps">
+            <div class="pipeline-step" data-step="1">
+              <div class="pipeline-node">
+                <span class="material-symbols-outlined">face</span>
+              </div>
+              <span class="pipeline-label">生徒</span>
+            </div>
+            
+            <div class="pipeline-connector">
+              <span class="pipeline-connector-text">30往復の対話</span>
+            </div>
+            
+            <div class="pipeline-step" data-step="2">
+              <div class="pipeline-node">
+                <span class="material-symbols-outlined">psychology</span>
+              </div>
+              <span class="pipeline-label">AI解析</span>
+              <span class="pipeline-sublabel">生のログは非公開</span>
+            </div>
+            
+            <div class="pipeline-connector">
+              <span class="pipeline-connector-text">リスクレポート</span>
+            </div>
+            
+            <div class="pipeline-step" data-step="3">
+              <div class="pipeline-node">
+                <span class="material-symbols-outlined">supervisor_account</span>
+              </div>
+              <span class="pipeline-label">教員</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why Blesc Section -->
+    <section id="why-blesc">
+      <div class="section-container">
+        <h2 class="section-title">blescが選ばれる理由</h2>
+        
+        <div class="benefits-grid">
+          <div class="benefit-item">
+            <div class="benefit-header">
+              <span class="benefit-num">01</span>
+              <h3 class="benefit-title">心理的安全性</h3>
+            </div>
+            <p class="benefit-text">
+              チャットログは完全に非公開。<strong>見られる不安がない</strong>からこそ、生徒は本音を語れます。
+            </p>
+          </div>
+          
+          <div class="benefit-item">
+            <div class="benefit-header">
+              <span class="benefit-num">02</span>
+              <h3 class="benefit-title">早期検知</h3>
+            </div>
+            <p class="benefit-text">
+              孤立する前に、<strong>隠れたリスクを自動でアラート。</strong>教員の追加業務は発生しません。
+            </p>
+          </div>
+          
+          <div class="benefit-item">
+            <div class="benefit-header">
+              <span class="benefit-num">03</span>
+              <h3 class="benefit-title">全生徒をカバー</h3>
+            </div>
+            <p class="benefit-text">
+              学校インフラ上で稼働するため、任意ダウンロードに依存せず、<strong>全生徒にリーチします。</strong>
+            </p>
+          </div>
+          
+          <div class="benefit-item">
+            <div class="benefit-header">
+              <span class="benefit-num">04</span>
+              <h3 class="benefit-title">科学的な裏付け</h3>
+            </div>
+            <p class="benefit-text">
+              <strong>医学研究にもとづくモデル</strong>が、解析に厳密な根拠を与えます。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Technology Section -->
+    <section id="technology">
+      <div class="section-container">
+        <h2 class="section-title">テクノロジー</h2>
+        
+        <div class="tech-intro">
+          <p class="text-lead">
+            blescは、言葉を予測するだけの汎用AIではありません。
+          </p>
+          <p class="text-body">
+            「睡眠不足 → 認知機能の低下 → 抑うつ傾向」といった心理の因果連鎖を、医学的研究にもとづいて構造化した<strong>オントロジー知識グラフ</strong>をAIに実装しています。これは、臨床心理士の思考プロセスを機械可読な形で再現する仕組みです。
+          </p>
+          <p class="text-body">
+            このモデルは<strong>京都大学の臨床心理学研究</strong>との協働によって開発しています。プラットフォーム基盤は、学校環境の要件に耐えうるスケーラブルな設計を、<strong>株式会社Hatapro</strong>との連携で構築しています。
+          </p>
+        </div>
+
+        <!-- Ontology Knowledge Graph Diagram (Plain design on surface) -->
+        <div class="ontology-diagram-wrapper">
+          <h3 class="diagram-title">臨床心理学オントロジー知識グラフの概念モデル</h3>
+          <div class="ontology-flow">
+            <div class="ontology-node" id="node-sleep">
+              <span class="material-symbols-outlined">bedtime</span>
+              <span class="node-label">睡眠不足</span>
+            </div>
+            
+            <div class="ontology-arrow">
+              <span class="material-symbols-outlined">arrow_forward</span>
+              <span class="arrow-label">認知の低下</span>
+            </div>
+            
+            <div class="ontology-node" id="node-cognitive">
+              <span class="material-symbols-outlined">psychology</span>
+              <span class="node-label">認知機能の低下</span>
+            </div>
+            
+            <div class="ontology-arrow">
+              <span class="material-symbols-outlined">arrow_forward</span>
+              <span class="arrow-label">リスク顕在化</span>
+            </div>
+            
+            <div class="ontology-node id-depressive" id="node-depress">
+              <span class="material-symbols-outlined">mood_bad</span>
+              <span class="node-label">抑うつ傾向</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Philosophy Section -->
+    <section id="philosophy">
+      <div class="section-container">
+        <h2 class="section-title">私たちの理念</h2>
+        
+        <div class="philosophy-content">
+          <p class="philosophy-lead">声にならないSOSに、気づける社会へ。</p>
+          
+          <div class="philosophy-story">
+            <p class="text-body">
+              私たちはテクノロジーに囲まれて生きながら、人と人とのつながりは、かつてないほど希薄になっています。
+            </p>
+            <p class="text-body">
+              私たち自身、身近な友人が抱えていた苦しみに誰も気づけないまま手遅れになる状況を、目の当たりにしてきました。<strong>サインは、確かにそこにあったはずでした。</strong>
+            </p>
+            <p class="text-body">
+              苦しんでいる人に気づけるのが「何かが起きた後」だけ。<strong>私たちは、その現実を受け入れることができませんでした。</strong>
+            </p>
+            <p class="text-body">
+              忙しい学校生活のなかで消えていく、小さく静かなSOS。Blescは、その声を聴き逃さないための仕組みです。<strong>誰かが孤立する前に、見えないものを可視化する。</strong>それが、私たちがBlescをつくる理由です。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Team Section (Clean Grid on the same surface, no cards) -->
+    <section id="team">
+      <div class="section-container">
+        <h2 class="section-title">チーム</h2>
+        
+        <div class="team-grid">
+          <div class="team-member">
+            <span class="member-role">代表取締役 / Co-founder & CEO</span>
+            <span class="member-name">山田 太郎</span>
+            <span class="member-en">Taro Yamada</span>
+          </div>
+          
+          <div class="team-member">
+            <span class="member-role">共同創業者 / Co-founder & CTO</span>
+            <span class="member-name">佐藤 次郎</span>
+            <span class="member-en">Jiro Sato</span>
+          </div>
+          
+          <div class="team-member">
+            <span class="member-role">リードAIエンジニア / Lead AI Engineer</span>
+            <span class="member-name">鈴木 花子</span>
+            <span class="member-en">Hanako Suzuki</span>
+          </div>
+          
+          <div class="team-member">
+            <span class="member-role">臨床心理顧問 / Clinical Psychology Advisor</span>
+            <span class="member-name">高橋 健一</span>
+            <span class="member-en">Kenichi Takahashi</span>
+          </div>
+          
+          <div class="team-member">
+            <span class="member-role">プロダクトデザイナー / Product Designer</span>
+            <span class="member-name">渡辺 美咲</span>
+            <span class="member-en">Misaki Watanabe</span>
+          </div>
+          
+          <div class="team-member">
+            <span class="member-role">学校連携・広報 / School Relations & PR</span>
+            <span class="member-name">田中 翔太</span>
+            <span class="member-en">Shota Tanaka</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact CTA Section -->
+    <section id="contact">
+      <div class="section-container">
+        <h2 class="section-title">導入のご相談・資料請求</h2>
+        <p class="contact-desc">
+          Blescは、教育委員会や私立・公立学校での導入を進めています。システム詳細や導入ステップについて、お気軽にお問い合わせください。
+        </p>
+        
+        <div class="contact-ctas">
+          <a href="mailto:info@blesc.com?subject=資料請求について" class="btn-outline btn-large">
+            <span class="material-symbols-outlined">mail</span>
+            資料請求はこちら
+          </a>
+          <a href="mailto:info@blesc.com?subject=導入のご相談" class="btn-solid btn-large">
+            <span class="material-symbols-outlined">chat_bubble</span>
+            導入のご相談はこちら
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <img src="assets/logo_with_flower.png" class="footer-wordmark-img" alt="blesc logo">
+      </div>
+      <div class="footer-links">
+        <a href="#reality">現実</a>
+        <a href="#how-it-works">仕組み</a>
+        <a href="#why-blesc">選ばれる理由</a>
+        <a href="#technology">テクノロジー</a>
+        <a href="#philosophy">理念</a>
+        <a href="#team">チーム</a>
+      </div>
+      <p class="footer-copyright">© 2026 blesc. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
