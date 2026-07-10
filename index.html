@@ -5,20 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>blesc ── 生徒のSOSを可視化する。</title>
   <meta name="description" content="日常の会話に現れる早期のサインをAIが捉え、支援が必要な生徒を、孤立する前に可視化します。京都大学の臨床心理学研究との協働開発。">
-  
+  <link rel="canonical" href="https://blesc.jp/">
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="blesc">
+  <meta property="og:title" content="blesc ── 生徒のSOSを可視化する。">
+  <meta property="og:description" content="日常の会話に現れる早期のサインをAIが捉え、支援が必要な生徒を、孤立する前に可視化します。京都大学の臨床心理学研究との協働開発。">
+  <meta property="og:url" content="https://blesc.jp/">
+  <meta property="og:image" content="https://blesc.jp/assets/logo_with_flower.png">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="blesc ── 生徒のSOSを可視化する。">
+  <meta name="twitter:description" content="日常の会話に現れる早期のサインをAIが捉え、支援が必要な生徒を、孤立する前に可視化します。">
+  <meta name="twitter:image" content="https://blesc.jp/assets/logo_with_flower.png">
+
   <!-- Font and Icon Imports -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <!-- Inter for Latin text, matching the Codex-style typographic system -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <!-- Noto Sans JP for Japanese content -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
   <!-- Material Symbols Outlined for Clean Google Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap" rel="stylesheet">
 
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#0a0a0c">
   <link rel="stylesheet" href="style.css">
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "blesc",
+    "url": "https://blesc.jp/",
+    "logo": "https://blesc.jp/assets/logo_with_flower.png",
+    "description": "日常の会話に現れる早期のサインをAIが捉え、支援が必要な生徒を、孤立する前に可視化する、学校向けの心理的リスク早期検知プラットフォーム。",
+    "sameAs": []
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "blesc",
+    "description": "生徒のSOSを可視化する。AIとの自然な対話から心理的リスクを早期に検知し、孤立する前に支援が必要な生徒を可視化します。京都大学の臨床心理学研究との協働開発。",
+    "brand": { "@type": "Brand", "name": "blesc" },
+    "category": "教育向けメンタルヘルス支援ソフトウェア"
+  }
+  </script>
 </head>
 <body class="is-locked">
 
@@ -49,6 +86,7 @@
       <nav class="nav-desktop">
         <a href="#reality">現実</a>
         <a href="#how-it-works">仕組み</a>
+        <a href="#product">プロダクト</a>
         <a href="#why-blesc">選ばれる理由</a>
         <a href="#technology">テクノロジー</a>
         <a href="#philosophy">理念</a>
@@ -75,6 +113,7 @@
     <nav class="nav-mobile">
       <a href="#reality">現実</a>
       <a href="#how-it-works">仕組み</a>
+      <a href="#product">プロダクト</a>
       <a href="#why-blesc">選ばれる理由</a>
       <a href="#technology">テクノロジー</a>
       <a href="#philosophy">理念</a>
@@ -105,7 +144,7 @@
           <a href="#contact" class="btn-solid btn-large">導入のご相談</a>
         </div>
         
-        <div class="hero-scroll-indicator">
+        <div class="hero-scroll-indicator" aria-hidden="true">
           <span class="material-symbols-outlined">keyboard_double_arrow_down</span>
         </div>
       </div>
@@ -129,13 +168,17 @@
         <!-- Clean Grid layout (No cards, on the same surface) -->
         <div class="reality-stats-grid">
           <div class="stat-item">
-            <span class="stat-number">1st / 37th</span>
+            <span class="stat-number">
+              <span class="count-up" data-count="1" data-suffix="st">1st</span> / <span class="count-up" data-count="37" data-suffix="th">37th</span>
+            </span>
             <p class="stat-text">
               日本の子どもは、身体的健康で<strong>世界1位</strong>である一方、精神的幸福度は38カ国中<strong>37位</strong>にとどまっています。
             </p>
           </div>
           <div class="stat-item">
-            <span class="stat-number">350,000+</span>
+            <span class="stat-number">
+              <span class="count-up" data-count="350000" data-suffix="+">350,000+</span>
+            </span>
             <p class="stat-text">
               不登校の児童・生徒は<strong>35万人を超え</strong>、現在も増加を続けています。
             </p>
@@ -221,6 +264,85 @@
               </div>
               <span class="pipeline-label">教員</span>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product Showcase Section -->
+    <section id="product">
+      <div class="section-container">
+        <h2 class="section-title">プロダクト</h2>
+
+        <div class="how-text-block">
+          <p class="text-lead">生徒が語り、教員は要点だけを受け取る。</p>
+          <p class="text-body">
+            生徒側は、構えずに話せるチャット。教員側は、対応が必要な生徒だけが浮かび上がる要点レポート。<strong>会話ログそのものが共有されることはありません。</strong>
+          </p>
+        </div>
+
+        <div class="product-showcase">
+          <!-- Student chat mockup -->
+          <div class="product-panel">
+            <span class="product-panel-tag">生徒の画面</span>
+            <div class="mock-chat" role="img" aria-label="生徒とAIの対話画面のイメージ。AIが体調を気づかい、生徒が疲れや睡眠について答えている様子。">
+              <div class="mock-chat-header">
+                <span class="mock-chat-dot"></span>
+                <span class="mock-chat-title">blesc</span>
+              </div>
+              <div class="mock-chat-body">
+                <div class="bubble bubble-ai">最近、学校はどんな感じ？</div>
+                <div class="bubble bubble-me">うーん、ちょっと疲れてるかも</div>
+                <div class="bubble bubble-ai">そっか。ちゃんと眠れてる？</div>
+                <div class="bubble bubble-me">あんまり…夜に考えごとしちゃって</div>
+                <div class="bubble bubble-typing" aria-hidden="true">
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
+              <div class="mock-chat-input" aria-hidden="true">
+                <span>メッセージを入力…</span>
+                <span class="material-symbols-outlined">send</span>
+              </div>
+            </div>
+            <p class="product-caption">構えずに話せる、月に一度の対話。</p>
+          </div>
+
+          <!-- Teacher report mockup -->
+          <div class="product-panel">
+            <span class="product-panel-tag">教員の画面</span>
+            <div class="mock-report" role="img" aria-label="教員が受け取るリスクレポートのイメージ。匿名化された生徒IDごとにリスクの度合いが表示され、会話ログは共有されない旨が明記されている。">
+              <div class="mock-report-header">
+                <span class="mock-report-title">今月のリスクレポート</span>
+                <span class="mock-report-badge">3件の要対応</span>
+              </div>
+              <ul class="mock-report-list">
+                <li class="mock-report-row">
+                  <span class="mock-report-id">3年2組 #14</span>
+                  <span class="risk-meter"><span class="risk-fill risk-high"></span></span>
+                  <span class="risk-label risk-label-high">高</span>
+                </li>
+                <li class="mock-report-row">
+                  <span class="mock-report-id">3年1組 #08</span>
+                  <span class="risk-meter"><span class="risk-fill risk-mid"></span></span>
+                  <span class="risk-label risk-label-mid">中</span>
+                </li>
+                <li class="mock-report-row">
+                  <span class="mock-report-id">3年2組 #27</span>
+                  <span class="risk-meter"><span class="risk-fill risk-mid"></span></span>
+                  <span class="risk-label risk-label-mid">中</span>
+                </li>
+                <li class="mock-report-row">
+                  <span class="mock-report-id">3年3組 #03</span>
+                  <span class="risk-meter"><span class="risk-fill risk-low"></span></span>
+                  <span class="risk-label risk-label-low">低</span>
+                </li>
+              </ul>
+              <div class="mock-report-note">
+                <span class="material-symbols-outlined">lock</span>
+                会話ログは共有されません
+              </div>
+            </div>
+            <p class="product-caption">届くのは要点のみ。会話の中身は非公開。</p>
           </div>
         </div>
       </div>
@@ -396,6 +518,44 @@
       </div>
     </section>
 
+    <!-- Process / Steps Section -->
+    <section id="process">
+      <div class="section-container">
+        <h2 class="section-title">導入までの流れ</h2>
+
+        <div class="process-grid">
+          <div class="process-step">
+            <span class="process-num">01</span>
+            <h3 class="process-title">お問い合わせ</h3>
+            <p class="process-text">
+              資料請求・導入相談フォームからご連絡ください。<strong>最短即日でご返信</strong>します。
+            </p>
+          </div>
+          <div class="process-step">
+            <span class="process-num">02</span>
+            <h3 class="process-title">ヒアリング</h3>
+            <p class="process-text">
+              学校の状況や課題を伺い、<strong>最適な運用の形</strong>をご提案します。
+            </p>
+          </div>
+          <div class="process-step">
+            <span class="process-num">03</span>
+            <h3 class="process-title">試験導入</h3>
+            <p class="process-text">
+              一部の学年・クラスから<strong>スモールスタート</strong>。効果を確かめながら進めます。
+            </p>
+          </div>
+          <div class="process-step">
+            <span class="process-num">04</span>
+            <h3 class="process-title">本導入</h3>
+            <p class="process-text">
+              全校展開と、<strong>継続的な運用サポート</strong>。導入後も伴走します。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Contact CTA Section -->
     <section id="contact">
       <div class="section-container">
@@ -404,16 +564,56 @@
           Blescは、教育委員会や私立・公立学校での導入を進めています。システム詳細や導入ステップについて、お気軽にお問い合わせください。
         </p>
         
-        <div class="contact-ctas">
-          <a href="mailto:info@blesc.com?subject=資料請求について" class="btn-outline btn-large">
-            <span class="material-symbols-outlined">mail</span>
-            資料請求はこちら
-          </a>
-          <a href="mailto:info@blesc.com?subject=導入のご相談" class="btn-solid btn-large">
-            <span class="material-symbols-outlined">chat_bubble</span>
-            導入のご相談はこちら
-          </a>
-        </div>
+        <!--
+          Replace the form `action` below with your Formspree form endpoint
+          (https://formspree.io/) or any form backend. Until then, submissions
+          fall back to the mailto link shown beneath the form.
+        -->
+        <form class="contact-form" action="https://formspree.io/f/your-form-id" method="POST">
+          <input type="hidden" name="_subject" value="blescサイトからのお問い合わせ">
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="cf-org">学校・団体名 <span class="req" aria-hidden="true">*</span></label>
+              <input type="text" id="cf-org" name="学校・団体名" required aria-required="true" autocomplete="organization">
+            </div>
+            <div class="form-field">
+              <label for="cf-name">お名前 <span class="req" aria-hidden="true">*</span></label>
+              <input type="text" id="cf-name" name="お名前" required aria-required="true" autocomplete="name">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label for="cf-email">メールアドレス <span class="req" aria-hidden="true">*</span></label>
+              <input type="email" id="cf-email" name="メール" required aria-required="true" autocomplete="email">
+            </div>
+            <div class="form-field">
+              <label for="cf-type">お問い合わせ種別</label>
+              <select id="cf-type" name="種別">
+                <option value="資料請求">資料請求</option>
+                <option value="導入のご相談">導入のご相談</option>
+                <option value="その他">その他</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="cf-message">メッセージ</label>
+            <textarea id="cf-message" name="メッセージ" rows="4" placeholder="ご質問やご要望があればご記入ください（任意）"></textarea>
+          </div>
+
+          <button type="submit" class="btn-solid btn-large form-submit">
+            <span class="material-symbols-outlined" aria-hidden="true">send</span>
+            送信する
+          </button>
+        </form>
+
+        <p class="contact-fallback">
+          フォームがうまく動かない場合は
+          <a href="mailto:info@blesc.jp?subject=導入のご相談・資料請求について">info@blesc.jp</a>
+          まで直接ご連絡ください。
+        </p>
       </div>
     </section>
 

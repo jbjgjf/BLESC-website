@@ -5,19 +5,32 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Timings for the intro sequence (in milliseconds)
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const TIMINGS = prefersReducedMotion ? {
+  let introSeen = false;
+  try { introSeen = sessionStorage.getItem('blesc-intro-seen') === '1'; } catch (e) {}
+  const skipIntro = prefersReducedMotion || introSeen;
+
+  // Remember the intro has played so repeat visits go straight to content
+  try { sessionStorage.setItem('blesc-intro-seen', '1'); } catch (e) {}
+
+  const TIMINGS = skipIntro ? {
     bloomStart: 0,
     logoFadeIn: 0,
     logoFadeOut: 0,
     overlayFadeOut: 0,
     sequenceComplete: 50
   } : {
-    bloomStart: 100,      // Start flower blooming (scaling/rotating)
-    logoFadeIn: 3600,     // Fade in the Blesc black logo (increased from 2400)
-    logoFadeOut: 4800,    // Fade out the Blesc black logo (reduced from 4400)
-    overlayFadeOut: 5600, // Fade out the entire overlay
-    sequenceComplete: 6400 // Remove overlay and unlock scroll
+    bloomStart: 50,        // Start flower blooming
+    logoFadeIn: 1050,      // Reveal the blesc wordmark once the curtain is white
+    logoFadeOut: 1550,     // Fade the wordmark out
+    overlayFadeOut: 1800,  // Fade the whole overlay away
+    sequenceComplete: 2050 // Remove overlay and unlock scroll
   };
+
+  // On skip, hide the overlay instantly instead of running the fade sequence
+  if (skipIntro) {
+    introOverlay.style.display = 'none';
+    document.body.classList.remove('is-locked');
+  }
 
   // Step 1: Start flower bloom
   setTimeout(() => {
@@ -132,10 +145,47 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }, observerOptions);
 
+  // --- Stat Count-Up Animation ---
+  const animateCount = (el) => {
+    const target = parseInt(el.dataset.count, 10);
+    const suffix = el.dataset.suffix || '';
+    const prefix = el.dataset.prefix || '';
+    const format = (n) => prefix + n.toLocaleString('en-US') + suffix;
+
+    if (prefersReducedMotion || isNaN(target)) {
+      el.textContent = format(isNaN(target) ? 0 : target);
+      return;
+    }
+
+    const duration = 1200;
+    const start = performance.now();
+    const step = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+      el.textContent = format(Math.round(target * eased));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
+  const countObserver = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateCount(entry.target);
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.6 });
+
+  const countElements = document.querySelectorAll('.count-up');
+
   // Start observing once the intro overlay is faded out
   setTimeout(() => {
     revealElements.forEach(el => {
       observer.observe(el);
+    });
+    countElements.forEach(el => {
+      countObserver.observe(el);
     });
   }, TIMINGS.sequenceComplete);
 
