@@ -4,7 +4,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const introOverlay = document.getElementById('intro-overlay');
   
   // Timings for the intro sequence (in milliseconds)
-  const TIMINGS = {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const TIMINGS = prefersReducedMotion ? {
+    bloomStart: 0,
+    logoFadeIn: 0,
+    logoFadeOut: 0,
+    overlayFadeOut: 0,
+    sequenceComplete: 50
+  } : {
     bloomStart: 100,      // Start flower blooming (scaling/rotating)
     logoFadeIn: 3600,     // Fade in the Blesc black logo (increased from 2400)
     logoFadeOut: 4800,    // Fade out the Blesc black logo (reduced from 4400)
