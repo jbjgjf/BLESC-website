@@ -993,6 +993,36 @@ header.header-scrolled {
   font-family: sans-serif;
 }
 
+/* Team placeholder slots (to be filled with real members) */
+.team-placeholder {
+  border-style: dashed;
+  border-color: var(--border-strong);
+}
+
+.team-placeholder .member-role,
+.team-placeholder .member-name,
+.team-placeholder .member-en {
+  color: var(--text-muted);
+  opacity: 0.65;
+}
+
+.team-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--bg-elevated-hover);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 16px;
+}
+
+.team-avatar .material-symbols-outlined {
+  font-size: 24px;
+  color: var(--text-muted);
+}
+
 /* Contact CTA Section */
 #contact {
   padding: var(--section-padding) 0;
