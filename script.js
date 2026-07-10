@@ -38,6 +38,14 @@ document.addEventListener('DOMContentLoaded', () => {
     introOverlay.style.display = 'none';
   }, TIMINGS.sequenceComplete);
 
+  // --- Scroll-reactive Header ---
+  const header = document.querySelector('header');
+  const updateHeaderState = () => {
+    header.classList.toggle('header-scrolled', window.scrollY > 8);
+  };
+  updateHeaderState();
+  window.addEventListener('scroll', updateHeaderState, { passive: true });
+
   // --- Mobile Navigation Overlay Menu ---
   const menuTrigger = document.querySelector('.menu-trigger');
   const menuClose = document.querySelector('.menu-close');
