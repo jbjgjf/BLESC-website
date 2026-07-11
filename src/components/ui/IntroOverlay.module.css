@@ -1,0 +1,63 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--accent);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  pointer-events: all;
+}
+
+.whiteCurtain {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-primary);
+  z-index: 10001;
+}
+
+.flowerContainer {
+  position: relative;
+  z-index: 10002;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flowerWrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flower {
+  width: 100%;
+  height: auto;
+  /* CSS Filter to make the blue logo pure white */
+  filter: brightness(0) invert(1);
+}
+
+.logoContainer {
+  position: absolute;
+  z-index: 10003;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.wordmark {
+  width: 320px;
+  height: auto;
+  filter: brightness(0) invert(1);
+}

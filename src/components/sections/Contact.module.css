@@ -1,0 +1,97 @@
+.contact {
+  padding: var(--section-padding) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-secondary);
+}
+
+.contactDesc {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin-bottom: 48px;
+}
+
+.contactForm {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 48px;
+  max-width: 720px;
+}
+
+.formRow {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.formField {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formField label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.req {
+  color: #ff4b4b;
+}
+
+.formField input,
+.formField select,
+.formField textarea {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text-primary);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.formField input:focus,
+.formField select:focus,
+.formField textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(94, 92, 230, 0.2);
+}
+
+.formField textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.formSubmit {
+  margin-top: 32px;
+  width: 100%;
+}
+
+.contactFallback {
+  margin-top: 40px;
+  font-size: 14px;
+  color: var(--text-tertiary);
+}
+
+.contactFallback a {
+  color: var(--accent);
+  text-decoration: underline;
+  margin: 0 4px;
+}
+
+@media (max-width: 768px) {
+  .contactForm {
+    padding: 32px 24px;
+  }
+  .formRow {
+    flex-direction: column;
+    gap: 24px;
+  }
+}

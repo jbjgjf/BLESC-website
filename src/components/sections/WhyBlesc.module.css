@@ -1,0 +1,59 @@
+.whyBlesc {
+  padding: var(--section-padding) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-secondary);
+}
+
+.benefitsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.benefitItem {
+  padding: 40px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  background-color: var(--bg-primary);
+  transition: transform 0.3s var(--ease-expo-out), background-color 0.3s var(--ease-expo-out);
+}
+
+.benefitHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.benefitNum {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--accent);
+  background-color: rgba(94, 92, 230, 0.1);
+  padding: 8px 16px;
+  border-radius: 100px;
+}
+
+.benefitTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.benefitText {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+
+.benefitText strong {
+  color: var(--text-primary);
+}
+
+@media (max-width: 900px) {
+  .benefitsGrid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}

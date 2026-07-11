@@ -1,0 +1,125 @@
+.technology {
+  padding: var(--section-padding) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-primary);
+}
+
+.techIntro {
+  max-width: 800px;
+  margin-bottom: 80px;
+}
+
+.ontologyDiagramWrapper {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 24px;
+  padding: 60px 40px;
+  text-align: center;
+}
+
+.diagramTitle {
+  font-size: 18px;
+  color: var(--text-tertiary);
+  margin-bottom: 60px;
+  letter-spacing: 0.05em;
+}
+
+.ontologyFlowContainer {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.svgLine {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  transform: translateY(-50%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.ontologyFlow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.ontologyNode {
+  background-color: var(--bg-primary);
+  border: 2px solid var(--border-strong);
+  border-radius: 16px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 160px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.ontologyNode span.material-symbols-outlined {
+  font-size: 32px;
+  color: var(--text-secondary);
+}
+
+.nodeLabel {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ontologyArrowSpacer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrowLabel {
+  font-size: 13px;
+  color: var(--accent);
+  background-color: var(--bg-primary);
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--accent-border);
+}
+
+.nodeDepress {
+  border-color: var(--accent);
+  background-color: var(--accent-bg);
+}
+
+.nodeDepress span.material-symbols-outlined {
+  color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .ontologyFlow {
+    flex-direction: column;
+    gap: 60px;
+  }
+  
+  .svgLine {
+    /* Need to change SVG orientation for mobile or hide it */
+    display: none;
+  }
+  
+  .ontologyArrowSpacer {
+    height: 40px;
+  }
+  
+  .ontologyArrowSpacer::before {
+    content: '';
+    width: 2px;
+    height: 40px;
+    background-color: var(--accent);
+    position: absolute;
+    z-index: -1;
+  }
+}
