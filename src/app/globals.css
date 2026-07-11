@@ -40,7 +40,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', 'Helvetica Neue', Helvetica, 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-inter), var(--font-noto-sans-jp), -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.8;
@@ -161,7 +161,7 @@ body.is-locked {
 
 /* Typography & General Classes */
 h1, h2, h3, h4 {
-  font-family: 'Inter', 'Helvetica Neue', 'Noto Sans JP', sans-serif;
+  font-family: var(--font-inter), var(--font-noto-sans-jp), sans-serif;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-primary);
