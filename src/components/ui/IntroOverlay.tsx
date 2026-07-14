@@ -13,20 +13,25 @@ export default function IntroOverlay() {
     let introSeen = false;
     try {
       introSeen = sessionStorage.getItem("blesc-intro-seen") === "1";
-    } catch (e) {}
+    } catch {}
+
+    let hideIntroFrame: number | undefined;
 
     if (prefersReducedMotion || introSeen) {
-      setIsVisible(false);
       document.body.classList.remove("is-locked");
+      hideIntroFrame = window.requestAnimationFrame(() => setIsVisible(false));
     } else {
       document.body.classList.add("is-locked");
       try {
         sessionStorage.setItem("blesc-intro-seen", "1");
-      } catch (e) {}
+      } catch {}
     }
-  }, []);
 
-  if (!isVisible) return null;
+    return () => {
+      if (hideIntroFrame !== undefined) window.cancelAnimationFrame(hideIntroFrame);
+      document.body.classList.remove("is-locked");
+    };
+  }, []);
 
   return (
     <AnimatePresence onExitComplete={() => document.body.classList.remove("is-locked")}>
