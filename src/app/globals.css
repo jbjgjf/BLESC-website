@@ -7,9 +7,10 @@
   --accent-bg: hsla(var(--hue), 100%, 46%, 0.06);
   --accent-border: hsla(var(--hue), 100%, 46%, 0.2);
 
-  --bg-primary: #ffffff;
-  --bg-elevated: #f5f8fc;
-  --bg-elevated-hover: #e9eff6;
+  /* Warm ivory canvas to match the floral asset set; cards read as paper. */
+  --bg-primary: #faf8f2;
+  --bg-elevated: #ffffff;
+  --bg-elevated-hover: #f3efe4;
 
   --text-primary: #0f172a;
   --text-secondary: #334155;
@@ -19,8 +20,8 @@
   --border-strong: rgba(15, 23, 42, 0.15);
   --border-subtle: rgba(15, 23, 42, 0.06);
 
-  --bg-header: rgba(255, 255, 255, 0.5);
-  --bg-header-scrolled: rgba(255, 255, 255, 0.85);
+  --bg-header: rgba(250, 248, 242, 0.5);
+  --bg-header-scrolled: rgba(250, 248, 242, 0.88);
 
   /* Animation Easings */
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);

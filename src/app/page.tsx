@@ -1,7 +1,8 @@
 import IntroOverlay from "@/components/ui/IntroOverlay";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import Hero from "@/components/sections/Hero";
+import FloralScrolly from "@/components/sections/FloralScrolly";
+import FloralDivider from "@/components/ui/FloralDivider";
 import Reality from "@/components/sections/Reality";
 import HowItWorks from "@/components/sections/HowItWorks";
 import Technology from "@/components/sections/Technology";
@@ -18,13 +19,16 @@ export default function Home() {
       <IntroOverlay />
       <Header />
       <main id="main-content">
-        <Hero />
+        <FloralScrolly />
         <Reality />
+        <FloralDivider />
         <HowItWorks />
         <Product />
+        <FloralDivider />
         <WhyBlesc />
         <Technology />
         <Philosophy />
+        <FloralDivider />
         <Team />
         <Process />
         <Contact />

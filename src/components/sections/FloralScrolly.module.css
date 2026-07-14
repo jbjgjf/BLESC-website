@@ -1,0 +1,255 @@
+.scrolly {
+  position: relative;
+  height: 300vh;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 10%, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 60%),
+    var(--bg-primary);
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 80px;
+}
+
+/* Soft blue halo behind the convergence scene (Figma frame 3) */
+.halo {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  width: min(620px, 80vmin);
+  height: min(620px, 80vmin);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, hsla(var(--hue), 85%, 72%, 0.28) 0%, hsla(var(--hue), 85%, 76%, 0.12) 45%, transparent 70%);
+  pointer-events: none;
+}
+
+.haloRing {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  width: min(430px, 58vmin);
+  height: min(430px, 58vmin);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid hsla(var(--hue), 70%, 60%, 0.25);
+  pointer-events: none;
+}
+
+/* White paper cards with a gentle tilt (Figma frames 1 & 2) */
+.paperCard {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid rgba(70, 58, 36, 0.06);
+  border-radius: 10px;
+  box-shadow:
+    0 2px 6px rgba(70, 58, 36, 0.07),
+    0 28px 70px rgba(70, 58, 36, 0.13);
+  padding: clamp(40px, 6vw, 72px) clamp(32px, 6vw, 80px);
+  max-width: 780px;
+  margin: 0 24px;
+  text-align: center;
+}
+
+.cardLayer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 80px;
+  pointer-events: none;
+}
+
+.cardLayer.interactive {
+  pointer-events: auto;
+}
+
+.cornerFlower {
+  position: absolute;
+  pointer-events: none;
+}
+
+.title {
+  font-family: var(--font-inter), var(--font-noto-sans-jp), sans-serif;
+  font-size: clamp(34px, 5vw, 64px);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: pre-line;
+  margin-bottom: 24px;
+}
+
+.subtitle {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  margin-bottom: 40px;
+}
+
+.midMessage {
+  font-size: clamp(24px, 3.4vw, 40px);
+  line-height: 1.5;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  margin-bottom: 18px;
+}
+
+.midBody {
+  font-size: 16px;
+  line-height: 2;
+  color: var(--text-secondary);
+  max-width: 32em;
+  margin: 0 auto;
+}
+
+.finale {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 80px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.finale.interactive {
+  pointer-events: auto;
+}
+
+.finaleMessage {
+  font-size: clamp(22px, 3vw, 36px);
+  line-height: 1.7;
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 22em;
+  padding: 0 24px;
+  margin-bottom: 36px;
+}
+
+.ctas {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.flowerField {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.fieldFlower {
+  position: absolute;
+  will-change: transform;
+}
+
+.sway {
+  animation: sway 7s ease-in-out infinite;
+}
+
+.sway:nth-child(2n) {
+  animation-duration: 9s;
+  animation-delay: -3s;
+}
+
+.sway:nth-child(3n) {
+  animation-duration: 11s;
+  animation-delay: -5s;
+}
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-3deg) translateY(0); }
+  50% { transform: rotate(3.5deg) translateY(-7px); }
+}
+
+/* Slow-falling petals in the foreground */
+.petal {
+  position: absolute;
+  top: -6%;
+  border-radius: 62% 38% 55% 45% / 60% 45% 55% 40%;
+  opacity: 0;
+  animation: fall linear infinite;
+  pointer-events: none;
+}
+
+@keyframes fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  8% { opacity: 0.5; }
+  90% { opacity: 0.35; }
+  100% { transform: translateY(110vh) rotate(300deg); opacity: 0; }
+}
+
+.scrollHint {
+  position: absolute;
+  bottom: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.scrollHint :global(.material-symbols-outlined) {
+  animation: nudge 2.2s ease-in-out infinite;
+}
+
+@keyframes nudge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(7px); }
+}
+
+/* Static fallback for reduced motion */
+.staticHero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 0 80px;
+  position: relative;
+  background: var(--bg-primary);
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sway,
+  .petal,
+  .scrollHint :global(.material-symbols-outlined) {
+    animation: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .scrolly {
+    height: 260vh;
+  }
+
+  .hideOnMobile {
+    display: none;
+  }
+
+  .paperCard {
+    padding: 36px 24px;
+  }
+
+  .subtitle {
+    margin-bottom: 28px;
+  }
+}
