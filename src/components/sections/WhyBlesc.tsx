@@ -1,4 +1,5 @@
 import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
+import { TiltCard } from "@/components/TiltCard";
 import { Eyebrow, Icon, Section } from "@/components/ui";
 
 const ITEMS = [
@@ -47,7 +48,7 @@ export function WhyBlesc() {
       >
         {ITEMS.map((item) => (
           <RevealItem key={item.n} className="h-full">
-            <div className="h-full rounded-2xl border border-line bg-surface p-8 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_18px_40px_-24px_rgba(0,0,0,0.9)] md:p-10">
+            <TiltCard className="h-full border border-line bg-surface p-8 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_18px_40px_-24px_rgba(0,0,0,0.9)] md:p-10">
               <Icon name={item.icon} size={26} className="text-accent" />
               <h3 className="mt-6 flex items-baseline gap-3 text-xl font-medium tracking-[-0.01em] text-ink">
                 <span className="text-[0.8rem] font-normal tabular-nums text-muted">
@@ -58,7 +59,7 @@ export function WhyBlesc() {
               <p className="measure-jp mt-4 text-[0.95rem] text-muted">
                 {item.body}
               </p>
-            </div>
+            </TiltCard>
           </RevealItem>
         ))}
       </Stagger>

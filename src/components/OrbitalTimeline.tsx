@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useInView, useReducedMotion } from "motion/react";
 import { GlassSurface } from "@/components/GlassSurface";
+import { TiltCard } from "@/components/TiltCard";
 import { Icon } from "@/components/ui";
 
 export type OrbitalStage = {
@@ -279,7 +280,7 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
           viewport at any width, and the copy stays in one place to read. */}
       <div className="mx-auto mt-4 min-h-[13rem] w-full max-w-xl">
         {active ? (
-          <div className="rounded-2xl border border-line bg-surface p-7 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_18px_40px_-24px_rgba(0,0,0,0.9)] md:p-8">
+          <TiltCard className="border border-line bg-surface p-7 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_18px_40px_-24px_rgba(0,0,0,0.9)] md:p-8">
             <div className="flex items-baseline justify-between gap-4">
               <p className="text-[0.75rem] font-medium tabular-nums tracking-[0.22em] text-accent">
                 {active.n}
@@ -362,7 +363,7 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
                 </div>
               </div>
             )}
-          </div>
+          </TiltCard>
         ) : (
           <p className="pt-6 text-center text-[0.85rem] text-muted">
             各段階を選択すると、詳細が表示されます。
