@@ -85,7 +85,8 @@ export function CausalChain() {
               >
                 <motion.path
                   d="M0 1 H100"
-                  stroke="var(--color-border)"
+                  stroke="var(--color-primary)"
+                  strokeOpacity={0.45}
                   strokeWidth={1.5}
                   fill="none"
                   vectorEffect="non-scaling-stroke"
@@ -102,7 +103,8 @@ export function CausalChain() {
               >
                 <motion.path
                   d="M1 0 V100"
-                  stroke="var(--color-border)"
+                  stroke="var(--color-primary)"
+                  strokeOpacity={0.45}
                   strokeWidth={1.5}
                   fill="none"
                   vectorEffect="non-scaling-stroke"

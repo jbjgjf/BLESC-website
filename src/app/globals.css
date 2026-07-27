@@ -1,17 +1,24 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   Design tokens. #85c0ed is the ONLY colour permitted to carry meaning —
-   links, active states, small UI marks, the flow diagram, button fills.
-   Everything else is neutral.
+   Design tokens — dark. The light palette is inverted about its own axis:
+   the warm off-white becomes the text, the near-navy becomes the ground.
+   #85c0ed is unchanged and is still the ONLY colour permitted to carry
+   meaning — links, active states, small UI marks, the flow indicator,
+   button fills. Everything else is neutral.
+
+   On this ground #85c0ed measures 10.09:1, so unlike the light build it is
+   now safe as small text too.
 --------------------------------------------------------------------------- */
 :root {
   --color-primary: #85c0ed;
-  --color-text: #1a2332;
-  --color-text-muted: #5c6b7a;
-  --color-bg: #fafaf8;
-  --color-bg-alt: #f2f0ec;
-  --color-border: #e4e1da;
+  --color-text: #f2f1ee;
+  --color-text-muted: #868f9a;
+  --color-bg: #0a0b0d;
+  --color-bg-alt: #121417;
+  --color-border: #24272c;
+  /* raised planes: the Why Blesc cards and the step media wells */
+  --surface-raised: #14171b;
 
   /* the "expo-out" curve — default premium easing across the whole site */
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -24,6 +31,7 @@
   --color-canvas: var(--color-bg);
   --color-canvas-alt: var(--color-bg-alt);
   --color-line: var(--color-border);
+  --color-surface: var(--surface-raised);
 
   --font-sans: var(--font-inter), var(--font-noto-jp), ui-sans-serif, system-ui,
     "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
@@ -35,6 +43,9 @@ html {
   -webkit-text-size-adjust: 100%;
   /* No rubber-banding at the page ends — the page should feel settled. */
   overscroll-behavior-y: none;
+  /* Dark form controls, scrollbars and the overscroll gutter. */
+  color-scheme: dark;
+  background: var(--color-bg);
 }
 
 body {
@@ -50,7 +61,8 @@ body {
 
 ::selection {
   background: var(--color-primary);
-  color: var(--color-text);
+  /* Selected text flips to the dark ground — #85c0ed is a light fill. */
+  color: var(--color-bg);
 }
 
 :focus-visible {

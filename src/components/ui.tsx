@@ -41,9 +41,9 @@ type ButtonLinkProps = ComponentProps<"a"> & {
 
 /**
  * The only permitted button micro-interaction: scale 1 → 1.02 plus a
- * background lighten. Primary uses --color-primary as a fill with
- * --color-text on top (8.1:1) — never as small text on the light canvas,
- * where #85c0ed would fail contrast badly.
+ * background lighten. #85c0ed is a light fill, so primary buttons carry the
+ * dark ground colour as their label (10.1:1) rather than the page's text
+ * colour, which would be light-on-light.
  */
 export function ButtonLink({
   variant = "primary",
@@ -57,9 +57,10 @@ export function ButtonLink({
     "duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:scale-[1.02]";
 
   const variants = {
-    primary: "bg-accent text-ink hover:bg-[#9bcdf2]",
-    secondary:
-      "border border-line text-ink hover:border-ink/25 hover:bg-canvas-alt",
+    primary: "bg-accent text-canvas hover:bg-[#9bcdf2]",
+    // A translucent white lift reads on both canvas and canvas-alt sections,
+    // which a fixed background colour would not.
+    secondary: "border border-line text-ink hover:border-ink/30 hover:bg-ink/[0.06]",
   } as const;
 
   return (

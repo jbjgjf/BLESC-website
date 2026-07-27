@@ -60,8 +60,8 @@ export function Nav() {
     <motion.header
       initial={false}
       animate={{
-        backgroundColor: solid ? "rgba(250,250,248,0.88)" : "rgba(250,250,248,0)",
-        borderBottomColor: solid ? "var(--color-border)" : "rgba(228,225,218,0)",
+        backgroundColor: solid ? "rgba(10,11,13,0.85)" : "rgba(10,11,13,0)",
+        borderBottomColor: solid ? "var(--color-border)" : "rgba(36,39,44,0)",
       }}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       className={`fixed inset-x-0 top-0 z-50 border-b ${
@@ -109,7 +109,7 @@ export function Nav() {
 
           <a
             href={CTA.consult.href}
-            className="inline-flex items-center rounded-full bg-accent px-5 py-2.5 text-[0.85rem] font-medium text-ink transition-[transform,background-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02] hover:bg-[#9bcdf2]"
+            className="inline-flex items-center rounded-full bg-accent px-5 py-2.5 text-[0.85rem] font-medium text-canvas transition-[transform,background-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02] hover:bg-[#9bcdf2]"
           >
             {CTA.consult.label}
           </a>

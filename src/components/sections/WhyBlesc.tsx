@@ -28,7 +28,12 @@ const ITEMS = [
   },
 ] as const;
 
-/** 2×2 on desktop, stacked on mobile. Rules, not cards. */
+/**
+ * 2×2 on desktop, stacked on mobile. Each item sits on its own rounded,
+ * shadowed panel. On a near-black ground a drop shadow alone is invisible,
+ * so the lift comes from three stacked cues: a raised surface colour, a
+ * hairline top highlight, and a deep ambient shadow beneath.
+ */
 export function WhyBlesc() {
   return (
     <Section>
@@ -37,20 +42,20 @@ export function WhyBlesc() {
       </Reveal>
 
       <Stagger
-        className="mt-4 grid grid-cols-1 gap-x-16 md:grid-cols-2"
+        className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6"
         stagger={0.1}
       >
         {ITEMS.map((item) => (
-          <RevealItem key={item.n}>
-            <div className="h-full border-t border-line py-12 md:py-14">
-              <Icon name={item.icon} size={26} className="text-muted" />
+          <RevealItem key={item.n} className="h-full">
+            <div className="h-full rounded-2xl border border-line bg-surface p-8 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_18px_40px_-24px_rgba(0,0,0,0.9)] md:p-10">
+              <Icon name={item.icon} size={26} className="text-accent" />
               <h3 className="mt-6 flex items-baseline gap-3 text-xl font-medium tracking-[-0.01em] text-ink">
                 <span className="text-[0.8rem] font-normal tabular-nums text-muted">
                   {item.n} /
                 </span>
                 {item.title}
               </h3>
-              <p className="measure-jp mt-4 max-w-md text-[0.95rem] text-muted">
+              <p className="measure-jp mt-4 text-[0.95rem] text-muted">
                 {item.body}
               </p>
             </div>
