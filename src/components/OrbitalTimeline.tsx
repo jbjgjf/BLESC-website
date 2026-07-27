@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useInView, useReducedMotion } from "motion/react";
+import { GlassSurface } from "@/components/GlassSurface";
 import { Icon } from "@/components/ui";
 
 export type OrbitalStage = {
@@ -340,10 +341,21 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
                         key={relatedId}
                         type="button"
                         onClick={() => focusStage(relatedId)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-[0.8rem] text-ink transition-[transform,background-color,border-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02] hover:border-ink/30 hover:bg-ink/[0.06]"
+                        className="glass-btn-secondary rounded-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02]"
                       >
-                        {related.label}
-                        <Icon name="arrow_forward" size={14} />
+                        <GlassSurface
+                          className="flex items-center gap-1.5 text-[0.8rem] text-ink"
+                          style={{
+                            background: "var(--glass-tint)",
+                            borderRadius: 9999,
+                            padding: "0.375rem 0.875rem",
+                            border: "1px solid rgba(242,241,238,0.16)",
+                            transition: "background 300ms cubic-bezier(0.16,1,0.3,1)",
+                          }}
+                        >
+                          {related.label}
+                          <Icon name="arrow_forward" size={14} />
+                        </GlassSurface>
                       </button>
                     );
                   })}

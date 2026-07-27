@@ -2,6 +2,7 @@
 
 import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import { useEffect, useState } from "react";
+import { GlassSurface } from "@/components/GlassSurface";
 import { CTA, NAV_LINKS } from "@/lib/site";
 
 /**
@@ -109,9 +110,19 @@ export function Nav() {
 
           <a
             href={CTA.consult.href}
-            className="inline-flex items-center rounded-full bg-accent px-5 py-2.5 text-[0.85rem] font-medium text-canvas transition-[transform,background-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02] hover:bg-[#9bcdf2]"
+            className="glass-btn-primary inline-block rounded-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02]"
           >
-            {CTA.consult.label}
+            <GlassSurface
+              className="flex items-center text-[0.85rem] font-medium text-canvas"
+              style={{
+                background: "var(--glass-tint)",
+                borderRadius: 9999,
+                padding: "0.625rem 1.25rem",
+                transition: "background 300ms cubic-bezier(0.16,1,0.3,1)",
+              }}
+            >
+              {CTA.consult.label}
+            </GlassSurface>
           </a>
         </div>
       </nav>

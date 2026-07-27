@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Fragment } from "react";
+import { GlassSurface } from "@/components/GlassSurface";
 
 /* -------------------------------------------------------------------------- */
 /* Icon                                                                       */
@@ -40,10 +41,12 @@ type ButtonLinkProps = ComponentProps<"a"> & {
 };
 
 /**
- * The only permitted button micro-interaction: scale 1 → 1.02 plus a
- * background lighten. #85c0ed is a light fill, so primary buttons carry the
- * dark ground colour as their label (10.1:1) rather than the page's text
- * colour, which would be light-on-light.
+ * Liquid-glass control. The anchor keeps the semantics, focus ring and the
+ * one permitted micro-interaction (scale 1 → 1.02); the inner lens is the
+ * surface, tinted through --glass-tint so the hover lighten still animates.
+ *
+ * #85c0ed is a light fill, so primary carries the dark ground colour as its
+ * label rather than the page's text colour, which would be light-on-light.
  */
 export function ButtonLink({
   variant = "primary",
@@ -51,21 +54,27 @@ export function ButtonLink({
   children,
   ...props
 }: ButtonLinkProps) {
-  const base =
-    "inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 " +
-    "text-[0.95rem] font-medium tracking-wide transition-[transform,background-color,border-color] " +
-    "duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:scale-[1.02]";
-
-  const variants = {
-    primary: "bg-accent text-canvas hover:bg-[#9bcdf2]",
-    // A translucent white lift reads on both canvas and canvas-alt sections,
-    // which a fixed background colour would not.
-    secondary: "border border-line text-ink hover:border-ink/30 hover:bg-ink/[0.06]",
-  } as const;
-
   return (
-    <a className={`${base} ${variants[variant]} ${className}`} {...props}>
-      {children}
+    <a
+      className={`glass-btn-${variant} inline-block rounded-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:scale-[1.02] ${className}`}
+      {...props}
+    >
+      <GlassSurface
+        className={`flex items-center justify-center gap-2 text-[0.95rem] font-medium tracking-wide ${
+          variant === "primary" ? "text-canvas" : "text-ink"
+        }`}
+        style={{
+          background: "var(--glass-tint)",
+          borderRadius: 9999,
+          padding: "0.875rem 1.75rem",
+          transition: "background 300ms cubic-bezier(0.16,1,0.3,1)",
+          ...(variant === "secondary"
+            ? { border: "1px solid rgba(242,241,238,0.16)" }
+            : null),
+        }}
+      >
+        {children}
+      </GlassSurface>
     </a>
   );
 }

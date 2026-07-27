@@ -96,7 +96,9 @@ export function IntroFade({
   className,
   delay = 0,
   translate = true,
-}: RevealProps & { translate?: boolean }) {
+  duration = 0.9,
+  blur = 8,
+}: RevealProps & { translate?: boolean; duration?: number; blur?: number }) {
   const reduce = useReducedMotion();
 
   if (reduce) {
@@ -118,10 +120,10 @@ export function IntroFade({
       initial={{
         opacity: 0,
         y: translate ? 16 : 0,
-        filter: "blur(4px)",
+        filter: `blur(${blur}px)`,
       }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ duration: 0.6, ease: EXPO_OUT, delay }}
+      transition={{ duration, ease: EXPO_OUT, delay }}
     >
       {children}
     </motion.div>
@@ -129,20 +131,28 @@ export function IntroFade({
 }
 
 /**
- * Splits a line into words and reveals them 0.06s apart with blur+opacity —
- * no scale, no rotation. The full string stays readable to assistive tech
- * because every word remains a real text node.
+ * Splits a line into words and reveals them with blur+opacity — no scale, no
+ * rotation. The full string stays readable to assistive tech because every
+ * word remains a real text node.
+ *
+ * `duration` and `blur` are deliberately generous: the defocus is the point
+ * of this reveal, and at a short duration it resolves before the eye can
+ * register it.
  */
 export function WordReveal({
   text,
   className,
   delay = 0,
-  stagger = 0.06,
+  stagger = 0.09,
+  duration = 1.2,
+  blur = 14,
 }: {
   text: string;
   className?: string;
   delay?: number;
   stagger?: number;
+  duration?: number;
+  blur?: number;
 }) {
   const reduce = useReducedMotion();
   const words = text.split(" ");
@@ -174,11 +184,14 @@ export function WordReveal({
           aria-hidden
           className="inline-block whitespace-pre"
           variants={{
-            hidden: { opacity: 0, filter: "blur(6px)" },
+            hidden: { opacity: 0, filter: `blur(${blur}px)` },
             show: {
               opacity: 1,
               filter: "blur(0px)",
-              transition: { duration: 0.6, ease: EXPO_OUT },
+              // Linear on the blur, not expo-out: expo resolves almost all of
+              // the defocus in the first few frames, which is exactly what
+              // made it hard to see.
+              transition: { duration, ease: "easeOut" },
             },
           }}
         >

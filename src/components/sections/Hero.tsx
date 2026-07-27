@@ -16,11 +16,23 @@ const LINE_OFFSETS = HEADLINE_LINES.reduce<number[]>((acc, line, i) => {
   return acc;
 }, []);
 
-const STAGGER = 0.06;
-const HEADLINE_START = 0.35;
+/*
+ * Slow enough that the defocus reads as motion rather than a flicker: each
+ * word takes 1.2s to resolve out of a 14px blur, 0.09s apart.
+ */
+const STAGGER = 0.09;
+const WORD_DURATION = 1.2;
+const WORD_BLUR = 14;
+const HEADLINE_START = 0.25;
 const TOTAL_WORDS = HEADLINE_LINES.join(" ").split(" ").length;
-// Subheadline and CTAs follow 0.2s after the headline finishes.
-const AFTER_HEADLINE = HEADLINE_START + TOTAL_WORDS * STAGGER + 0.2;
+
+/*
+ * Subheadline and CTAs follow 0.15s after the headline genuinely finishes.
+ * The old formula omitted the word duration entirely, so they arrived while
+ * the last words were still resolving — invisible at 0.6s, obvious at 1.2s.
+ */
+const AFTER_HEADLINE =
+  HEADLINE_START + (TOTAL_WORDS - 1) * STAGGER + WORD_DURATION + 0.15;
 
 export function Hero() {
   return (
@@ -56,6 +68,8 @@ export function Hero() {
                 <WordReveal
                   text={line}
                   stagger={STAGGER}
+                  duration={WORD_DURATION}
+                  blur={WORD_BLUR}
                   delay={HEADLINE_START + LINE_OFFSETS[i] * STAGGER}
                 />
               </span>

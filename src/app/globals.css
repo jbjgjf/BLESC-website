@@ -71,6 +71,30 @@ body {
   border-radius: 2px;
 }
 
+/* ---------------------------------------------------------------------------
+   Liquid-glass controls.
+
+   The tint alpha is what guarantees label contrast, not decoration. A glass
+   button is translucent, so its backdrop is whatever the aurora happens to be
+   doing underneath — unpredictable and animated. These alphas hold WCAG AA
+   for the label against ANY backdrop from pure black to a white clamp:
+   primary 6.2:1 worst case, secondary 6.7:1. Lowering them to make the glass
+   more see-through breaks that guarantee.
+--------------------------------------------------------------------------- */
+.glass-btn-primary {
+  --glass-tint: rgba(133, 192, 237, 0.78);
+}
+.glass-btn-primary:hover {
+  --glass-tint: rgba(160, 208, 243, 0.86);
+}
+
+.glass-btn-secondary {
+  --glass-tint: rgba(10, 11, 13, 0.72);
+}
+.glass-btn-secondary:hover {
+  --glass-tint: rgba(48, 52, 58, 0.78);
+}
+
 /* Japanese paragraph text needs more air than Latin to stay readable. */
 .measure-jp {
   line-height: 1.9;
