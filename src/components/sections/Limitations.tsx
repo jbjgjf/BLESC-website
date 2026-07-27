@@ -1,7 +1,8 @@
-import { RevealItem, Reveal, Stagger } from "@/components/Reveal";
-import { Eyebrow, Icon, Section } from "@/components/ui";
+import { Reveal } from "@/components/Reveal";
+import { StatementList, type Statement } from "@/components/StatementList";
+import { Eyebrow, Section } from "@/components/ui";
 
-const ITEMS = [
+const ITEMS: Statement[] = [
   {
     icon: "quiz",
     title: "アンケートでは本音が表れない。",
@@ -17,9 +18,13 @@ const ITEMS = [
     title: "教員のリソースには限界がある。",
     body: "40名を一人ひとり見守り、心の機微まで捉えることは現実的ではありません。",
   },
-] as const;
+];
 
-/** Flat list separated by hairline rules — deliberately not cards. */
+// NEW COPY — not from the brief. The panel header needs a title, and this
+// frames the three limitations as the question the 仕組み section answers,
+// which is where the header arrow points.
+const HEADING = "なぜ、これまでの方法では気づけないのか。";
+
 export function Limitations() {
   return (
     <Section>
@@ -27,27 +32,14 @@ export function Limitations() {
         <Eyebrow>構造的な限界</Eyebrow>
       </Reveal>
 
-      <Stagger className="mt-4" stagger={0.1}>
-        {ITEMS.map((item) => (
-          <RevealItem key={item.title}>
-            <div className="flex items-start gap-6 border-t border-line py-12 md:gap-10 md:py-16">
-              <Icon
-                name={item.icon}
-                size={26}
-                className="mt-1 shrink-0 text-muted"
-              />
-              <div className="max-w-2xl">
-                <h3 className="text-xl font-medium leading-snug tracking-[-0.01em] text-ink md:text-2xl">
-                  {item.title}
-                </h3>
-                <p className="measure-jp mt-4 text-[0.95rem] text-muted md:text-base">
-                  {item.body}
-                </p>
-              </div>
-            </div>
-          </RevealItem>
-        ))}
-      </Stagger>
+      <div className="mt-4">
+        <StatementList
+          title={HEADING}
+          items={ITEMS}
+          href="#how"
+          hrefLabel="仕組みのセクションへ移動する"
+        />
+      </div>
     </Section>
   );
 }
