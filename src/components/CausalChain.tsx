@@ -64,7 +64,7 @@ export function CausalChain() {
             <motion.span
               custom={i}
               variants={reduce ? flat : dotVariants}
-              className="block size-2.5 shrink-0 rounded-full bg-accent ring-4 ring-accent/20"
+              className="block size-3 shrink-0 rounded-full bg-accent ring-4 ring-accent/30"
             />
             <motion.span
               custom={i}
@@ -86,8 +86,8 @@ export function CausalChain() {
                 <motion.path
                   d="M0 1 H100"
                   stroke="var(--color-primary)"
-                  strokeOpacity={0.45}
-                  strokeWidth={1.5}
+                  strokeOpacity={0.85}
+                  strokeWidth={2.5}
                   fill="none"
                   vectorEffect="non-scaling-stroke"
                   custom={i}
@@ -104,8 +104,8 @@ export function CausalChain() {
                 <motion.path
                   d="M1 0 V100"
                   stroke="var(--color-primary)"
-                  strokeOpacity={0.45}
-                  strokeWidth={1.5}
+                  strokeOpacity={0.85}
+                  strokeWidth={2.5}
                   fill="none"
                   vectorEffect="non-scaling-stroke"
                   custom={i}

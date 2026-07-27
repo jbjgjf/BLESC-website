@@ -194,7 +194,7 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
         {/* Ring */}
         <div
           aria-hidden
-          className="absolute rounded-full border border-line"
+          className="absolute rounded-full border-2 border-line-strong"
           style={{ width: radius * 2, height: radius * 2 }}
         />
 
@@ -252,19 +252,19 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
               }}
             >
               <span
-                className={`flex size-10 items-center justify-center rounded-full border transition-[background-color,border-color,color,scale] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                className={`flex size-10 items-center justify-center rounded-full border-2 transition-[background-color,border-color,color,scale] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   isActive
                     ? "scale-125 border-accent bg-accent text-canvas"
                     : isRelated
                       ? "border-accent bg-accent/15 text-accent"
-                      : "border-line bg-surface text-muted"
+                      : "border-line-strong bg-surface text-ink"
                 }`}
               >
                 <Icon name={stage.icon} size={18} />
               </span>
               <span
-                className={`mt-3 whitespace-nowrap text-[0.72rem] transition-colors duration-500 ${
-                  isActive ? "text-ink" : "text-muted"
+                className={`mt-3 whitespace-nowrap text-[0.8rem] transition-colors duration-500 ${
+                  isActive ? "font-medium text-ink" : "text-muted"
                 }`}
               >
                 {stage.label}
@@ -330,7 +330,7 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
 
             {active.relatedIds.length > 0 && (
               <div className="mt-6 border-t border-line pt-5">
-                <p className="text-[0.7rem] uppercase tracking-[0.18em] text-muted">
+                <p className="text-[0.78rem] font-medium uppercase tracking-[0.15em] text-muted">
                   関連する段階
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">

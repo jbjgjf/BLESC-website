@@ -121,10 +121,16 @@ export function Section({
   );
 }
 
-/** Small uppercase section marker. Muted, never the accent (contrast). */
+/**
+ * Small uppercase section marker. Muted, never the accent (contrast).
+ *
+ * Sized up from 0.7rem and pulled in from 0.22em tracking: at that size,
+ * letters spaced that widely stop reading as a word and start reading as
+ * scattered characters, which is most of why these disappeared.
+ */
 export function Eyebrow({ children }: { children: ReactNode }) {
   return (
-    <p className="mb-6 text-[0.7rem] font-medium uppercase tracking-[0.22em] text-muted">
+    <p className="mb-6 text-[0.78rem] font-medium uppercase tracking-[0.15em] text-muted">
       {children}
     </p>
   );

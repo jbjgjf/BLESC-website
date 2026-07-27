@@ -48,11 +48,13 @@ export interface TiltCardProps {
 /**
  * Cursor-tracking 3D tilt with a radial glare.
  *
- * The glare is capped at 12% and gated on hover. At the component's shipped
- * 15% it lifts the card background enough to drop --color-text-muted body
- * copy to 4.35:1, under WCAG AA; 13% is the ceiling and 12% leaves margin.
- * Gating on hover also stops four idle cards carrying a permanent centred
- * wash — the effect is meant to follow the cursor.
+ * Glare runs at the component's shipped 15%. It was held at 12% while
+ * --color-text-muted was #868f9a, where 15% dropped card body copy to
+ * 4.35:1; at the current brighter muted the same glare leaves it at 5.90:1,
+ * so the cap is no longer buying anything.
+ *
+ * Still gated on hover: idle cards should not carry a permanent centred
+ * wash, and the effect is meant to follow the cursor.
  */
 export function TiltCard({
   children,
@@ -111,7 +113,7 @@ export function TiltCard({
         <motion.div
           aria-hidden
           style={{ background: glareBg }}
-          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-[0.12]"
+          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-[0.15]"
         />
       ) : null}
     </motion.div>

@@ -96,10 +96,10 @@ export function Nav() {
                     {label}
                     <span
                       aria-hidden
-                      className={`absolute -bottom-0.5 left-0 h-px w-full origin-left transition-transform duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                      className={`absolute -bottom-0.5 left-0 h-0.5 w-full origin-left rounded-full transition-transform duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
                         isActive
                           ? "scale-x-100 bg-accent"
-                          : "scale-x-0 bg-ink/30 group-hover:scale-x-100"
+                          : "scale-x-0 bg-ink/50 group-hover:scale-x-100"
                       }`}
                     />
                   </a>
