@@ -219,11 +219,19 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
         {stages.map((stage, index) => {
           const angle = ((index / stages.length) * 360 + rotation) % 360;
           const radian = (angle * Math.PI) / 180;
-          const x = radius * Math.cos(radian);
-          const y = radius * Math.sin(radian);
+
+          /*
+           * Rounded before they reach the DOM. The browser normalises CSS
+           * lengths and opacities to a few decimals, so raw trig output makes
+           * the server string and the client value disagree and React reports
+           * a hydration mismatch it refuses to patch up.
+           */
+          const x = Math.round(radius * Math.cos(radian) * 100) / 100;
+          const y = Math.round(radius * Math.sin(radian) * 100) / 100;
 
           // Depth cue: nodes on the far side sit behind and dim slightly.
           const depth = (1 + Math.sin(radian)) / 2;
+          const opacity = Math.round((0.55 + 0.45 * depth) * 1000) / 1000;
           const isActive = stage.id === activeId;
           const isRelated = relatedToActive.includes(stage.id);
 
@@ -238,7 +246,7 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
               style={{
                 transform: `translate(${x}px, ${y}px)`,
                 zIndex: isActive ? 40 : Math.round(10 + 20 * depth),
-                opacity: isActive ? 1 : 0.55 + 0.45 * depth,
+                opacity: isActive ? 1 : opacity,
               }}
             >
               <span

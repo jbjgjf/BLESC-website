@@ -1,6 +1,7 @@
 "use client";
 
 import { IntroFade, WordReveal } from "@/components/Reveal";
+import { SilkAurora } from "@/components/SilkAurora";
 import { ButtonLink, Container } from "@/components/ui";
 import { CTA } from "@/lib/site";
 
@@ -25,9 +26,23 @@ export function Hero() {
   return (
     <section
       id="top"
-      className="relative flex min-h-[88svh] items-center bg-canvas pt-32 pb-24 md:min-h-screen"
+      className="relative flex min-h-[88svh] items-center overflow-hidden bg-canvas pt-32 pb-24 md:min-h-screen"
     >
-      <Container>
+      <SilkAurora />
+
+      {/*
+        Readability scrim. The shader can clamp to near-white where its three
+        ribbons overlap, so the copy cannot rely on the aurora staying dark.
+        Held at 0.90 across the text column and opened up on the right, which
+        keeps the muted subheadline at 4.6:1 and the headline above 11:1 even
+        against a hypothetical pure-white aurora.
+      */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(10,11,13,0.92)_0%,rgba(10,11,13,0.90)_58%,rgba(10,11,13,0.35)_100%)]"
+      />
+
+      <Container className="relative z-10">
         <div className="max-w-3xl">
           <IntroFade delay={0.05}>
             <p className="text-2xl font-semibold tracking-[-0.02em] text-ink">
