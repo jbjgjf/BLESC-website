@@ -14,7 +14,11 @@
       "Bash(cat)",
       "Bash(npx -v)",
       "Bash(touch /usr/local/bin/testwrite)",
-      "Bash(rm /usr/local/bin/testwrite)"
+      "Bash(rm /usr/local/bin/testwrite)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m 'Archive: dark-themed R3F/GSAP scrolling site *)",
+      "Bash(node -e ' *)"
     ]
   }
 }

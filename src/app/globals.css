@@ -1,26 +1,103 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Design tokens. #85c0ed is the ONLY colour permitted to carry meaning —
+   links, active states, small UI marks, the flow diagram, button fills.
+   Everything else is neutral.
+--------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-primary: #85c0ed;
+  --color-text: #1a2332;
+  --color-text-muted: #5c6b7a;
+  --color-bg: #fafaf8;
+  --color-bg-alt: #f2f0ec;
+  --color-border: #e4e1da;
+
+  /* the "expo-out" curve — default premium easing across the whole site */
+  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-accent: var(--color-primary);
+  --color-ink: var(--color-text);
+  --color-muted: var(--color-text-muted);
+  --color-canvas: var(--color-bg);
+  --color-canvas-alt: var(--color-bg-alt);
+  --color-line: var(--color-border);
+
+  --font-sans: var(--font-inter), var(--font-noto-jp), ui-sans-serif, system-ui,
+    "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  /* Lenis drives scrolling; native smooth behaviour would fight it. */
+  scroll-behavior: auto;
+  -webkit-text-size-adjust: 100%;
+  /* No rubber-banding at the page ends — the page should feel settled. */
+  overscroll-behavior-y: none;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  /* Base body size per spec. */
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--color-primary);
+  color: var(--color-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Japanese paragraph text needs more air than Latin to stay readable. */
+.measure-jp {
+  line-height: 1.9;
+  letter-spacing: 0.01em;
+}
+
+/* Authored line breaks: honoured on wide screens, ignored on narrow ones so
+   Japanese copy can rewrap naturally instead of breaking mid-thought. */
+.br-wide {
+  display: none;
+}
+@media (min-width: 768px) {
+  .br-wide {
+    display: inline;
+  }
+}
+
+/* Material Symbols — outlined style only, never filled. */
+.material-symbols-outlined {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 300,
+    "GRAD" 0,
+    "opsz" 24;
+  user-select: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion: strip every transform/blur transition. Framer Motion
+   variants are neutralised in JS via useReducedMotion; this covers the
+   CSS-driven hover and nav transitions.
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
