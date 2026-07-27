@@ -59,7 +59,13 @@ export default function RootLayout({
           element to its resting state instead.
         */}
         <noscript>
-          <style>{`main [style], header [style] { opacity: 1 !important; filter: none !important; transform: none !important; }`}</style>
+          <style>{`
+            main [style], header [style] { opacity: 1 !important; filter: none !important; transform: none !important; }
+            /* The orbital timeline needs a click to show a stage, so promote
+               its always-present fallback list to the visible copy instead. */
+            .orbital-fallback { position: static !important; width: auto !important; height: auto !important; margin: 0 !important; clip: auto !important; clip-path: none !important; white-space: normal !important; }
+            .orbital-fallback li { margin-bottom: 2rem; }
+          `}</style>
         </noscript>
       </head>
       <body className="antialiased">
