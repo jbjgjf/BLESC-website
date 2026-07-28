@@ -1,9 +1,13 @@
+import { GradientFooter } from "@/components/GradientFooter";
 import { Container, Icon } from "@/components/ui";
 import { CONTACT_EMAIL, NAV_LINKS } from "@/lib/site";
 
 export function Footer() {
   return (
-    <footer className="border-t border-line bg-canvas-alt py-16">
+    // bg-canvas rather than canvas-alt: the glow reads cleanest rising off the
+    // darkest ground on the page. No transform or filter here — a fixed child
+    // needs a plain containing block, which is also why there is no `relative`.
+    <GradientFooter className="border-t border-line bg-canvas pt-14">
       <Container>
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <a
@@ -39,8 +43,8 @@ export function Footer() {
           </div>
         </div>
 
-        <p className="mt-16 text-[0.78rem] text-muted">© 2026 Blesc</p>
+        <p className="mt-12 text-[0.78rem] text-muted">© 2026 Blesc</p>
       </Container>
-    </footer>
+    </GradientFooter>
   );
 }
