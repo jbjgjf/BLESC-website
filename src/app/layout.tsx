@@ -4,6 +4,8 @@ import "material-symbols/outlined.css";
 import "./globals.css";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import { ScrollProgress } from "@/components/ScrollProgress";
 import { SmoothScroll } from "@/components/SmoothScroll";
 
@@ -51,8 +53,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={`${inter.variable} ${notoSansJp.variable}`}>
+    // suppressHydrationWarning: the head script stamps data-theme on <html>
+    // before React hydrates, so the server's attribute intentionally differs.
+    <html
+      lang="ja"
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${inter.variable} ${notoSansJp.variable}`}
+    >
       <head>
+        {/*
+          Blocking, before first paint. Applying the stored theme from an
+          effect instead would flash the wrong palette on every load for
+          anyone whose preference differs from the server default.
+        */}
+        <script
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
         {/*
           Reveals are server-rendered with their hidden inline styles, so
           without JS the page would read as blank. This forces every animated
@@ -69,11 +86,13 @@ export default function RootLayout({
         </noscript>
       </head>
       <body className="antialiased">
-        <SmoothScroll />
-        <ScrollProgress />
-        <Nav />
-        <main>{children}</main>
-        <Footer />
+        <ThemeProvider>
+          <SmoothScroll />
+          <ScrollProgress />
+          <Nav />
+          <main>{children}</main>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );

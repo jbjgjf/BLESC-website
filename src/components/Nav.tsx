@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useMotionValueEvent, useScroll } from "motion/react";
+import { useMotionValueEvent, useScroll } from "motion/react";
 import { useEffect, useState } from "react";
 import { GlassSurface } from "@/components/GlassSurface";
 import { CTA, NAV_LINKS } from "@/lib/site";
@@ -57,16 +57,17 @@ export function Nav() {
     return () => observer.disconnect();
   }, []);
 
+  /*
+   * The bar is driven by classes rather than motion's `animate`, so its
+   * colour is the --color-canvas token and flips with the theme. Animating a
+   * literal rgba() meant a hardcoded dark bar sitting over a light page.
+   */
   return (
-    <motion.header
-      initial={false}
-      animate={{
-        backgroundColor: solid ? "rgba(10,11,13,0.85)" : "rgba(10,11,13,0)",
-        borderBottomColor: solid ? "var(--color-border)" : "rgba(36,39,44,0)",
-      }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed inset-x-0 top-0 z-50 border-b ${
-        solid ? "backdrop-blur-md" : ""
+    <header
+      className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        solid
+          ? "border-line bg-canvas/85 backdrop-blur-md"
+          : "border-transparent bg-transparent"
       }`}
     >
       <nav
@@ -113,7 +114,7 @@ export function Nav() {
             className="glass-btn-primary inline-block rounded-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02]"
           >
             <GlassSurface
-              className="flex items-center text-[0.85rem] font-medium text-canvas"
+              className="flex items-center text-[0.85rem] font-medium text-on-accent"
               style={{
                 background: "var(--glass-tint)",
                 borderRadius: 9999,
@@ -126,6 +127,6 @@ export function Nav() {
           </a>
         </div>
       </nav>
-    </motion.header>
+    </header>
   );
 }

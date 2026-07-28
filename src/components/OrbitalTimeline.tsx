@@ -212,7 +212,7 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
               />
             </>
           )}
-          <span className="flex size-8 items-center justify-center rounded-full bg-accent text-[0.7rem] font-medium tabular-nums text-canvas">
+          <span className="flex size-8 items-center justify-center rounded-full bg-accent text-[0.7rem] font-medium tabular-nums text-on-accent">
             {active ? active.n : ""}
           </span>
         </div>
@@ -254,7 +254,7 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
               <span
                 className={`flex size-10 items-center justify-center rounded-full border-2 transition-[background-color,border-color,color,scale] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                   isActive
-                    ? "scale-125 border-accent bg-accent text-canvas"
+                    ? "scale-125 border-accent bg-accent text-on-accent"
                     : isRelated
                       ? "border-accent bg-accent/15 text-accent"
                       : "border-line-strong bg-surface text-ink"
@@ -280,7 +280,7 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
           viewport at any width, and the copy stays in one place to read. */}
       <div className="mx-auto mt-4 min-h-[13rem] w-full max-w-xl">
         {active ? (
-          <TiltCard className="border border-line bg-surface p-7 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05),0_18px_40px_-24px_rgba(0,0,0,0.9)] md:p-8">
+          <TiltCard className="border border-line bg-surface p-7 shadow-[var(--shadow-card)] md:p-8">
             <div className="flex items-baseline justify-between gap-4">
               <p className="text-[0.75rem] font-medium tabular-nums tracking-[0.22em] text-accent">
                 {active.n}

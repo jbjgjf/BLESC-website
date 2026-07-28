@@ -97,7 +97,7 @@ export function TiltCard({
   const transform = useMotionTemplate`perspective(1000px) rotateX(${srx}deg) rotateY(${sry}deg)`;
   // --color-text, not the component's var(--foreground), which this project
   // has never defined — the gradient would have resolved to nothing.
-  const glareBg = useMotionTemplate`radial-gradient(circle at ${gx}% ${gy}%, var(--color-text), transparent 50%)`;
+  const glareBg = useMotionTemplate`radial-gradient(circle at ${gx}% ${gy}%, var(--color-glare), transparent 50%)`;
 
   return (
     <motion.div
@@ -113,7 +113,7 @@ export function TiltCard({
         <motion.div
           aria-hidden
           style={{ background: glareBg }}
-          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-[0.15]"
+          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-[var(--glare-opacity)]"
         />
       ) : null}
     </motion.div>

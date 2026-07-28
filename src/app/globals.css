@@ -32,8 +32,66 @@
   /* raised planes: the Why Blesc cards and the step media wells */
   --surface-raised: #14171b;
 
+  /*
+   * Label colour for anything filled with --color-primary.
+   *
+   * Deliberately NOT --color-bg. #85c0ed is a light blue in both themes, so
+   * its label has to stay dark in both. Following the ground colour would put
+   * #fafaf8 on #85c0ed in light mode — 1.87:1, a total failure — while the
+   * dark navy below holds 8.09:1 there and 10.09:1 here.
+   */
+  --on-accent: #0a0b0d;
+
+  /* Hero readability scrim, and the card lift. */
+  --scrim-strong: rgba(10, 11, 13, 0.92);
+  --scrim-mid: rgba(10, 11, 13, 0.9);
+  --scrim-soft: rgba(10, 11, 13, 0.35);
+  --shadow-card: inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+    0 18px 40px -24px rgba(0, 0, 0, 0.9);
+
+  /* TiltCard sheen: a light wash lifts a dark card. */
+  --color-glare: #f2f1ee;
+  --glare-opacity: 0.15;
+
   /* the "expo-out" curve — default premium easing across the whole site */
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------------------------------------------------------------------------
+   Light theme. Values are the original brief palette, which turns out to be
+   exactly the light half of this system. Every utility built on the tokens
+   above flips here for free; only genuinely hardcoded colours needed the
+   extra variables.
+--------------------------------------------------------------------------- */
+:root[data-theme="light"] {
+  --color-text: #1a2332;
+  --color-text-muted: #5c6b7a;
+  --color-bg: #fafaf8;
+  --color-bg-alt: #f2f0ec;
+  --color-border: #e4e1da;
+  /* 3.56:1 on the light ground — still clears WCAG 1.4.11. */
+  --color-border-strong: #8a8477;
+  --surface-raised: #ffffff;
+
+  --on-accent: #1a2332;
+
+  --scrim-strong: rgba(250, 250, 248, 0.94);
+  --scrim-mid: rgba(250, 250, 248, 0.92);
+  --scrim-soft: rgba(250, 250, 248, 0.45);
+  /* A white inset highlight is invisible on white; lead with the drop. */
+  --shadow-card: inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
+    0 12px 32px -18px rgba(26, 35, 50, 0.18);
+
+  /*
+   * A light sheen on a white card reads as nothing, so light mode deepens
+   * instead of lifting — the same cue, inverted. It also has to be far
+   * gentler: light-mode muted starts at 5.47:1 on a card against dark mode's
+   * 8.00:1, so there is much less to spend. A blue wash was tried first and
+   * could only reach 10% before the body copy fell under AA; this holds
+   * 5.0:1 at the glare peak.
+   */
+  --color-glare: #1a2332;
+  --glare-opacity: 0.1;
 }
 
 @theme inline {
@@ -45,6 +103,7 @@
   --color-line: var(--color-border);
   --color-line-strong: var(--color-border-strong);
   --color-surface: var(--surface-raised);
+  --color-on-accent: var(--on-accent);
 
   --font-sans: var(--font-inter), var(--font-noto-jp), ui-sans-serif, system-ui,
     "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
@@ -56,9 +115,15 @@ html {
   -webkit-text-size-adjust: 100%;
   /* No rubber-banding at the page ends — the page should feel settled. */
   overscroll-behavior-y: none;
-  /* Dark form controls, scrollbars and the overscroll gutter. */
-  color-scheme: dark;
   background: var(--color-bg);
+}
+
+/* Native form controls, scrollbars and the overscroll gutter follow suit. */
+:root {
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 body {
@@ -74,8 +139,8 @@ body {
 
 ::selection {
   background: var(--color-primary);
-  /* Selected text flips to the dark ground — #85c0ed is a light fill. */
-  color: var(--color-bg);
+  /* Same reasoning as buttons: the fill is light in both themes. */
+  color: var(--on-accent);
 }
 
 :focus-visible {
@@ -106,6 +171,19 @@ body {
 }
 .glass-btn-secondary:hover {
   --glass-tint: rgba(48, 52, 58, 0.78);
+}
+
+/*
+ * Secondary flips its tint with the theme — its label is --color-text, which
+ * flips too, so a dark pill on a light page would be light-on-light. Primary
+ * keeps the accent tint in both, because its label is --on-accent and stays
+ * dark either way.
+ */
+:root[data-theme="light"] .glass-btn-secondary {
+  --glass-tint: rgba(255, 255, 255, 0.78);
+}
+:root[data-theme="light"] .glass-btn-secondary:hover {
+  --glass-tint: rgba(255, 255, 255, 0.92);
 }
 
 /* Japanese paragraph text needs more air than Latin to stay readable. */

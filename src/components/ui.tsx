@@ -61,7 +61,7 @@ export function ButtonLink({
     >
       <GlassSurface
         className={`flex items-center justify-center gap-2 text-[0.95rem] font-medium tracking-wide ${
-          variant === "primary" ? "text-canvas" : "text-ink"
+          variant === "primary" ? "text-on-accent" : "text-ink"
         }`}
         style={{
           background: "var(--glass-tint)",

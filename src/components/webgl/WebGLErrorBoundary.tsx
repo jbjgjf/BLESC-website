@@ -15,10 +15,12 @@ export function WebGLFallback({ className = "" }: { className?: string }) {
       className={className}
       style={{
         backgroundColor: "var(--color-bg)",
+        // Built from tokens so the same gradient works on either ground —
+        // it is also what stands in for the shader in light mode.
         backgroundImage: [
-          "radial-gradient(120% 80% at 68% 30%, rgba(133,192,237,0.16), transparent 60%)",
-          "radial-gradient(90% 70% at 20% 78%, rgba(133,192,237,0.10), transparent 62%)",
-          "linear-gradient(180deg, rgba(18,20,23,0.9), rgba(10,11,13,1))",
+          "radial-gradient(120% 80% at 68% 30%, rgba(133,192,237,0.20), transparent 60%)",
+          "radial-gradient(90% 70% at 20% 78%, rgba(133,192,237,0.12), transparent 62%)",
+          "linear-gradient(180deg, var(--color-bg-alt), var(--color-bg))",
         ].join(","),
       }}
     />

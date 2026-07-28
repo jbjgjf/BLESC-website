@@ -1,4 +1,3 @@
-import { FinalCta } from "@/components/sections/FinalCta";
 import { Hero } from "@/components/sections/Hero";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { Limitations } from "@/components/sections/Limitations";
@@ -21,7 +20,6 @@ export default function Home() {
       <Technology />
       <Philosophy />
       <Team />
-      <FinalCta />
     </>
   );
 }

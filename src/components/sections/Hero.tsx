@@ -2,6 +2,8 @@
 
 import { IntroFade, WordReveal } from "@/components/Reveal";
 import { SilkAurora } from "@/components/SilkAurora";
+import { useTheme } from "@/components/ThemeProvider";
+import { WebGLFallback } from "@/components/webgl/WebGLErrorBoundary";
 import { ButtonLink, Container } from "@/components/ui";
 import { CTA } from "@/lib/site";
 
@@ -35,12 +37,27 @@ const AFTER_HEADLINE =
   HEADLINE_START + (TOTAL_WORDS - 1) * STAGGER + WORD_DURATION + 0.15;
 
 export function Hero() {
+  const { theme } = useTheme();
+
   return (
     <section
       id="top"
       className="relative flex min-h-[88svh] items-center overflow-hidden bg-canvas pt-32 pb-24 md:min-h-screen"
     >
-      <SilkAurora />
+      {/*
+        Dark only. The shader builds its light additively on top of the base
+        colour — `col = base; col += accent * veil …` — so on a near-white
+        ground every veil clamps straight to white and the aurora disappears
+        into a flat blown-out rectangle. Inverting it properly means changing
+        the blend to a mix rather than an add, which is a shader change worth
+        making deliberately. Light mode gets the static gradient instead,
+        which is the same fallback used when WebGL is unavailable.
+      */}
+      {theme === "dark" ? (
+        <SilkAurora />
+      ) : (
+        <WebGLFallback className="pointer-events-none absolute inset-0" />
+      )}
 
       {/*
         Readability scrim. The shader can clamp to near-white where its three
@@ -51,7 +68,7 @@ export function Hero() {
       */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(10,11,13,0.92)_0%,rgba(10,11,13,0.90)_58%,rgba(10,11,13,0.35)_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,var(--scrim-strong)_0%,var(--scrim-mid)_58%,var(--scrim-soft)_100%)]"
       />
 
       <Container className="relative z-10">
