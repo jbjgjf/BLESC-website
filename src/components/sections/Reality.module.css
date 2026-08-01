@@ -9,10 +9,45 @@
 }
 
 .realityStatsGrid {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 60px;
   margin-bottom: 64px;
+}
+
+/* Decorative sprigs behind the statistics. Positioned outside the measure so
+   they read as marginalia and never crowd the numbers. */
+.statSprigLeft,
+.statSprigRight {
+  position: absolute;
+  z-index: 0;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.statSprigLeft {
+  top: -48px;
+  left: -76px;
+}
+
+.statSprigRight {
+  bottom: -56px;
+  right: -64px;
+}
+
+.statItem {
+  position: relative;
+  z-index: 1;
+}
+
+/* Below the wide breakpoint there is no margin to spare, so the sprigs go
+   rather than overlap the text. */
+@media (max-width: 1280px) {
+  .statSprigLeft,
+  .statSprigRight {
+    display: none;
+  }
 }
 
 .statItem {

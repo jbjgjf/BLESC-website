@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { useRef } from "react";
+import Flower from "@/components/ui/Flower";
+import { enter, headingIn, petalIn, riseIn, stagger } from "@/lib/motion";
 import styles from "./Reality.module.css";
 
 // A small component to animate counting up when in view
@@ -37,34 +39,25 @@ function CountUp({ target, duration = 1.2, suffix = "", prefix = "" }: { target:
 export default function Reality() {
   const containerRef = useRef(null);
   
-  // Parallax effect for the background text or decorative elements
+  // Drives the drifting sprigs behind the statistics. This was computed and
+  // then never applied, so the section paid for a scroll listener and showed
+  // no depth for it.
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
   });
-  
+
   const yParallax = useTransform(scrollYProgress, [0, 1], [50, -50]);
+  const yParallaxSlow = useTransform(scrollYProgress, [0, 1], [30, -30]);
 
   return (
     <section id="reality" className={styles.reality} ref={containerRef}>
       <div className="section-container">
-        <motion.h2 
-          className="section-title"
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
+        <motion.h2 className="section-title" {...enter(headingIn)}>
           学校が直面している現実
         </motion.h2>
 
-        <motion.div 
-          className={styles.realityHighlight}
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8 }}
-        >
+        <motion.div className={styles.realityHighlight} {...enter()}>
           <p className="text-lead">
             危機が起きてからでは、遅い。<br />
             生徒の不調に気づくのが<strong>「何かが起きた後」</strong>になってしまう。Blescは、そのタイミングを根本から変えます。
@@ -74,14 +67,17 @@ export default function Reality() {
           </p>
         </motion.div>
 
-        <div className={styles.realityStatsGrid}>
-          <motion.div 
-            className={styles.statItem}
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
+        <motion.div className={styles.realityStatsGrid} {...enter(stagger(0.18))}>
+          {/* Pressed sprigs drifting behind the numbers — the hero's floral
+              vocabulary carried into the first section below it. */}
+          <motion.div className={styles.statSprigLeft} style={{ y: yParallax }} aria-hidden="true">
+            <Flower variant="blue" size={64} sprig rotate={-12} />
+          </motion.div>
+          <motion.div className={styles.statSprigRight} style={{ y: yParallaxSlow }} aria-hidden="true">
+            <Flower variant="pink" size={52} sprig rotate={16} />
+          </motion.div>
+
+          <motion.div className={styles.statItem} variants={petalIn}>
             <span className={styles.statNumber}>
               <CountUp target={1} suffix="st" /> / <CountUp target={37} suffix="th" />
             </span>
@@ -89,13 +85,7 @@ export default function Reality() {
               日本の子どもは、身体的健康で<strong>世界1位</strong>である一方、精神的幸福度は38カ国中<strong>37位</strong>にとどまっています。
             </p>
           </motion.div>
-          <motion.div 
-            className={styles.statItem}
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
+          <motion.div className={styles.statItem} variants={petalIn}>
             <span className={styles.statNumber}>
               <CountUp target={350000} suffix="+" />
             </span>
@@ -103,20 +93,15 @@ export default function Reality() {
               不登校の児童・生徒は<strong>35万人を超え</strong>、現在も増加を続けています。
             </p>
           </motion.div>
-        </div>
+        </motion.div>
 
         <div className={styles.limitsDivider}></div>
 
-        <motion.h3 
-          className={styles.subsectionTitle}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
+        <motion.h3 className={styles.subsectionTitle} {...enter()}>
           既存の仕組みには、構造的な限界があります。
         </motion.h3>
 
-        <div className={styles.limitsGrid}>
+        <motion.div className={styles.limitsGrid} {...enter(stagger(0.14))}>
           {[
             {
               title: "アンケートでは本音が表れない。",
@@ -131,13 +116,10 @@ export default function Reality() {
               desc: "40名を一人ひとり見守り、心の機微まで捉えることは現実的ではありません。"
             }
           ].map((limit, i) => (
-            <motion.div 
-              key={i} 
+            <motion.div
+              key={i}
               className={styles.limitItem}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.6, delay: i * 0.15 }}
+              variants={riseIn}
               whileHover={{ y: -8, borderColor: "var(--accent-border)" }}
             >
               <h4 className={styles.limitTitle}>{limit.title}</h4>
@@ -152,7 +134,7 @@ export default function Reality() {
               </p>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

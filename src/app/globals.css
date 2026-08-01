@@ -11,6 +11,12 @@
   --bg-primary: #faf8f2;
   --bg-elevated: #ffffff;
   --bg-elevated-hover: #f3efe4;
+  /* Paper surface under the older section styles. Six modules still ask for
+     --bg-secondary; it was never declared, so every card, panel and chat
+     bubble using it rendered transparent against the ivory canvas — including
+     the AI side of the product demo, whose bubbles vanished while the
+     student's stayed blue. Same white as the hero's paper card. */
+  --bg-secondary: var(--bg-elevated);
 
   --text-primary: #0f172a;
   --text-secondary: #334155;

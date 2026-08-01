@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_JP } from "next/font/google";
+import MotionProvider from "@/components/ui/MotionProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -34,9 +35,12 @@ export const metadata: Metadata = {
   },
 };
 
+// The canvas is warm ivory (--bg-primary: #faf8f2). Declaring a dark scheme
+// here made browsers render form controls and scrollbars for a dark page and
+// tinted the mobile browser chrome near-black against an ivory site.
 export const viewport: Viewport = {
-  colorScheme: "dark",
-  themeColor: "#0a0a0c",
+  colorScheme: "light",
+  themeColor: "#faf8f2",
 };
 
 export default function RootLayout({
@@ -53,7 +57,9 @@ export default function RootLayout({
         />
         <link rel="canonical" href="https://blesc.jp/" />
       </head>
-      <body>{children}</body>
+      <body>
+        <MotionProvider>{children}</MotionProvider>
+      </body>
     </html>
   );
 }
