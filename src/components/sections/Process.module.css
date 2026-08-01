@@ -16,6 +16,17 @@
   border-radius: 20px;
   padding: 32px 24px;
   position: relative;
+  /* Match the hero's paper card: warm, low shadow rather than a flat panel. */
+  box-shadow:
+    0 1px 3px rgba(70, 58, 36, 0.05),
+    0 12px 28px rgba(70, 58, 36, 0.06);
+  transition: box-shadow 0.4s var(--ease-expo-out);
+}
+
+.processStep:hover {
+  box-shadow:
+    0 2px 6px rgba(70, 58, 36, 0.07),
+    0 20px 44px rgba(70, 58, 36, 0.1);
 }
 
 .processStep::after {

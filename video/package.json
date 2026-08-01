@@ -1,0 +1,23 @@
+{
+  "name": "blesc-video",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Remotion compositions for blesc. Isolated from the website so nothing here reaches the site bundle.",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render HeroLoop out/blesc-hero.mp4",
+    "render:og": "remotion render OgCard out/blesc-og.mp4",
+    "still:og": "remotion still OgCard out/blesc-og.png --frame=89"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.503",
+    "@remotion/google-fonts": "^4.0.503",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "remotion": "4.0.503"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "typescript": "^5"
+  }
+}

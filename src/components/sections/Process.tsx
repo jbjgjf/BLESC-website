@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import { enter, headingIn, riseIn, stagger } from "@/lib/motion";
 import styles from "./Process.module.css";
 
 export default function Process() {
@@ -29,24 +30,17 @@ export default function Process() {
   return (
     <section id="process" className={styles.process}>
       <div className="section-container">
-        <motion.h2 
-          className="section-title"
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-        >
+        <motion.h2 className="section-title" {...enter(headingIn)}>
           導入までの流れ
         </motion.h2>
 
-        <div className={styles.processGrid}>
+        <motion.div className={styles.processGrid} {...enter(stagger(0.14))}>
           {steps.map((step, index) => (
-            <motion.div 
+            <motion.div
               key={index}
               className={styles.processStep}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ delay: index * 0.1, duration: 0.6 }}
+              variants={riseIn}
+              whileHover={{ y: -6, borderColor: "var(--accent-border)" }}
             >
               <div className={styles.processHeader}>
                 <span className={styles.processNum}>{step.num}</span>
@@ -55,7 +49,7 @@ export default function Process() {
               <p className={styles.processText} dangerouslySetInnerHTML={{ __html: step.text }} />
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
