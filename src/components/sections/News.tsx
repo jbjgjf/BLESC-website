@@ -1,6 +1,6 @@
 import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
 import { Flower } from "@/components/Flower";
-import { Eyebrow, Icon, Section } from "@/components/ui";
+import { SectionTitle, Icon, Section } from "@/components/ui";
 
 /**
  * PLACEHOLDER — every entry here is invented, including the dates and the
@@ -49,14 +49,14 @@ export function News() {
   return (
     <Section id="news">
       <Reveal>
-        <Eyebrow>ニュース</Eyebrow>
+        <SectionTitle accent="bg-mark-3">ニュース</SectionTitle>
       </Reveal>
 
       <Reveal className="max-w-3xl">
-        <h2 className="flex items-center gap-3 text-[clamp(1.5rem,3.4vw,2.25rem)] font-medium leading-[1.4] tracking-[-0.02em] text-ink">
+        <p className="flex items-center gap-3 text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.4] tracking-[-0.02em] text-ink">
           Blescの最新の動き。
-          <Flower size={22} rotate={14} opacity={0.55} className="shrink-0 text-mark-3" />
-        </h2>
+          <Flower size={34} rotate={14} opacity={0.9} className="shrink-0 text-mark-3" />
+        </p>
       </Reveal>
 
       <Stagger className="mt-14" stagger={0.09}>

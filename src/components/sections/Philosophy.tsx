@@ -30,10 +30,10 @@ export function Philosophy() {
       */}
       <FlowerScatter
         items={[
-          { top: "14%", left: "5%", size: 34, rotate: 12, opacity: 0.16, className: "hidden text-mark-1 lg:block" },
-          { top: "33%", right: "7%", size: 22, rotate: -22, opacity: 0.14, className: "hidden text-mark-3 lg:block" },
-          { top: "58%", left: "8%", size: 19, rotate: 38, opacity: 0.13, className: "hidden text-mark-2 lg:block" },
-          { top: "78%", right: "5%", size: 28, rotate: -8, opacity: 0.15, className: "hidden text-mark-1 lg:block" },
+          { top: "13%", left: "4%", size: 62, rotate: 12, opacity: 0.5, className: "hidden text-mark-1 lg:block" },
+          { top: "32%", right: "6%", size: 44, rotate: -22, opacity: 0.44, className: "hidden text-mark-3 lg:block" },
+          { top: "58%", left: "7%", size: 38, rotate: 38, opacity: 0.42, className: "hidden text-mark-2 lg:block" },
+          { top: "77%", right: "4%", size: 54, rotate: -8, opacity: 0.48, className: "hidden text-mark-1 lg:block" },
         ]}
       />
 

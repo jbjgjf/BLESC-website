@@ -9,8 +9,8 @@ export function Stats() {
     <Section alt className="relative overflow-hidden">
       <FlowerScatter
         items={[
-          { top: "18%", right: "4%", size: 30, rotate: -14, opacity: 0.14, className: "hidden text-mark-2 lg:block" },
-          { top: "68%", right: "12%", size: 18, rotate: 26, opacity: 0.12, className: "hidden text-mark-1 lg:block" },
+          { top: "16%", right: "3%", size: 58, rotate: -14, opacity: 0.46, className: "hidden text-mark-2 lg:block" },
+          { top: "66%", right: "11%", size: 36, rotate: 26, opacity: 0.4, className: "hidden text-mark-1 lg:block" },
         ]}
       />
 

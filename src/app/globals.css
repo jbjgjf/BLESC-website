@@ -1,4 +1,11 @@
 @import "tailwindcss";
+/*
+ * Layered on purpose. Imported unlayered, the icon font's own
+ * .material-symbols-outlined { display: inline-block } outranks every
+ * Tailwind utility, because unlayered CSS beats anything inside a layer —
+ * so `hidden md:block` on an icon silently did nothing.
+ */
+@import "material-symbols/outlined.css" layer(base);
 
 /* ---------------------------------------------------------------------------
    Design tokens — dark. The light palette is inverted about its own axis:

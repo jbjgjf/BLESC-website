@@ -69,9 +69,9 @@ export function StatementList({
       className={`w-full rounded-2xl border border-line bg-surface p-6 shadow-[var(--shadow-card)] md:p-10 ${className}`}
     >
       <div className="mb-8 flex items-start justify-between gap-6 md:mb-10">
-        <h2 className="text-xl font-medium leading-snug tracking-[-0.02em] text-ink md:text-2xl">
+        <h3 className="text-xl font-medium leading-snug tracking-[-0.02em] text-ink md:text-2xl">
           {title}
-        </h2>
+        </h3>
         <a
           href={href}
           aria-label={hrefLabel}

@@ -204,35 +204,6 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
             style={{ width: radius * 2, height: radius * 2 }}
           />
 
-          {/*
-          Direction markers. The ring alone says these five things are
-          related; it does not say which way round they go. A chevron sits at
-          each midpoint between consecutive nodes, rotated to the tangent, so
-          the flow reads clockwise at a glance.
-        */}
-          {stages.map((stage, index) => {
-            const midAngle =
-              (((index + 0.5) / stages.length) * 360 + rotation) % 360;
-            const radian = (midAngle * Math.PI) / 180;
-            const x = Math.round(radius * Math.cos(radian) * 100) / 100;
-            const y = Math.round(radius * Math.sin(radian) * 100) / 100;
-
-            return (
-              <span
-                key={`dir-${stage.id}`}
-                aria-hidden
-                className="absolute text-mark-1/70"
-                style={{
-                  transform: `translate(${x}px, ${y}px) rotate(${
-                    Math.round((midAngle + 90) * 100) / 100
-                  }deg)`,
-                }}
-              >
-                <Icon name="chevron_right" size={20} />
-              </span>
-            );
-          })}
-
           {/* Core */}
           <div
             aria-hidden

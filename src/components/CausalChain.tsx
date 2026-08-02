@@ -3,33 +3,48 @@
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { Fragment } from "react";
 import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
+import { Icon } from "@/components/ui";
 
-const CHAIN = ["睡眠不足", "認知機能の低下", "抑うつ傾向"] as const;
+/**
+ * The causal chain the ontology encodes, at full section width.
+ *
+ * Previously a small run of dots beside the copy. It is the clearest single
+ * statement of what the model actually does, so it now carries the section
+ * rather than annotating it.
+ */
+const CHAIN = [
+  { label: "睡眠不足", icon: "bedtime", text: "text-mark-1", bar: "bg-mark-1" },
+  {
+    label: "認知機能の低下",
+    icon: "psychology",
+    text: "text-mark-2",
+    bar: "bg-mark-2",
+  },
+  {
+    label: "抑うつ傾向",
+    icon: "trending_down",
+    text: "text-mark-3",
+    bar: "bg-mark-3",
+  },
+] as const;
 
-const STEP = 0.18;
+const STEP = 0.14;
 
-const dotVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.6 },
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 26 },
+  show: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: EXPO_OUT, delay: i * STEP },
+  }),
+};
+
+const arrowVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.7 },
   show: (i: number) => ({
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.5, ease: EXPO_OUT, delay: i * STEP },
-  }),
-};
-
-const labelVariants: Variants = {
-  hidden: { opacity: 0 },
-  show: (i: number) => ({
-    opacity: 1,
-    transition: { duration: 0.45, delay: i * STEP + 0.08 },
-  }),
-};
-
-const edgeVariants: Variants = {
-  hidden: { pathLength: 0 },
-  show: (i: number) => ({
-    pathLength: 1,
-    transition: { duration: 0.5, ease: EXPO_OUT, delay: i * STEP + 0.14 },
+    transition: { duration: 0.45, ease: EXPO_OUT, delay: i * STEP + 0.22 },
   }),
 };
 
@@ -38,15 +53,6 @@ const flat: Variants = {
   show: { opacity: 1, transition: { duration: 0.3 } },
 };
 
-const flatEdge: Variants = {
-  hidden: { pathLength: 1, opacity: 0 },
-  show: { pathLength: 1, opacity: 1, transition: { duration: 0.3 } },
-};
-
-/**
- * The causal chain the ontology encodes, shown at a deliberately small scale.
- * Supporting illustration for the copy above it — not a hero visual.
- */
 export function CausalChain() {
   const reduce = useReducedMotion() ?? false;
 
@@ -55,64 +61,42 @@ export function CausalChain() {
       initial="hidden"
       whileInView="show"
       viewport={VIEWPORT}
-      aria-hidden
-      className="flex max-w-lg flex-col items-start gap-0 sm:flex-row sm:items-start"
+      className="flex w-full flex-col items-stretch gap-4 md:flex-row md:items-center md:gap-3"
     >
-      {CHAIN.map((label, i) => (
-        <Fragment key={label}>
-          <div className="flex shrink-0 flex-row items-center gap-3 sm:flex-col sm:gap-2.5">
-            <motion.span
-              custom={i}
-              variants={reduce ? flat : dotVariants}
-              className="block size-3 shrink-0 rounded-full bg-accent ring-4 ring-accent/30"
-            />
-            <motion.span
-              custom={i}
-              variants={reduce ? flat : labelVariants}
-              className="whitespace-nowrap text-[0.8rem] text-muted"
+      {CHAIN.map((link, i) => (
+        <Fragment key={link.label}>
+          <motion.div
+            custom={i}
+            variants={reduce ? flat : cardVariants}
+            className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-line bg-surface px-6 py-10 text-center shadow-[var(--shadow-card)] md:py-14"
+          >
+            <span
+              className={`flex size-16 items-center justify-center rounded-full bg-canvas-alt ${link.text}`}
             >
-              {label}
-            </motion.span>
-          </div>
+              <Icon name={link.icon} size={30} />
+            </span>
+
+            <p className="mt-6 text-[clamp(1.1rem,2vw,1.5rem)] font-medium tracking-[-0.015em] text-ink">
+              {link.label}
+            </p>
+
+            <span
+              aria-hidden
+              className={`mt-5 block h-1 w-10 rounded-full ${link.bar}`}
+            />
+          </motion.div>
 
           {i < CHAIN.length - 1 && (
-            <>
-              {/* Horizontal edge, sm and up — sits level with the dots. */}
-              <svg
-                viewBox="0 0 100 2"
-                preserveAspectRatio="none"
-                className="mt-[0.3125rem] hidden h-0.5 w-full min-w-8 sm:block"
-              >
-                <motion.path
-                  d="M0 1 H100"
-                  stroke="var(--color-primary)"
-                  strokeOpacity={0.85}
-                  strokeWidth={2.5}
-                  fill="none"
-                  vectorEffect="non-scaling-stroke"
-                  custom={i}
-                  variants={reduce ? flatEdge : edgeVariants}
-                />
-              </svg>
-
-              {/* Vertical edge, mobile — drops from the dot's centre. */}
-              <svg
-                viewBox="0 0 2 100"
-                preserveAspectRatio="none"
-                className="ml-[0.3125rem] h-6 w-0.5 sm:hidden"
-              >
-                <motion.path
-                  d="M1 0 V100"
-                  stroke="var(--color-primary)"
-                  strokeOpacity={0.85}
-                  strokeWidth={2.5}
-                  fill="none"
-                  vectorEffect="non-scaling-stroke"
-                  custom={i}
-                  variants={reduce ? flatEdge : edgeVariants}
-                />
-              </svg>
-            </>
+            <motion.div
+              aria-hidden
+              custom={i}
+              variants={reduce ? flat : arrowVariants}
+              className="flex shrink-0 items-center justify-center text-muted"
+            >
+              {/* Horizontal on a row, vertical once the chain stacks. */}
+              <Icon name="arrow_forward" size={30} className="hidden md:block" />
+              <Icon name="arrow_downward" size={30} className="md:hidden" />
+            </motion.div>
           )}
         </Fragment>
       ))}

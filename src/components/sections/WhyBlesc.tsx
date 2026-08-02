@@ -1,6 +1,6 @@
 import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
 import { TiltCard } from "@/components/TiltCard";
-import { Eyebrow, Icon, Section } from "@/components/ui";
+import { SectionTitle, Icon, Section } from "@/components/ui";
 
 const ITEMS = [
   {
@@ -42,7 +42,7 @@ export function WhyBlesc() {
   return (
     <Section>
       <Reveal>
-        <Eyebrow>Why Blesc</Eyebrow>
+        <SectionTitle accent="bg-mark-3">Why Blesc</SectionTitle>
       </Reveal>
 
       <Stagger

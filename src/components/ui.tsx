@@ -122,17 +122,31 @@ export function Section({
 }
 
 /**
- * Small uppercase section marker. Muted, never the accent (contrast).
+ * Section title.
  *
- * Sized up from 0.7rem and pulled in from 0.22em tracking: at that size,
- * letters spaced that widely stop reading as a word and start reading as
- * scattered characters, which is most of why these disappeared.
+ * Was a 0.78rem uppercase label, which read as a caption rather than the
+ * name of the section. Now the second-largest type on the page after the
+ * hero headline — clamp tops out at 3.25rem against the hero's 4.25rem — as
+ * a real <h2>, with a short accent bar carrying the colour so the heading
+ * itself can stay full-strength ink.
+ *
+ * `accent` takes a complete class name rather than a fragment: Tailwind
+ * scans source text, so a interpolated `bg-${x}` would never be generated.
  */
-export function Eyebrow({ children }: { children: ReactNode }) {
+export function SectionTitle({
+  children,
+  accent = "bg-mark-1",
+}: {
+  children: ReactNode;
+  accent?: string;
+}) {
   return (
-    <p className="mb-6 text-[0.78rem] font-medium uppercase tracking-[0.15em] text-mark-1">
-      {children}
-    </p>
+    <div className="mb-10 md:mb-12">
+      <span aria-hidden className={`block h-1 w-14 rounded-full ${accent}`} />
+      <h2 className="mt-6 text-[clamp(2rem,5vw,3.25rem)] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
+        {children}
+      </h2>
+    </div>
   );
 }
 

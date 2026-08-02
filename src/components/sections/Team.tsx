@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { CircularGallery, type GalleryItem } from "@/components/CircularGallery";
 import { Reveal } from "@/components/Reveal";
-import { Eyebrow, Icon, Section } from "@/components/ui";
+import { SectionTitle, Icon, Section } from "@/components/ui";
 import { initialsCard } from "@/lib/initialsCard";
 
 /**
@@ -102,7 +102,7 @@ export function Team() {
   return (
     <Section id="team" alt>
       <Reveal>
-        <Eyebrow>チーム</Eyebrow>
+        <SectionTitle accent="bg-mark-2">チーム</SectionTitle>
       </Reveal>
 
       <div className="relative h-[420px] w-full md:h-[540px]">

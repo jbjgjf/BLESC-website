@@ -1,6 +1,6 @@
 import { Reveal } from "@/components/Reveal";
 import { StatementList, type Statement } from "@/components/StatementList";
-import { Eyebrow, Section } from "@/components/ui";
+import { SectionTitle, Section } from "@/components/ui";
 
 const ITEMS: Statement[] = [
   {
@@ -29,7 +29,7 @@ export function Limitations() {
   return (
     <Section>
       <Reveal>
-        <Eyebrow>構造的な限界</Eyebrow>
+        <SectionTitle accent="bg-mark-2">構造的な限界</SectionTitle>
       </Reveal>
 
       <div className="mt-4">

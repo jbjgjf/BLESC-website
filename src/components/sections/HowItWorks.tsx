@@ -1,6 +1,6 @@
 import { OrbitalTimeline, type OrbitalStage } from "@/components/OrbitalTimeline";
 import { Reveal } from "@/components/Reveal";
-import { Eyebrow, Section } from "@/components/ui";
+import { SectionTitle, Section } from "@/components/ui";
 
 /**
  * The section's paragraph, one sentence per stage. Stages relate to their
@@ -55,7 +55,7 @@ export function HowItWorks() {
   return (
     <Section id="how" alt>
       <Reveal>
-        <Eyebrow>仕組み</Eyebrow>
+        <SectionTitle accent="bg-mark-1">仕組み</SectionTitle>
       </Reveal>
 
       <OrbitalTimeline stages={STAGES} />
