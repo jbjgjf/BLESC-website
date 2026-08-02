@@ -1,18 +1,27 @@
 import { Counter } from "@/components/Counter";
 import { FlowerScatter } from "@/components/Flower";
-import { RevealItem, Stagger } from "@/components/Reveal";
-import { Section } from "@/components/ui";
+import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
+import { Section, SectionTitle } from "@/components/ui";
 
-/** Numbers are the visual here — no icons, no chrome. */
+/**
+ * Numbers are the visual here — no icons, no chrome.
+ *
+ * NEW COPY: 数字が示す現実 is my wording, not from the brief. The section had
+ * no heading of its own and read as two figures floating between sections.
+ */
 export function Stats() {
   return (
     <Section alt className="relative overflow-hidden">
       <FlowerScatter
         items={[
-          { top: "16%", right: "3%", size: 58, rotate: -14, opacity: 0.46, className: "hidden text-mark-2 lg:block" },
+          { top: "16%", right: "3%", size: 58, rotate: -14, opacity: 0.46, className: "hidden text-mark-3 lg:block" },
           { top: "66%", right: "11%", size: 36, rotate: 26, opacity: 0.4, className: "hidden text-mark-1 lg:block" },
         ]}
       />
+
+      <Reveal>
+        <SectionTitle accent="bg-mark-1">数字が示す現実</SectionTitle>
+      </Reveal>
 
       <Stagger className="grid gap-20 md:grid-cols-2 md:gap-16" stagger={0.12}>
         <RevealItem>
@@ -34,7 +43,7 @@ export function Stats() {
         </RevealItem>
 
         <RevealItem>
-          <p className="flex items-baseline text-mark-2">
+          <p className="flex items-baseline text-mark-1">
             <Counter
               to={350000}
               className="text-[clamp(3rem,9vw,7.5rem)] font-medium leading-none tracking-[-0.045em] tabular-nums"

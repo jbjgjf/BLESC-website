@@ -1,9 +1,15 @@
 import { Reveal, Stagger, RevealItem } from "@/components/Reveal";
 import { Lines, Section } from "@/components/ui";
 
+/*
+ * Tighter top than the standard section rhythm. The hero centres its copy in
+ * a full-viewport box, which already leaves ~246px of air below the CTAs;
+ * the default 144px on top of that put this heading 390px clear of them.
+ * Tailwind sorts pt-* after py-*, so this wins over Section's own py.
+ */
 export function Problem() {
   return (
-    <Section id="problem">
+    <Section id="problem" className="pt-12 md:pt-16">
       <Reveal className="max-w-3xl">
         <h2 className="text-[clamp(1.875rem,4.4vw,3rem)] font-medium leading-[1.35] tracking-[-0.02em] text-ink">
           危機が起きてからでは、遅い。
