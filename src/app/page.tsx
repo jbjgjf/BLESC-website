@@ -1,6 +1,7 @@
 import { Hero } from "@/components/sections/Hero";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { Limitations } from "@/components/sections/Limitations";
+import { News } from "@/components/sections/News";
 import { Philosophy } from "@/components/sections/Philosophy";
 import { Problem } from "@/components/sections/Problem";
 import { Stats } from "@/components/sections/Stats";
@@ -20,6 +21,7 @@ export default function Home() {
       <Technology />
       <Philosophy />
       <Team />
+      <News />
     </>
   );
 }

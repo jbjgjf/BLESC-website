@@ -113,7 +113,7 @@ const HEX_COLOR_REGEX = /^#?[0-9a-fA-F]{6}$/;
 /* Site palette, not the component's shipped teal/cream. */
 const DEFAULT_BASE = "#0a0b0d"; // --color-bg
 const DEFAULT_MID = "#121417"; // --color-bg-alt
-const DEFAULT_SHEEN = "#f2f1ee"; // --color-text, so highlights read as light
+const DEFAULT_SHEEN = "#ffffff"; // --color-text, so highlights read as light
 const DEFAULT_ACCENT = "#85c0ed"; // --color-primary
 
 function sanitizeHexColor(value: string, fallback: string) {

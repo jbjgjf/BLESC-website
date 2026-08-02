@@ -85,7 +85,7 @@ export function StatementList({
         {items.map((statement) => (
           <motion.li key={statement.title} variants={item}>
             <div className="flex items-start gap-4 rounded-2xl border border-line bg-canvas-alt p-5 md:gap-6 md:p-6">
-              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-surface text-accent">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-surface text-mark-1">
                 <Icon name={statement.icon} size={22} />
               </span>
               <div>

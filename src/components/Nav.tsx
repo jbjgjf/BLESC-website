@@ -3,6 +3,7 @@
 import { useMotionValueEvent, useScroll } from "motion/react";
 import { useEffect, useState } from "react";
 import { GlassSurface } from "@/components/GlassSurface";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { CTA, NAV_LINKS } from "@/lib/site";
 
 /**
@@ -81,8 +82,8 @@ export function Nav() {
           Blesc
         </a>
 
-        <div className="flex items-center gap-8">
-          <ul className="hidden items-center gap-8 md:flex">
+        <div className="flex items-center gap-4 md:gap-6">
+          <ul className="hidden items-center gap-5 md:flex lg:gap-8">
             {NAV_LINKS.map(({ href, label }) => {
               const isActive = activeId === href;
               return (
@@ -108,6 +109,8 @@ export function Nav() {
               );
             })}
           </ul>
+
+          <ThemeToggle compact />
 
           <a
             href={CTA.consult.href}

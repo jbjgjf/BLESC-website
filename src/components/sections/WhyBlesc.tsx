@@ -29,6 +29,9 @@ const ITEMS = [
   },
 ] as const;
 
+/** Each card takes the next mark, so the 2×2 grid carries three hues. */
+const MARKS = ["text-mark-1", "text-mark-2", "text-mark-3"] as const;
+
 /**
  * 2×2 on desktop, stacked on mobile. Each item sits on its own rounded,
  * shadowed panel. On a near-black ground a drop shadow alone is invisible,
@@ -46,12 +49,14 @@ export function WhyBlesc() {
         className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6"
         stagger={0.1}
       >
-        {ITEMS.map((item) => (
+        {ITEMS.map((item, i) => (
           <RevealItem key={item.n} className="h-full">
             <TiltCard className="h-full border border-line bg-surface p-8 shadow-[var(--shadow-card)] md:p-10">
-              <Icon name={item.icon} size={26} className="text-accent" />
+              <Icon name={item.icon} size={26} className={MARKS[i % 3]} />
               <h3 className="mt-6 flex items-baseline gap-3 text-xl font-medium tracking-[-0.01em] text-ink">
-                <span className="text-[0.8rem] font-normal tabular-nums text-muted">
+                <span
+                  className={`text-[0.8rem] font-medium tabular-nums ${MARKS[i % 3]}`}
+                >
                   {item.n} /
                 </span>
                 {item.title}

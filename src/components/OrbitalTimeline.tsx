@@ -256,7 +256,7 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
                   isActive
                     ? "scale-125 border-accent bg-accent text-on-accent"
                     : isRelated
-                      ? "border-accent bg-accent/15 text-accent"
+                      ? "border-accent bg-accent/15 text-mark-1"
                       : "border-line-strong bg-surface text-ink"
                 }`}
               >
@@ -282,7 +282,7 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
         {active ? (
           <TiltCard className="border border-line bg-surface p-7 shadow-[var(--shadow-card)] md:p-8">
             <div className="flex items-baseline justify-between gap-4">
-              <p className="text-[0.75rem] font-medium tabular-nums tracking-[0.22em] text-accent">
+              <p className="text-[0.75rem] font-medium tabular-nums tracking-[0.22em] text-mark-1">
                 {active.n}
               </p>
               <button
@@ -323,7 +323,7 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
 
             {active.note && (
               <p className="mt-5 flex items-center gap-2 text-[0.85rem] text-muted">
-                <Icon name="lock" size={16} className="text-accent" />
+                <Icon name="lock" size={16} className="text-mark-1" />
                 {active.note}
               </p>
             )}

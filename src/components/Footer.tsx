@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { GradientFooter } from "@/components/GradientFooter";
 import { useTheme } from "@/components/ThemeProvider";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { ButtonLink, Container, Icon } from "@/components/ui";
 import { CONTACT_EMAIL, CTA, NAV_LINKS } from "@/lib/site";
 
@@ -17,7 +16,7 @@ const DARK_STOPS = [
   { offset: 0.1827, color: "#0B3C6E" },
   { offset: 0.2837, color: "#2E77B8" },
   { offset: 0.4135, color: "#85C0ED" },
-  { offset: 0.5866, color: "#F2F1EE" },
+  { offset: 0.5866, color: "#FFFFFF" },
   { offset: 0.6827, color: "#BBD9F1" },
   { offset: 0.8029, color: "#85C0ED" },
   { offset: 1, color: "#85C0ED00" },
@@ -124,7 +123,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.15em] text-muted">
+            <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.15em] text-mark-1">
               サイトマップ
             </h3>
             <nav aria-label="フッターナビゲーション" className="mt-5">
@@ -144,7 +143,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.15em] text-muted">
+            <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.15em] text-mark-1">
               お問い合わせ
             </h3>
             <a
@@ -155,12 +154,6 @@ export function Footer() {
               {CONTACT_EMAIL}
             </a>
 
-            <h3 className="mt-10 text-[0.78rem] font-medium uppercase tracking-[0.15em] text-muted">
-              表示
-            </h3>
-            <div className="mt-5">
-              <ThemeToggle />
-            </div>
           </div>
         </div>
 

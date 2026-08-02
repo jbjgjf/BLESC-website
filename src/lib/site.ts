@@ -5,6 +5,7 @@ export const NAV_LINKS = [
   { href: "#how", label: "仕組み" },
   { href: "#technology", label: "テクノロジー" },
   { href: "#team", label: "チーム" },
+  { href: "#news", label: "ニュース" },
 ] as const;
 
 // TODO: replace with the real enquiry endpoints (form URLs) when they exist.

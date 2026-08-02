@@ -126,7 +126,7 @@ export function Team() {
           <p className="text-xl font-medium tracking-[-0.01em] text-ink">
             {person.name}
           </p>
-          <p className="mt-2 text-[0.9rem] text-accent">{person.role}</p>
+          <p className="mt-2 text-[0.9rem] text-mark-1">{person.role}</p>
           <p className="measure-jp mt-4 text-[0.95rem] text-muted">
             {person.description}
           </p>

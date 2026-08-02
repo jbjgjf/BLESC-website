@@ -8,7 +8,7 @@ export function Stats() {
     <Section alt>
       <Stagger className="grid gap-20 md:grid-cols-2 md:gap-16" stagger={0.12}>
         <RevealItem>
-          <p className="flex items-baseline text-ink">
+          <p className="flex items-baseline text-mark-1">
             <Counter
               to={37}
               className="text-[clamp(4rem,11vw,7.5rem)] font-medium leading-none tracking-[-0.045em] tabular-nums"
@@ -26,7 +26,7 @@ export function Stats() {
         </RevealItem>
 
         <RevealItem>
-          <p className="flex items-baseline text-ink">
+          <p className="flex items-baseline text-mark-2">
             <Counter
               to={350000}
               className="text-[clamp(3rem,9vw,7.5rem)] font-medium leading-none tracking-[-0.045em] tabular-nums"

@@ -12,9 +12,30 @@ import { Icon } from "@/components/ui";
  * forgets the choice on navigation and flashes the wrong theme on load —
  * persistence and the pre-paint script live in ThemeProvider instead.
  */
-export function ThemeToggle() {
+export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const { theme, toggle } = useTheme();
   const isLight = theme === "light";
+
+  /*
+   * Nav variant. The flanking sun/moon plus the track is ~110px, which the
+   * bar cannot spare once it carries five links and the CTA — so this is a
+   * single icon button showing the theme it switches TO.
+   */
+  if (compact) {
+    return (
+      <button
+        type="button"
+        role="switch"
+        aria-checked={isLight}
+        onClick={toggle}
+        aria-label="ライトモードとダークモードを切り替える"
+        title={isLight ? "ダークモードに切り替え" : "ライトモードに切り替え"}
+        className="flex size-9 shrink-0 items-center justify-center rounded-full text-muted transition-[color,background-color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-105 hover:bg-ink/[0.08] hover:text-ink"
+      >
+        <Icon name={isLight ? "dark_mode" : "light_mode"} size={20} />
+      </button>
+    );
+  }
 
   return (
     <div className="flex items-center gap-3">
