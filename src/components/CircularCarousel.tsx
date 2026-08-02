@@ -9,6 +9,8 @@ export interface CarouselItem {
   title: string;
   description: string;
   tag?: string;
+  /** Trust-critical aside, shown on the card it belongs to. */
+  note?: string;
   /** Full class name — Tailwind scans source text, so no interpolation. */
   text?: string;
 }
@@ -23,22 +25,30 @@ export interface CircularCarouselProps {
 }
 
 const VISIBLE_COUNT = 5;
-const CARD_W = 200;
-const RADIUS_Y = 92;
 const EASE = [0.22, 1, 0.36, 1] as const;
+
+type Layout = {
+  cardW: number;
+  cardH: number;
+  radiusX: number;
+  radiusY: number;
+};
+
+const WIDE: Layout = { cardW: 264, cardH: 208, radiusX: 380, radiusY: 124 };
+const COMPACT: Layout = { cardW: 200, cardH: 168, radiusX: 200, radiusY: 92 };
 
 /**
  * Where a card sits on the arc relative to the active one.
  *
- * `radiusX` is passed in rather than fixed at 220 as upstream: the deck has
- * to live inside a measured column, and a constant radius pushed the outer
- * cards straight out of it at anything narrower than a full-width desktop.
+ * The radius is passed in rather than the constant 220 upstream used: the
+ * deck is measured against its container, so it can open right out at full
+ * width and still keep its outer cards on screen at 375px.
  */
 function getItemPosition(
   index: number,
   activeIndex: number,
   total: number,
-  radiusX: number,
+  layout: Layout,
 ) {
   const offset = index - activeIndex;
   const half = Math.floor(VISIBLE_COUNT / 2);
@@ -52,14 +62,15 @@ function getItemPosition(
   const angle = (adjusted / VISIBLE_COUNT) * Math.PI;
   const distance = Math.abs(adjusted);
   const maxDistance = half + 1;
+  const round = (v: number) => Math.round(v * 100) / 100;
 
   return {
-    x: Math.round(Math.sin(angle) * radiusX * 100) / 100,
-    y: Math.round(-Math.cos(angle) * RADIUS_Y * 100) / 100,
-    scale: Math.round(Math.max(0, 1 - (distance / maxDistance) * 0.3) * 1000) / 1000,
-    // Floor raised from 0.3: at that level the back cards were unreadable
-    // rather than merely recessed.
-    opacity: Math.round(Math.max(0.45, 1 - (distance / maxDistance) * 0.55) * 1000) / 1000,
+    x: round(Math.sin(angle) * layout.radiusX),
+    y: round(-Math.cos(angle) * layout.radiusY),
+    scale: round(Math.max(0, 1 - (distance / maxDistance) * 0.28)),
+    // Floor raised from upstream's 0.3: at that level the back cards were
+    // unreadable rather than merely recessed.
+    opacity: round(Math.max(0.5, 1 - (distance / maxDistance) * 0.5)),
     zIndex: VISIBLE_COUNT - distance,
   };
 }
@@ -74,7 +85,7 @@ export function CircularCarousel({
 }: CircularCarouselProps) {
   const [internalIndex, setInternalIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [radiusX, setRadiusX] = useState(200);
+  const [layout, setLayout] = useState<Layout>(WIDE);
 
   const trackRef = useRef<HTMLDivElement | null>(null);
   const reduce = useReducedMotion() ?? false;
@@ -95,14 +106,26 @@ export function CircularCarousel({
   const next = useCallback(() => goTo(activeIndex + 1), [activeIndex, goTo]);
   const prev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
 
-  /* Radius follows the column so the outer cards stay inside it. */
+  /*
+   * Card size and radius both follow the container. Driving the card box from
+   * the same constants the arc maths uses keeps them in sync — upstream had
+   * the width in a Tailwind class and again in a negative margin, which is
+   * two places to forget.
+   */
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
 
     const observer = new ResizeObserver(([entry]) => {
       const { width } = entry.contentRect;
-      setRadiusX(Math.max(64, Math.min(220, (width - CARD_W) / 2)));
+      const base = width < 640 ? COMPACT : WIDE;
+      setLayout({
+        ...base,
+        radiusX: Math.max(
+          56,
+          Math.min(base.radiusX, (width - base.cardW) / 2),
+        ),
+      });
     });
 
     observer.observe(el);
@@ -110,9 +133,9 @@ export function CircularCarousel({
   }, []);
 
   /*
-   * Auto-advance. Paused on hover and on focus, and switched off entirely
-   * under prefers-reduced-motion — a deck that reshuffles itself every few
-   * seconds is exactly the motion that setting is asking us to drop.
+   * Auto-advance, paused on hover and focus and switched off entirely under
+   * prefers-reduced-motion — a deck that reshuffles itself on a timer is
+   * exactly the motion that setting asks us to drop.
    */
   useEffect(() => {
     if (!autoPlay || paused || reduce || total <= 1) return;
@@ -134,6 +157,8 @@ export function CircularCarousel({
   // Upstream read items[activeIndex].id unguarded, which throws on an empty list.
   if (total === 0) return null;
 
+  const trackHeight = layout.cardH + layout.radiusY + 96;
+
   return (
     <div
       role="group"
@@ -144,21 +169,25 @@ export function CircularCarousel({
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
-      className={`relative flex flex-col items-center gap-10 ${className}`}
+      className={`relative flex flex-col items-center gap-12 ${className}`}
     >
-      <div ref={trackRef} className="relative h-[300px] w-full">
-        {/* Index readout, behind the deck. */}
+      <div
+        ref={trackRef}
+        className="relative w-full"
+        style={{ height: trackHeight }}
+      >
+        {/* Index readout, sitting behind the deck. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center"
         >
-          <span className="text-[3.5rem] font-semibold leading-none tabular-nums text-ink/10">
+          <span className="text-[7rem] font-semibold leading-none tabular-nums text-ink/[0.07] md:text-[10rem]">
             {String(activeIndex + 1).padStart(2, "0")}
           </span>
         </div>
 
         {items.map((item, i) => {
-          const pos = getItemPosition(i, activeIndex, total, radiusX);
+          const pos = getItemPosition(i, activeIndex, total, layout);
           if (!pos) return null;
 
           const isActive = i === activeIndex;
@@ -177,11 +206,18 @@ export function CircularCarousel({
               transition={
                 reduce ? { duration: 0.2 } : { duration: 0.65, ease: EASE }
               }
-              style={{ zIndex: pos.zIndex, transformOrigin: "center center" }}
+              style={{
+                zIndex: pos.zIndex,
+                transformOrigin: "center center",
+                width: layout.cardW,
+                height: layout.cardH,
+                marginLeft: -layout.cardW / 2,
+                marginTop: -layout.cardH / 2,
+              }}
               onClick={() => goTo(i)}
               aria-label={`ステップ ${i + 1}、${item.title}`}
               aria-current={isActive}
-              className={`absolute left-1/2 top-1/2 -ml-[100px] -mt-[70px] flex h-[140px] w-[200px] cursor-pointer flex-col items-start justify-between rounded-2xl border p-4 text-left shadow-[var(--shadow-card)] transition-[border-color,background-color] duration-300 ${
+              className={`absolute left-1/2 top-1/2 flex cursor-pointer flex-col items-start justify-between rounded-2xl border p-5 text-left shadow-[var(--shadow-card)] transition-[border-color,background-color] duration-300 ${
                 isActive
                   ? "border-mark-1 bg-surface"
                   : "border-line bg-canvas-alt hover:border-ink/30"
@@ -189,7 +225,7 @@ export function CircularCarousel({
             >
               {item.tag && (
                 <span
-                  className={`rounded-full bg-canvas px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.1em] tabular-nums ${
+                  className={`rounded-full bg-canvas px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.1em] tabular-nums ${
                     item.text ?? "text-mark-1"
                   }`}
                 >
@@ -198,21 +234,23 @@ export function CircularCarousel({
               )}
 
               <div className="w-full">
-                <h3
-                  className={`font-medium leading-tight text-ink ${
-                    isActive ? "text-[1.05rem]" : "text-[0.95rem]"
-                  }`}
-                >
+                <h3 className="text-[1.05rem] font-medium leading-tight text-ink">
                   {item.title}
                 </h3>
                 {/*
                   Clamped for the card only — the string stays whole in the
-                  DOM, so nothing is hidden from assistive tech, and the panel
-                  below shows it in full.
+                  DOM, so nothing is withheld from assistive tech.
                 */}
-                <p className="mt-1.5 line-clamp-2 text-[0.78rem] leading-relaxed text-muted">
+                <p className="mt-2 line-clamp-3 text-[0.82rem] leading-relaxed text-muted">
                   {item.description}
                 </p>
+
+                {item.note && (
+                  <p className="mt-2.5 flex items-center gap-1.5 text-[0.72rem] text-mark-1">
+                    <Icon name="lock" size={14} />
+                    {item.note}
+                  </p>
+                )}
               </div>
             </motion.button>
           );
