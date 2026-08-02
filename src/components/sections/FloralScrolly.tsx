@@ -25,15 +25,25 @@ type FieldFlower = {
 // so it reads as a circle on typical viewports).
 const CIRCLE = { x: 50, y: 46, rx: 16, ry: 24 };
 
+// Eight seats, 45 degrees apart.
+//
+// The angles used to be -90/-30/30/90/150/210/270/330, where -90 and 270 name
+// the same direction, as do -30 and 330 — eight flowers converged onto six
+// seats and two pairs landed exactly on top of each other. The finale text
+// sits over the middle of the ring, which is why it read as a slightly sparse
+// circle rather than an obvious bug.
+//
+// hideOnMobile is spread so the reduced set stays distributed around the ring
+// instead of bunching on one side.
 const FIELD: FieldFlower[] = [
   { scatter: { x: 12, y: 16 }, angle: -90, variant: "blue", size: 58, speed: 0.9, sprig: true },
-  { scatter: { x: 82, y: 12 }, angle: -30, variant: "lavender", size: 46, speed: 1.3 },
-  { scatter: { x: 88, y: 56 }, angle: 30, variant: "blue", size: 62, speed: 0.7, sprig: true },
-  { scatter: { x: 74, y: 84 }, angle: 90, variant: "pink", size: 50, speed: 1.1 },
-  { scatter: { x: 26, y: 86 }, angle: 150, variant: "blue", size: 44, speed: 1.4, hideOnMobile: true },
-  { scatter: { x: 6, y: 58 }, angle: 210, variant: "pink", size: 54, speed: 0.8, sprig: true },
-  { scatter: { x: 34, y: 30 }, angle: 270, variant: "lavender", size: 38, speed: 1.6, hideOnMobile: true },
-  { scatter: { x: 64, y: 36 }, angle: 330, variant: "blue", size: 40, speed: 1.2, hideOnMobile: true },
+  { scatter: { x: 82, y: 12 }, angle: -45, variant: "lavender", size: 46, speed: 1.3, hideOnMobile: true },
+  { scatter: { x: 88, y: 56 }, angle: 0, variant: "blue", size: 62, speed: 0.7, sprig: true },
+  { scatter: { x: 74, y: 84 }, angle: 45, variant: "pink", size: 50, speed: 1.1, hideOnMobile: true },
+  { scatter: { x: 26, y: 86 }, angle: 90, variant: "blue", size: 44, speed: 1.4 },
+  { scatter: { x: 6, y: 58 }, angle: 135, variant: "pink", size: 54, speed: 0.8, sprig: true },
+  { scatter: { x: 34, y: 30 }, angle: 180, variant: "lavender", size: 38, speed: 1.6 },
+  { scatter: { x: 64, y: 36 }, angle: 225, variant: "blue", size: 40, speed: 1.2, hideOnMobile: true },
 ];
 
 const PETALS = [
