@@ -6,19 +6,40 @@ import { Reveal } from "@/components/Reveal";
 import { SectionTitle, Icon, Section } from "@/components/ui";
 import { initialsCard } from "@/lib/initialsCard";
 
+type Member = {
+  name: string;
+  initials: string;
+  role: string;
+  description: string;
+  /**
+   * Headshot path, relative to /public — e.g. "/team/yamada-taro.jpg".
+   * Optional so photos can land one at a time; anyone without one keeps
+   * their generated initials card.
+   *
+   * These do NOT pass through next/image. The carousel uploads them as GPU
+   * textures, so nothing resizes them for you — export at roughly 800×1000,
+   * 4:5 portrait, and keep each under ~150KB since all ten load at once.
+   */
+  photo?: string;
+};
+
 /**
  * PLACEHOLDER ROSTER — every name, role and description here is invented.
  * 山田太郎 / 山田花子 are Japan's standard stand-in names, the equivalent of
  * "John Doe". The descriptions are generic role summaries, not statements
- * about real people. Replace the whole array, and drop real headshots into
- * /public with a `photo` field, before this page goes anywhere public.
+ * about real people. Replace the whole array before this page goes public.
+ *
+ * Typed rather than `as const`: with a const assertion, reading `m.photo` on
+ * an entry that has not got one yet is a type error, which would force all
+ * ten photos to arrive in the same commit.
  */
-const MEMBERS = [
+const MEMBERS: Member[] = [
   {
     name: "山田 太郎",
     initials: "YT",
     role: "代表取締役 / CEO",
     description: "事業全体の方針と、教育委員会・学校法人との連携を統括。",
+    // photo: "/team/yamada-taro.jpg",
   },
   {
     name: "山田 花子",
@@ -74,7 +95,7 @@ const MEMBERS = [
     role: "コーポレート",
     description: "法務・労務・情報セキュリティ体制の整備を担当。",
   },
-] as const;
+];
 
 export function Team() {
   const [active, setActive] = useState(0);
@@ -84,7 +105,7 @@ export function Team() {
   const items = useMemo<GalleryItem[]>(
     () =>
       MEMBERS.map((m, i) => ({
-        image: initialsCard(m.initials, i),
+        image: m.photo ?? initialsCard(m.initials, i),
         text: m.name,
       })),
     [],
