@@ -27,8 +27,12 @@ export type OrbitalStage = {
   relatedIds: number[];
 };
 
-/** Degrees per millisecond — one revolution just under a minute. */
-const DEG_PER_MS = 0.006;
+/*
+ * Degrees per millisecond. Slowed to roughly a three-minute revolution: at
+ * the old 60s the ring visibly moved while you were reading it, which is
+ * most of why the running order was hard to hold on to.
+ */
+const DEG_PER_MS = 0.002;
 /** Where a focused node parks: 270° puts it at the top of the ring. */
 const FOCUS_ANGLE = 270;
 
@@ -44,9 +48,15 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
   const reduce = useReducedMotion() ?? false;
   const inView = useInView(sectionRef, { amount: 0.15 });
 
-  const [rotation, setRotation] = useState(0);
-  const [activeId, setActiveId] = useState<number | null>(null);
-  const [radius, setRadius] = useState(200);
+  /*
+   * Stage 1 is selected from the start and parked at the top of the ring, so
+   * the sequence reads without anyone having to click first. There is no
+   * "nothing selected" state any more — with the panel beside the orbit, an
+   * empty one would collapse the layout.
+   */
+  const [rotation, setRotation] = useState(FOCUS_ANGLE);
+  const [activeId, setActiveId] = useState<number>(() => stages[0]?.id ?? 1);
+  const [radius, setRadius] = useState(175);
 
   // Read by the animation loop without re-subscribing it every render.
   const autoRotateRef = useRef(true);
@@ -62,8 +72,8 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
 
     const observer = new ResizeObserver(([entry]) => {
       const { width } = entry.contentRect;
-      // Leave room for the 40px node plus its label on both sides.
-      setRadius(Math.max(104, Math.min(200, (width - 150) / 2)));
+      // Leave room for the node, its number badge and its label on both sides.
+      setRadius(Math.max(104, Math.min(180, (width - 190) / 2)));
     });
 
     observer.observe(el);
@@ -136,32 +146,27 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
     [stages, reduce],
   );
 
-  const clearFocus = useCallback(() => {
-    setActiveId(null);
+  /** Resumes the drift but keeps the selection — the panel never empties. */
+  const resumeDrift = useCallback(() => {
     targetRef.current = null;
     autoRotateRef.current = true;
   }, []);
 
-  const toggleStage = useCallback(
-    (id: number) => {
-      if (activeId === id) clearFocus();
-      else focusStage(id);
-    },
-    [activeId, clearFocus, focusStage],
-  );
-
-  // Escape closes the detail panel, matching the click-outside affordance.
+  // Escape releases the ring back to its drift, matching click-outside.
   useEffect(() => {
-    if (activeId === null) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") clearFocus();
+      if (e.key === "Escape") resumeDrift();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [activeId, clearFocus]);
+  }, [resumeDrift]);
 
-  const active = stages.find((s) => s.id === activeId) ?? null;
-  const relatedToActive = active ? active.relatedIds : [];
+  const activeIndex = Math.max(
+    0,
+    stages.findIndex((s) => s.id === activeId),
+  );
+  const active = stages[activeIndex];
+  const relatedToActive = active.relatedIds;
 
   return (
     <div ref={sectionRef}>
@@ -182,120 +187,162 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
         ))}
       </ol>
 
-      {/* Orbit ------------------------------------------------------ */}
-      <div
-        ref={orbitRef}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) clearFocus();
-        }}
-        className="relative mx-auto flex w-full max-w-[34rem] items-center justify-center"
-        style={{ height: radius * 2 + 120 }}
-      >
-        {/* Ring */}
+      <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-14">
+        {/* Orbit ------------------------------------------------------ */}
         <div
-          aria-hidden
-          className="absolute rounded-full border-2 border-line-strong"
-          style={{ width: radius * 2, height: radius * 2 }}
-        />
-
-        {/* Core */}
-        <div
-          aria-hidden
-          className="absolute flex size-16 items-center justify-center rounded-full bg-accent/15"
+          ref={orbitRef}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) resumeDrift();
+          }}
+          className="relative mx-auto flex w-full max-w-[34rem] items-center justify-center"
+          style={{ height: radius * 2 + 130 }}
         >
-          {!reduce && (
-            <>
-              <span className="absolute size-20 animate-ping rounded-full border border-accent/25 [animation-duration:3s]" />
+          {/* Ring */}
+          <div
+            aria-hidden
+            className="absolute rounded-full border-2 border-line-strong"
+            style={{ width: radius * 2, height: radius * 2 }}
+          />
+
+          {/*
+          Direction markers. The ring alone says these five things are
+          related; it does not say which way round they go. A chevron sits at
+          each midpoint between consecutive nodes, rotated to the tangent, so
+          the flow reads clockwise at a glance.
+        */}
+          {stages.map((stage, index) => {
+            const midAngle =
+              (((index + 0.5) / stages.length) * 360 + rotation) % 360;
+            const radian = (midAngle * Math.PI) / 180;
+            const x = Math.round(radius * Math.cos(radian) * 100) / 100;
+            const y = Math.round(radius * Math.sin(radian) * 100) / 100;
+
+            return (
               <span
-                className="absolute size-24 animate-ping rounded-full border border-accent/15 [animation-duration:3s]"
-                style={{ animationDelay: "0.9s" }}
-              />
-            </>
-          )}
-          <span className="flex size-8 items-center justify-center rounded-full bg-accent text-[0.7rem] font-medium tabular-nums text-on-accent">
-            {active ? active.n : ""}
-          </span>
-        </div>
-
-        {/* Nodes */}
-        {stages.map((stage, index) => {
-          const angle = ((index / stages.length) * 360 + rotation) % 360;
-          const radian = (angle * Math.PI) / 180;
-
-          /*
-           * Rounded before they reach the DOM. The browser normalises CSS
-           * lengths and opacities to a few decimals, so raw trig output makes
-           * the server string and the client value disagree and React reports
-           * a hydration mismatch it refuses to patch up.
-           */
-          const x = Math.round(radius * Math.cos(radian) * 100) / 100;
-          const y = Math.round(radius * Math.sin(radian) * 100) / 100;
-
-          // Depth cue: nodes on the far side sit behind and dim slightly.
-          const depth = (1 + Math.sin(radian)) / 2;
-          const opacity = Math.round((0.55 + 0.45 * depth) * 1000) / 1000;
-          const isActive = stage.id === activeId;
-          const isRelated = relatedToActive.includes(stage.id);
-
-          return (
-            <button
-              key={stage.id}
-              type="button"
-              onClick={() => toggleStage(stage.id)}
-              aria-pressed={isActive}
-              aria-label={`${stage.label} の詳細を表示`}
-              className="absolute flex flex-col items-center rounded-lg focus-visible:outline-offset-8"
-              style={{
-                transform: `translate(${x}px, ${y}px)`,
-                zIndex: isActive ? 40 : Math.round(10 + 20 * depth),
-                opacity: isActive ? 1 : opacity,
-              }}
-            >
-              <span
-                className={`flex size-10 items-center justify-center rounded-full border-2 transition-[background-color,border-color,color,scale] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                  isActive
-                    ? "scale-125 border-accent bg-accent text-on-accent"
-                    : isRelated
-                      ? "border-accent bg-accent/15 text-mark-1"
-                      : "border-line-strong bg-surface text-ink"
-                }`}
+                key={`dir-${stage.id}`}
+                aria-hidden
+                className="absolute text-mark-1/70"
+                style={{
+                  transform: `translate(${x}px, ${y}px) rotate(${
+                    Math.round((midAngle + 90) * 100) / 100
+                  }deg)`,
+                }}
               >
-                <Icon name={stage.icon} size={18} />
+                <Icon name="chevron_right" size={20} />
               </span>
-              <span
-                className={`mt-3 whitespace-nowrap text-[0.8rem] transition-colors duration-500 ${
-                  isActive ? "font-medium text-ink" : "text-muted"
-                }`}
-              >
-                {stage.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+            );
+          })}
 
-      {/* Detail panel ----------------------------------------------
-          Held in a fixed slot under the orbit rather than floating beside
-          the clicked node: the panel can't then overflow the ring or the
-          viewport at any width, and the copy stays in one place to read. */}
-      <div className="mx-auto mt-4 min-h-[13rem] w-full max-w-xl">
-        {active ? (
-          <TiltCard className="border border-line bg-surface p-7 shadow-[var(--shadow-card)] md:p-8">
-            <div className="flex items-baseline justify-between gap-4">
-              <p className="text-[0.75rem] font-medium tabular-nums tracking-[0.22em] text-mark-1">
+          {/* Core */}
+          <div
+            aria-hidden
+            className="absolute flex size-20 items-center justify-center rounded-full border border-line bg-canvas-alt"
+          >
+            {!reduce && (
+              <span className="absolute size-24 animate-ping rounded-full border border-accent/20 [animation-duration:3.5s]" />
+            )}
+            <div className="text-center">
+              <p className="text-[0.6rem] uppercase tracking-[0.14em] text-muted">
+                STEP
+              </p>
+              <p className="text-lg font-semibold tabular-nums leading-tight text-mark-1">
                 {active.n}
               </p>
+            </div>
+          </div>
+
+          {/* Nodes */}
+          {stages.map((stage, index) => {
+            const angle = ((index / stages.length) * 360 + rotation) % 360;
+            const radian = (angle * Math.PI) / 180;
+
+            /*
+             * Rounded before they reach the DOM. The browser normalises CSS
+             * lengths and opacities to a few decimals, so raw trig output makes
+             * the server string and the client value disagree and React reports
+             * a hydration mismatch it refuses to patch up.
+             */
+            const x = Math.round(radius * Math.cos(radian) * 100) / 100;
+            const y = Math.round(radius * Math.sin(radian) * 100) / 100;
+
+            // Depth cue: nodes on the far side sit behind and dim slightly.
+            const depth = (1 + Math.sin(radian)) / 2;
+            const opacity = Math.round((0.55 + 0.45 * depth) * 1000) / 1000;
+            const isActive = stage.id === activeId;
+            const isRelated = relatedToActive.includes(stage.id);
+
+            return (
               <button
+                key={stage.id}
                 type="button"
-                onClick={clearFocus}
-                className="flex items-center gap-1 text-[0.75rem] text-muted transition-colors duration-300 hover:text-ink"
+                onClick={() => focusStage(stage.id)}
+                aria-pressed={isActive}
+                aria-label={`ステップ${index + 1}、${stage.label} の詳細を表示`}
+                className="absolute flex flex-col items-center rounded-lg focus-visible:outline-offset-8"
+                style={{
+                  transform: `translate(${x}px, ${y}px)`,
+                  zIndex: isActive ? 40 : Math.round(10 + 20 * depth),
+                  // Far-side nodes dim, but never so far that the step number
+                  // stops being readable — that number is the running order.
+                  opacity: isActive ? 1 : opacity,
+                }}
               >
-                <Icon name="close" size={14} />
-                閉じる
+                <span
+                  className={`relative flex size-14 items-center justify-center rounded-full border-2 shadow-[var(--shadow-card)] transition-[background-color,border-color,color,scale] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                    isActive
+                      ? "scale-110 border-mark-1 bg-accent text-on-accent"
+                      : isRelated
+                        ? "border-mark-1/60 bg-surface text-ink"
+                        : "border-line-strong bg-surface text-ink"
+                  }`}
+                >
+                  <Icon name={stage.icon} size={24} />
+
+                  {/*
+                  The whole point of the redesign: the running order is on
+                  the node itself, so it survives the rotation and needs no
+                  click to discover.
+                */}
+                  <span
+                    className={`absolute -right-1.5 -top-1.5 flex size-6 items-center justify-center rounded-full border-2 border-canvas text-[0.65rem] font-semibold tabular-nums transition-colors duration-500 ${
+                      isActive
+                        ? "bg-ink text-canvas"
+                        : "bg-mark-1 text-on-accent"
+                    }`}
+                  >
+                    {index + 1}
+                  </span>
+                </span>
+
+                <span
+                  className={`mt-3 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.78rem] transition-colors duration-500 ${
+                    isActive
+                      ? "bg-accent/15 font-medium text-ink"
+                      : "text-muted"
+                  }`}
+                >
+                  {stage.label}
+                </span>
               </button>
+            );
+          })}
+        </div>
+
+        {/* Detail panel ----------------------------------------------
+          Beside the orbit on wide screens, beneath it when the grid stacks.
+          It is never empty, so the column cannot collapse mid-interaction. */}
+        <div className="w-full">
+          <TiltCard className="border border-line bg-surface p-7 shadow-[var(--shadow-card)] md:p-8">
+            <div className="flex items-center gap-3">
+              <span className="flex size-7 items-center justify-center rounded-full bg-mark-1 text-[0.7rem] font-semibold tabular-nums text-on-accent">
+                {activeIndex + 1}
+              </span>
+              <p className="text-[0.72rem] font-medium uppercase tracking-[0.18em] text-muted">
+                ステップ {active.n} / {String(stages.length).padStart(2, "0")}
+              </p>
             </div>
 
-            <h3 className="mt-3 text-xl font-medium tracking-[-0.01em] text-ink">
+            <h3 className="mt-4 text-xl font-medium tracking-[-0.01em] text-ink">
               {active.label}
             </h3>
             <p className="measure-jp mt-4 text-[0.95rem] text-muted">
@@ -314,7 +361,11 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
               </div>
             ) : (
               <div className="mt-6 flex aspect-[16/9] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-canvas-alt">
-                <Icon name="add_photo_alternate" size={26} className="text-muted" />
+                <Icon
+                  name="add_photo_alternate"
+                  size={26}
+                  className="text-muted"
+                />
                 <p className="text-[0.75rem] text-muted">
                   {active.label} — モックアップ / 写真
                 </p>
@@ -351,7 +402,8 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
                             borderRadius: 9999,
                             padding: "0.375rem 0.875rem",
                             border: "1px solid rgba(242,241,238,0.16)",
-                            transition: "background 300ms cubic-bezier(0.16,1,0.3,1)",
+                            transition:
+                              "background 300ms cubic-bezier(0.16,1,0.3,1)",
                           }}
                         >
                           {related.label}
@@ -364,11 +416,7 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
               </div>
             )}
           </TiltCard>
-        ) : (
-          <p className="pt-6 text-center text-[0.85rem] text-muted">
-            各段階を選択すると、詳細が表示されます。
-          </p>
-        )}
+        </div>
       </div>
     </div>
   );

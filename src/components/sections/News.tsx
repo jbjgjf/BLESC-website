@@ -1,4 +1,5 @@
 import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
+import { Flower } from "@/components/Flower";
 import { Eyebrow, Icon, Section } from "@/components/ui";
 
 /**
@@ -52,8 +53,9 @@ export function News() {
       </Reveal>
 
       <Reveal className="max-w-3xl">
-        <h2 className="text-[clamp(1.5rem,3.4vw,2.25rem)] font-medium leading-[1.4] tracking-[-0.02em] text-ink">
+        <h2 className="flex items-center gap-3 text-[clamp(1.5rem,3.4vw,2.25rem)] font-medium leading-[1.4] tracking-[-0.02em] text-ink">
           Blescの最新の動き。
+          <Flower size={22} rotate={14} opacity={0.55} className="shrink-0 text-mark-3" />
         </h2>
       </Reveal>
 

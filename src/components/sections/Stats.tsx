@@ -1,11 +1,19 @@
 import { Counter } from "@/components/Counter";
+import { FlowerScatter } from "@/components/Flower";
 import { RevealItem, Stagger } from "@/components/Reveal";
 import { Section } from "@/components/ui";
 
 /** Numbers are the visual here — no icons, no chrome. */
 export function Stats() {
   return (
-    <Section alt>
+    <Section alt className="relative overflow-hidden">
+      <FlowerScatter
+        items={[
+          { top: "18%", right: "4%", size: 30, rotate: -14, opacity: 0.14, className: "hidden text-mark-2 lg:block" },
+          { top: "68%", right: "12%", size: 18, rotate: 26, opacity: 0.12, className: "hidden text-mark-1 lg:block" },
+        ]}
+      />
+
       <Stagger className="grid gap-20 md:grid-cols-2 md:gap-16" stagger={0.12}>
         <RevealItem>
           <p className="flex items-baseline text-mark-1">

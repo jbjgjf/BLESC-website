@@ -1,3 +1,4 @@
+import { FlowerScatter } from "@/components/Flower";
 import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
 import { Container, Lines } from "@/components/ui";
 
@@ -21,7 +22,21 @@ Blescは、その声を聴き逃さないための仕組みです。
  */
 export function Philosophy() {
   return (
-    <section className="bg-canvas py-36 md:py-56">
+    <section className="relative overflow-hidden bg-canvas py-36 md:py-56">
+      {/*
+        The copy here sits in a 2xl column inside a much wider container, so
+        the margins are the emptiest space on the page. Shown from lg up only —
+        below that the margins collapse and the flowers would crowd the text.
+      */}
+      <FlowerScatter
+        items={[
+          { top: "14%", left: "5%", size: 34, rotate: 12, opacity: 0.16, className: "hidden text-mark-1 lg:block" },
+          { top: "33%", right: "7%", size: 22, rotate: -22, opacity: 0.14, className: "hidden text-mark-3 lg:block" },
+          { top: "58%", left: "8%", size: 19, rotate: 38, opacity: 0.13, className: "hidden text-mark-2 lg:block" },
+          { top: "78%", right: "5%", size: 28, rotate: -8, opacity: 0.15, className: "hidden text-mark-1 lg:block" },
+        ]}
+      />
+
       <Container>
         <div className="mx-auto max-w-2xl">
           <Reveal>
