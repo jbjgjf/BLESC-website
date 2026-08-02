@@ -236,9 +236,15 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
             const x = Math.round(radius * Math.cos(radian) * 100) / 100;
             const y = Math.round(radius * Math.sin(radian) * 100) / 100;
 
-            // Depth cue: nodes on the far side sit behind and dim slightly.
+            /*
+             * Depth is expressed purely through stacking order now.
+             *
+             * It used to fade the far-side nodes with `opacity`, which makes
+             * the *whole* element translucent — background included — so the
+             * ring showed straight through each node's face. Nodes are opaque
+             * and z-index alone decides what sits in front.
+             */
             const depth = (1 + Math.sin(radian)) / 2;
-            const opacity = Math.round((0.55 + 0.45 * depth) * 1000) / 1000;
             const isActive = stage.id === activeId;
             const isRelated = relatedToActive.includes(stage.id);
 
@@ -253,9 +259,6 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
                 style={{
                   transform: `translate(${x}px, ${y}px)`,
                   zIndex: isActive ? 40 : Math.round(10 + 20 * depth),
-                  // Far-side nodes dim, but never so far that the step number
-                  // stops being readable — that number is the running order.
-                  opacity: isActive ? 1 : opacity,
                 }}
               >
                 <span
@@ -285,11 +288,14 @@ export function OrbitalTimeline({ stages }: { stages: OrbitalStage[] }) {
                   </span>
                 </span>
 
+                {/*
+                  Solid chip, not a tint: the label sits across the ring for
+                  the top and bottom nodes, and a translucent background would
+                  let the line run through the text.
+                */}
                 <span
-                  className={`mt-3 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.78rem] transition-colors duration-500 ${
-                    isActive
-                      ? "bg-accent/15 font-medium text-ink"
-                      : "text-muted"
+                  className={`mt-3 whitespace-nowrap rounded-full bg-canvas-alt px-2.5 py-1 text-[0.78rem] transition-colors duration-500 ${
+                    isActive ? "font-semibold text-ink" : "text-muted"
                   }`}
                 >
                   {stage.label}
