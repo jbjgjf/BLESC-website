@@ -112,7 +112,7 @@ export function Section({
   return (
     <section
       id={id}
-      className={`scroll-mt-24 py-24 md:py-36 ${
+      className={`scroll-mt-24 py-20 md:py-28 ${
         alt ? "bg-canvas-alt" : "bg-canvas"
       } ${className}`}
     >

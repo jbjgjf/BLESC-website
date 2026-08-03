@@ -68,7 +68,7 @@ export function Hero() {
   return (
     <section
       id="top"
-      className="relative flex min-h-[88svh] items-center overflow-hidden bg-canvas pt-32 pb-24 md:min-h-screen"
+      className="relative flex min-h-[88svh] items-center overflow-hidden bg-canvas pt-28 pb-16 md:min-h-screen"
     >
       {/*
         The static gradient sits underneath permanently: if WebGL is

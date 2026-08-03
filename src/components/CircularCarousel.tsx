@@ -44,33 +44,59 @@ const COMPACT: Layout = { cardW: 200, cardH: 168, radiusX: 200, radiusY: 92 };
  * deck is measured against its container, so it can open right out at full
  * width and still keep its outer cards on screen at 375px.
  */
+const HALF = Math.floor(VISIBLE_COUNT / 2);
+const MAX_DISTANCE = HALF + 1;
+
+const scaleAt = (distance: number) =>
+  Math.max(0, 1 - (distance / MAX_DISTANCE) * 0.28);
+
+/**
+ * Vertical extent the deck actually occupies, measured from the arc centre.
+ *
+ * The arc puts the cards' mass above centre — the front card sits a full
+ * radiusY up, the back pair only a third of that — so anchoring the deck at
+ * top:50% overflowed the track upward while leaving a large void beneath it.
+ * The track is sized from this instead, and the deck is shifted by its own
+ * midpoint so it sits centred in the space it needs.
+ */
+function deckExtent(layout: Layout) {
+  let top = Infinity;
+  let bottom = -Infinity;
+  for (let d = -HALF; d <= HALF; d++) {
+    const y = -Math.cos((d / VISIBLE_COUNT) * Math.PI) * layout.radiusY;
+    const halfHeight = (layout.cardH * scaleAt(Math.abs(d))) / 2;
+    top = Math.min(top, y - halfHeight);
+    bottom = Math.max(bottom, y + halfHeight);
+  }
+  return { top, bottom, height: bottom - top, shift: -(top + bottom) / 2 };
+}
+
 function getItemPosition(
   index: number,
   activeIndex: number,
   total: number,
   layout: Layout,
+  shift: number,
 ) {
   const offset = index - activeIndex;
-  const half = Math.floor(VISIBLE_COUNT / 2);
   let adjusted = offset;
 
-  if (offset > half) adjusted = offset - total;
-  if (offset < -half) adjusted = offset + total;
+  if (offset > HALF) adjusted = offset - total;
+  if (offset < -HALF) adjusted = offset + total;
 
-  if (Math.abs(adjusted) > half * 2) return null;
+  if (Math.abs(adjusted) > HALF * 2) return null;
 
   const angle = (adjusted / VISIBLE_COUNT) * Math.PI;
   const distance = Math.abs(adjusted);
-  const maxDistance = half + 1;
   const round = (v: number) => Math.round(v * 100) / 100;
 
   return {
     x: round(Math.sin(angle) * layout.radiusX),
-    y: round(-Math.cos(angle) * layout.radiusY),
-    scale: round(Math.max(0, 1 - (distance / maxDistance) * 0.28)),
+    y: round(-Math.cos(angle) * layout.radiusY + shift),
+    scale: round(scaleAt(distance)),
     // Floor raised from upstream's 0.3: at that level the back cards were
     // unreadable rather than merely recessed.
-    opacity: round(Math.max(0.5, 1 - (distance / maxDistance) * 0.5)),
+    opacity: round(Math.max(0.5, 1 - (distance / MAX_DISTANCE) * 0.5)),
     zIndex: VISIBLE_COUNT - distance,
   };
 }
@@ -157,7 +183,13 @@ export function CircularCarousel({
   // Upstream read items[activeIndex].id unguarded, which throws on an empty list.
   if (total === 0) return null;
 
-  const trackHeight = layout.cardH + layout.radiusY + 96;
+  /*
+   * Was cardH + radiusY + 96, which over-reserved: the whole allowance landed
+   * beneath the deck because the arc is top-heavy, leaving 168px of dead
+   * track under the cards while they clipped past the top edge.
+   */
+  const extent = deckExtent(layout);
+  const trackHeight = Math.ceil(extent.height) + 24;
 
   return (
     <div
@@ -187,7 +219,13 @@ export function CircularCarousel({
         </div>
 
         {items.map((item, i) => {
-          const pos = getItemPosition(i, activeIndex, total, layout);
+          const pos = getItemPosition(
+            i,
+            activeIndex,
+            total,
+            layout,
+            extent.shift,
+          );
           if (!pos) return null;
 
           const isActive = i === activeIndex;

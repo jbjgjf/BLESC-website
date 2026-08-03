@@ -29,7 +29,7 @@ Blescは、その声を聴き逃さないための仕組みです。
  */
 export function Philosophy() {
   return (
-    <section className="relative overflow-hidden bg-canvas py-36 md:py-56">
+    <section className="relative overflow-hidden bg-canvas py-28 md:py-40">
       {/*
         The copy here sits in a 2xl column inside a much wider container, so
         the margins are the emptiest space on the page. Shown from lg up only —
