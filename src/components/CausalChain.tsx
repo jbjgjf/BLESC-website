@@ -3,48 +3,47 @@
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { Fragment } from "react";
 import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
-import { Icon } from "@/components/ui";
 
 /**
- * The causal chain the ontology encodes, at full section width.
+ * The causal chain the ontology encodes.
  *
- * Previously a small run of dots beside the copy. It is the clearest single
- * statement of what the model actually does, so it now carries the section
- * rather than annotating it.
+ * Drawn as one continuous line with three nodes on it rather than three
+ * rounded panels in a row — the panels were the same box repeated, which is
+ * the shape that reads as generated. The line is the point: this is a chain,
+ * and each term is a consequence of the one before it.
  */
 const CHAIN = [
-  { label: "睡眠不足", icon: "bedtime", text: "text-mark-1", bar: "bg-mark-1" },
-  {
-    label: "認知機能の低下",
-    icon: "psychology",
-    text: "text-mark-2",
-    bar: "bg-mark-2",
-  },
-  {
-    label: "抑うつ傾向",
-    icon: "trending_down",
-    text: "text-mark-3",
-    bar: "bg-mark-3",
-  },
+  { label: "睡眠不足", dot: "bg-mark-1", text: "text-mark-1" },
+  { label: "認知機能の低下", dot: "bg-mark-2", text: "text-mark-2" },
+  { label: "抑うつ傾向", dot: "bg-mark-3", text: "text-mark-3" },
 ] as const;
 
-const STEP = 0.14;
+const STEP = 0.16;
 
-const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 26 },
+const nodeVariants: Variants = {
+  hidden: { opacity: 0, y: 14 },
   show: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: EXPO_OUT, delay: i * STEP },
+    transition: { duration: 0.55, ease: EXPO_OUT, delay: i * STEP },
   }),
 };
 
-const arrowVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.7 },
+/** The rule draws itself left to right, so the chain reads in order. */
+const lineVariants: Variants = {
+  hidden: { scaleX: 0 },
   show: (i: number) => ({
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.45, ease: EXPO_OUT, delay: i * STEP + 0.22 },
+    scaleX: 1,
+    transition: { duration: 0.5, ease: EXPO_OUT, delay: i * STEP + 0.18 },
+  }),
+};
+
+/** Same reveal for the stacked layout, along the other axis. */
+const lineVariantsY: Variants = {
+  hidden: { scaleY: 0 },
+  show: (i: number) => ({
+    scaleY: 1,
+    transition: { duration: 0.5, ease: EXPO_OUT, delay: i * STEP + 0.18 },
   }),
 };
 
@@ -61,45 +60,70 @@ export function CausalChain() {
       initial="hidden"
       whileInView="show"
       viewport={VIEWPORT}
-      className="flex w-full flex-col items-stretch gap-4 md:flex-row md:items-center md:gap-3"
+      className="w-full"
     >
-      {CHAIN.map((link, i) => (
-        <Fragment key={link.label}>
-          <motion.div
-            custom={i}
-            variants={reduce ? flat : cardVariants}
-            className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-line bg-surface px-6 py-10 text-center shadow-[var(--shadow-card)] md:py-14"
-          >
-            <span
-              className={`flex size-16 items-center justify-center rounded-full bg-canvas-alt ${link.text}`}
-            >
-              <Icon name={link.icon} size={30} />
-            </span>
-
-            <p className="mt-6 text-[clamp(1.1rem,2vw,1.5rem)] font-medium tracking-[-0.015em] text-ink">
-              {link.label}
-            </p>
-
-            <span
-              aria-hidden
-              className={`mt-5 block h-1 w-10 rounded-full ${link.bar}`}
-            />
-          </motion.div>
-
-          {i < CHAIN.length - 1 && (
+      {/* Wide: one horizontal run. */}
+      <div className="hidden items-start md:flex">
+        {CHAIN.map((link, i) => (
+          <Fragment key={link.label}>
             <motion.div
-              aria-hidden
               custom={i}
-              variants={reduce ? flat : arrowVariants}
-              className="flex shrink-0 items-center justify-center text-muted"
+              variants={reduce ? flat : nodeVariants}
+              className="flex shrink-0 flex-col items-center"
             >
-              {/* Horizontal on a row, vertical once the chain stacks. */}
-              <Icon name="arrow_forward" size={30} className="hidden md:block" />
-              <Icon name="arrow_downward" size={30} className="md:hidden" />
+              <span
+                className={`block size-3.5 rounded-full ring-4 ring-canvas-alt ${link.dot}`}
+              />
+              <p
+                className={`mt-6 whitespace-nowrap text-[clamp(1.1rem,2.2vw,1.6rem)] font-medium tracking-[-0.01em] ${link.text}`}
+              >
+                {link.label}
+              </p>
             </motion.div>
-          )}
-        </Fragment>
-      ))}
+
+            {i < CHAIN.length - 1 && (
+              <motion.span
+                aria-hidden
+                custom={i}
+                variants={reduce ? flat : lineVariants}
+                // mt puts the rule through the middle of the 14px dot.
+                className="mt-[6px] h-px flex-1 origin-left bg-line-strong"
+              />
+            )}
+          </Fragment>
+        ))}
+      </div>
+
+      {/* Narrow: the same chain turned on its side. */}
+      <div className="flex flex-col md:hidden">
+        {CHAIN.map((link, i) => (
+          <Fragment key={link.label}>
+            <motion.div
+              custom={i}
+              variants={reduce ? flat : nodeVariants}
+              className="flex items-center gap-4"
+            >
+              <span
+                className={`block size-3.5 shrink-0 rounded-full ring-4 ring-canvas-alt ${link.dot}`}
+              />
+              <p
+                className={`text-[1.15rem] font-medium tracking-[-0.01em] ${link.text}`}
+              >
+                {link.label}
+              </p>
+            </motion.div>
+
+            {i < CHAIN.length - 1 && (
+              <motion.span
+                aria-hidden
+                custom={i}
+                variants={reduce ? flat : lineVariantsY}
+                className="my-1 ml-[6px] h-10 w-px origin-top bg-line-strong"
+              />
+            )}
+          </Fragment>
+        ))}
+      </div>
     </motion.div>
   );
 }

@@ -34,8 +34,8 @@ type Layout = {
   radiusY: number;
 };
 
-const WIDE: Layout = { cardW: 264, cardH: 208, radiusX: 380, radiusY: 124 };
-const COMPACT: Layout = { cardW: 200, cardH: 168, radiusX: 200, radiusY: 92 };
+const WIDE: Layout = { cardW: 232, cardH: 108, radiusX: 380, radiusY: 104 };
+const COMPACT: Layout = { cardW: 176, cardH: 92, radiusX: 200, radiusY: 78 };
 
 /**
  * Where a card sits on the arc relative to the active one.
@@ -208,16 +208,12 @@ export function CircularCarousel({
         className="relative w-full"
         style={{ height: trackHeight }}
       >
-        {/* Index readout, sitting behind the deck. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 flex items-center justify-center"
-        >
-          <span className="text-[7rem] font-semibold leading-none tabular-nums text-ink/[0.07] md:text-[10rem]">
-            {String(activeIndex + 1).padStart(2, "0")}
-          </span>
-        </div>
-
+        {/*
+          The ghost numeral that used to sit here is gone. At 7% opacity it
+          was only ever legible through the dead track beneath the deck, so
+          tightening the track last change hid it completely. The step number
+          is a real element above the deck now instead of a watermark under it.
+        */}
         {items.map((item, i) => {
           const pos = getItemPosition(
             i,
@@ -255,41 +251,26 @@ export function CircularCarousel({
               onClick={() => goTo(i)}
               aria-label={`ステップ ${i + 1}、${item.title}`}
               aria-current={isActive}
-              className={`absolute left-1/2 top-1/2 flex cursor-pointer flex-col items-start justify-between rounded-2xl border p-5 text-left shadow-[var(--shadow-card)] transition-[border-color,background-color] duration-300 ${
+              className={`absolute left-1/2 top-1/2 flex cursor-pointer items-center justify-center rounded-2xl border px-5 text-center shadow-[var(--shadow-card)] transition-[border-color,background-color] duration-300 ${
                 isActive
                   ? "border-mark-1 bg-surface"
                   : "border-line bg-canvas-alt hover:border-ink/30"
               }`}
             >
-              {item.tag && (
-                <span
-                  className={`rounded-full bg-canvas px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.1em] tabular-nums ${
-                    item.text ?? "text-mark-1"
-                  }`}
-                >
-                  {item.tag}
-                </span>
-              )}
-
-              <div className="w-full">
-                <h3 className="text-[1.05rem] font-medium leading-tight text-ink">
-                  {item.title}
-                </h3>
-                {/*
-                  Clamped for the card only — the string stays whole in the
-                  DOM, so nothing is withheld from assistive tech.
-                */}
-                <p className="mt-2 line-clamp-3 text-[0.82rem] leading-relaxed text-muted">
-                  {item.description}
-                </p>
-
-                {item.note && (
-                  <p className="mt-2.5 flex items-center gap-1.5 text-[0.72rem] text-mark-1">
-                    <Icon name="lock" size={14} />
-                    {item.note}
-                  </p>
-                )}
-              </div>
+              {/*
+                Just the label. The cards used to carry a numbered pill, a
+                three-line clamped body and sometimes a lock note, which at
+                deck scale read as five identical little templates. The step
+                number, the body and the note all live in the readout above
+                the deck now, where there is room for them at full size.
+              */}
+              <h3
+                className={`text-[1.05rem] font-medium leading-snug transition-colors duration-300 ${
+                  isActive ? "text-ink" : "text-muted"
+                }`}
+              >
+                {item.title}
+              </h3>
             </motion.button>
           );
         })}

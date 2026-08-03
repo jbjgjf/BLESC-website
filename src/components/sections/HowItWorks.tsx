@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   CircularCarousel,
   type CarouselItem,
 } from "@/components/CircularCarousel";
 import { Reveal } from "@/components/Reveal";
-import { Section, SectionTitle } from "@/components/ui";
+import { Icon, Section, SectionTitle } from "@/components/ui";
 
 type Stage = {
   n: string;
@@ -54,19 +54,20 @@ const STAGES: Stage[] = [
 ];
 
 export function HowItWorks() {
+  const [active, setActive] = useState(0);
+
   // Stable identity so the carousel isn't handed a new array every render.
   const items = useMemo<CarouselItem[]>(
     () =>
       STAGES.map((s, i) => ({
         id: String(i),
-        tag: s.n,
         title: s.label,
         description: s.body,
-        note: s.note,
-        text: s.text,
       })),
     [],
   );
+
+  const stage = STAGES[active];
 
   return (
     <Section id="how" alt>
@@ -89,8 +90,43 @@ export function HowItWorks() {
         ))}
       </ol>
 
-      <div className="mt-6 md:mt-10">
-        <CircularCarousel items={items} />
+      {/*
+        Readout. The step number is the section's anchor, so it gets real
+        size here rather than the 7%-opacity watermark it used to be behind
+        the deck — and the body and privacy note come with it, which is what
+        lets every card shrink to just its label.
+      */}
+      <div className="grid items-baseline gap-x-8 gap-y-4 sm:grid-cols-[auto_1fr]">
+        <p
+          aria-hidden
+          className={`text-[clamp(3.5rem,9vw,6rem)] font-semibold leading-[0.8] tabular-nums ${stage.text}`}
+        >
+          {stage.n}
+        </p>
+
+        <div aria-live="polite" aria-atomic="true" className="min-h-[7rem]">
+          <h3 className="text-[clamp(1.5rem,3.6vw,2.25rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
+            <span className="sr-only">{`ステップ ${stage.n}、`}</span>
+            {stage.label}
+          </h3>
+          <p className="measure-jp mt-3 max-w-xl text-[0.98rem] text-muted">
+            {stage.body}
+          </p>
+          {stage.note && (
+            <p className="mt-3 flex items-center gap-2 text-[0.85rem] text-mark-1">
+              <Icon name="lock" size={16} />
+              {stage.note}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-12 md:mt-16">
+        <CircularCarousel
+          items={items}
+          activeIndex={active}
+          onActiveChange={setActive}
+        />
       </div>
     </Section>
   );
