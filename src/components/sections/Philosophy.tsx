@@ -7,7 +7,10 @@ import { Container, Icon, Lines } from "@/components/ui";
  * Set this to show a real photograph in the right-hand slot; the dashed
  * well renders until then. Kept null rather than pointed at stock imagery.
  */
-const PHOTO: { src: string; alt: string } | null = null;
+const PHOTO: { src: string; alt: string } | null = {
+  src: "/photos/philosophy.png",
+  alt: "",
+};
 
 const PARAGRAPHS = [
   `私たちはテクノロジーに囲まれて生きながら、

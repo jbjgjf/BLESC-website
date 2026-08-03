@@ -9,92 +9,33 @@ import { initialsCard } from "@/lib/initialsCard";
 type Member = {
   name: string;
   initials: string;
-  role: string;
-  description: string;
   /**
-   * Headshot path, relative to /public — e.g. "/team/yamada-taro.jpg".
-   * Optional so photos can land one at a time; anyone without one keeps
-   * their generated initials card.
+   * Real job titles only. The placeholder roster carried invented ones; those
+   * were removed rather than transferred onto real people, because a
+   * fabricated title on a named colleague is a claim about them, not filler.
+   */
+  role?: string;
+  description?: string;
+  /**
+   * Headshot path, relative to /public.
    *
-   * These do NOT pass through next/image. The carousel uploads them as GPU
-   * textures, so nothing resizes them for you — export at roughly 800×1000,
-   * 4:5 portrait, and keep each under ~150KB since all ten load at once.
+   * These do NOT pass through next/image — the carousel uploads them as GPU
+   * textures, so the file you save is the file that ships.
    */
   photo?: string;
 };
 
 /**
- * PLACEHOLDER ROSTER — every name, role and description here is invented.
- * 山田太郎 / 山田花子 are Japan's standard stand-in names, the equivalent of
- * "John Doe". The descriptions are generic role summaries, not statements
- * about real people. Replace the whole array before this page goes public.
- *
- * Typed rather than `as const`: with a const assertion, reading `m.photo` on
- * an entry that has not got one yet is a type error, which would force all
- * ten photos to arrive in the same commit.
+ * The team. Names and photographs are real; roles and descriptions are
+ * deliberately absent until supplied.
  */
 const MEMBERS: Member[] = [
-  {
-    name: "山田 太郎",
-    initials: "YT",
-    role: "代表取締役 / CEO",
-    description: "事業全体の方針と、教育委員会・学校法人との連携を統括。",
-    // photo: "/team/yamada-taro.jpg",
-  },
-  {
-    name: "山田 花子",
-    initials: "YH",
-    role: "CTO",
-    description: "対話エンジンと解析基盤の設計、および技術組織の運営を担当。",
-  },
-  {
-    name: "鈴木 一郎",
-    initials: "SI",
-    role: "リサーチ",
-    description: "臨床心理学の知見をモデルへ落とし込む研究設計を担当。",
-  },
-  {
-    name: "佐藤 次郎",
-    initials: "SJ",
-    role: "プロダクト",
-    description: "生徒が構えずに話せる対話体験の設計と検証を担当。",
-  },
-  {
-    name: "高橋 三郎",
-    initials: "TS",
-    role: "パートナーシップ",
-    description: "学校現場での導入プロセスと、運用サポート体制を構築。",
-  },
-  {
-    name: "田中 四郎",
-    initials: "TS",
-    role: "機械学習",
-    description: "オントロジー知識グラフの構築と、リスク検知モデルの改善。",
-  },
-  {
-    name: "伊藤 五郎",
-    initials: "IG",
-    role: "データ基盤",
-    description: "生徒データの保護要件を満たすインフラと権限設計を担当。",
-  },
-  {
-    name: "渡辺 六子",
-    initials: "WR",
-    role: "デザイン",
-    description: "プロダクトとコミュニケーション全体のデザインを担当。",
-  },
-  {
-    name: "中村 七海",
-    initials: "NN",
-    role: "カスタマーサクセス",
-    description: "導入後の運用伴走と、教員向けの研修プログラムを担当。",
-  },
-  {
-    name: "小林 八郎",
-    initials: "KH",
-    role: "コーポレート",
-    description: "法務・労務・情報セキュリティ体制の整備を担当。",
-  },
+  { name: "マクガン ジャスパー", initials: "JM", photo: "/team/jasper.png" },
+  { name: "モンガ 蓮緒奈", initials: "RM", photo: "/team/reona.png" },
+  { name: "内藤 悠人", initials: "YN", photo: "/team/yujin.png" },
+  { name: "松本 龍", initials: "RY", photo: "/team/ryu.png" },
+  { name: "王 謙蘊", initials: "KO", photo: "/team/ou.png" },
+  { name: "田 雨竜", initials: "UD", photo: "/team/longlong.png" },
 ];
 
 export function Team() {
@@ -143,14 +84,20 @@ export function Team() {
         carousel moves.
       */}
       <div className="mx-auto mt-8 max-w-xl text-center">
-        <div aria-live="polite" aria-atomic="true" className="min-h-[8.5rem]">
+        {/* Shrinks to the name alone until roles arrive, rather than
+            reserving space for copy that does not exist yet. */}
+        <div aria-live="polite" aria-atomic="true" className="min-h-[3.5rem]">
           <p className="text-xl font-medium tracking-[-0.01em] text-ink">
             {person.name}
           </p>
-          <p className="mt-2 text-[0.9rem] text-mark-1">{person.role}</p>
-          <p className="measure-jp mt-4 text-[0.95rem] text-muted">
-            {person.description}
-          </p>
+          {person.role && (
+            <p className="mt-2 text-[0.9rem] text-mark-1">{person.role}</p>
+          )}
+          {person.description && (
+            <p className="measure-jp mt-4 text-[0.95rem] text-muted">
+              {person.description}
+            </p>
+          )}
         </div>
 
         {/*
@@ -189,8 +136,8 @@ export function Team() {
         {MEMBERS.map((m) => (
           <li key={m.name}>
             <h3>{m.name}</h3>
-            <p>{m.role}</p>
-            <p>{m.description}</p>
+            {m.role && <p>{m.role}</p>}
+            {m.description && <p>{m.description}</p>}
           </li>
         ))}
       </ul>
