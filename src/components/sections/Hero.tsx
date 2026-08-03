@@ -1,11 +1,37 @@
 "use client";
 
 import { IntroFade, WordReveal } from "@/components/Reveal";
-import { SilkAurora } from "@/components/SilkAurora";
+import {
+  ShaderBackground,
+  type ShaderColor,
+} from "@/components/ShaderBackground";
 import { useTheme } from "@/components/ThemeProvider";
 import { WebGLFallback } from "@/components/webgl/WebGLErrorBoundary";
 import { ButtonLink, Container } from "@/components/ui";
 import { CTA } from "@/lib/site";
+
+/*
+ * Palettes, ground colour first. The shipped preset ran a cyan ramp
+ * (#031C26 → #1B6CA8 → #5AD2F4 → #EAF9FF); these are the same shape walked
+ * through the site's own tokens so the hero introduces no new hue.
+ *
+ * Light works here because `shade()` averages the palette rather than adding
+ * light to a base — the previous aurora clamped to white on a pale ground,
+ * which is why it was dark-only.
+ */
+const DARK_PALETTE: ShaderColor[] = [
+  [0.0392, 0.0431, 0.051], // #0a0b0d  --color-bg
+  [0.0706, 0.2353, 0.3686], // #123c5e  deep blue
+  [0.5216, 0.7529, 0.9294], // #85c0ed  --color-primary
+  [1, 1, 1], // #ffffff  --color-text
+];
+
+const LIGHT_PALETTE: ShaderColor[] = [
+  [0.9804, 0.9804, 0.9725], // #fafaf8  --color-bg
+  [0.7216, 0.851, 0.9451], // #b8d9f1  pale blue
+  [0.498, 0.7216, 0.8902], // #7fb8e3  mid blue
+  [1, 1, 1], // #ffffff
+];
 
 const HEADLINE_LINES = [
   "Hearing the unspoken.",
@@ -45,19 +71,16 @@ export function Hero() {
       className="relative flex min-h-[88svh] items-center overflow-hidden bg-canvas pt-32 pb-24 md:min-h-screen"
     >
       {/*
-        Dark only. The shader builds its light additively on top of the base
-        colour — `col = base; col += accent * veil …` — so on a near-white
-        ground every veil clamps straight to white and the aurora disappears
-        into a flat blown-out rectangle. Inverting it properly means changing
-        the blend to a mix rather than an add, which is a shader change worth
-        making deliberately. Light mode gets the static gradient instead,
-        which is the same fallback used when WebGL is unavailable.
+        The static gradient sits underneath permanently: if WebGL is
+        unavailable the canvas simply never draws and this shows through, so
+        there is no error state to track and no flash.
       */}
-      {theme === "dark" ? (
-        <SilkAurora />
-      ) : (
-        <WebGLFallback className="pointer-events-none absolute inset-0" />
-      )}
+      <WebGLFallback className="pointer-events-none absolute inset-0" />
+      <div className="pointer-events-none absolute inset-0">
+        <ShaderBackground
+          colors={theme === "light" ? LIGHT_PALETTE : DARK_PALETTE}
+        />
+      </div>
 
       {/*
         Readability scrim. The shader can clamp to near-white where its three
