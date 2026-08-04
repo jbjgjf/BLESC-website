@@ -26,16 +26,28 @@ type Member = {
 };
 
 /**
- * The team. Names and photographs are real; roles and descriptions are
- * deliberately absent until supplied.
+ * The team. Names, roles and photographs are real.
+ *
+ * CEO leads; the rest hold the order the photographs arrived in. Descriptions
+ * are still absent rather than invented — see the note on the type above.
  */
 const MEMBERS: Member[] = [
-  { name: "マクガン ジャスパー", initials: "JM", photo: "/team/jasper.png" },
-  { name: "モンガ 蓮緒奈", initials: "RM", photo: "/team/reona.png" },
-  { name: "内藤 悠人", initials: "YN", photo: "/team/yujin.png" },
-  { name: "松本 龍", initials: "RY", photo: "/team/ryu.png" },
-  { name: "王 謙蘊", initials: "KO", photo: "/team/ou.png" },
-  { name: "田 雨竜", initials: "UD", photo: "/team/longlong.png" },
+  { name: "田 雨竜", initials: "UD", role: "CEO", photo: "/team/longlong.png" },
+  {
+    name: "マクガン ジャスパー",
+    initials: "JM",
+    role: "CMO",
+    photo: "/team/jasper.png",
+  },
+  {
+    name: "モンガ 蓮緒奈",
+    initials: "RM",
+    role: "CXO",
+    photo: "/team/reona.png",
+  },
+  { name: "内藤 悠人", initials: "YN", role: "CRO", photo: "/team/yujin.png" },
+  { name: "王 謙蘊", initials: "KO", role: "CTO", photo: "/team/ou.png" },
+  { name: "松本 龍", initials: "RY", role: "CFO", photo: "/team/ryu.png" },
 ];
 
 export function Team() {
