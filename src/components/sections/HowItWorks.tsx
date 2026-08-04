@@ -5,8 +5,8 @@ import {
   CircularCarousel,
   type CarouselItem,
 } from "@/components/CircularCarousel";
-import { Reveal } from "@/components/Reveal";
-import { Icon, Section, SectionTitle } from "@/components/ui";
+import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
+import { Icon, Lines, Section, SectionTitle } from "@/components/ui";
 
 type Stage = {
   n: string;
@@ -18,37 +18,61 @@ type Stage = {
   text: string;
 };
 
-/** The section's paragraph, one sentence per stage. */
+/**
+ * The section's own explanation, verbatim from the brief.
+ *
+ * This was dropped when the flow became a carousel, which left the five
+ * stage fragments as the only account of how any of it works — and those are
+ * read one at a time, so the sequence never appeared as a whole. The brief
+ * always specified prose first and the diagram after it.
+ */
+const LEAD = [
+  `月に一度、ホームルームの時間に、生徒はAIと30往復ほどの
+自然な対話を行います。チャットのように、構えずに話せる設計です。`,
+  `会話に含まれる言葉のニュアンスや入力のためらいといった
+微細なシグナルから、AIが心理的リスクを検知します。`,
+  `会話の内容そのものが教員に公開されることはありません。
+届くのは、対応が必要な生徒を示す要点のみのレポートです。`,
+];
+
+/**
+ * One line per stage, condensed from the copy above rather than repeating it.
+ *
+ * Two were wrong before: 01 gave a time and never said what happens, and 04
+ * and 05 were swapped — the report step described what teachers *cannot* see
+ * while the teacher step described the report. The privacy line now sits at
+ * the point of delivery, which is where it means something.
+ */
 const STAGES: Stage[] = [
   {
     n: "01",
     label: "生徒",
-    body: "月に一度、ホームルームの時間に。",
+    body: "月に一度、ホームルームの時間に実施します。全生徒が対象です。",
     text: "text-mark-1",
   },
   {
     n: "02",
     label: "30往復の対話",
-    body: "生徒はAIと30往復ほどの自然な対話を行います。チャットのように、構えずに話せる設計です。",
+    body: "AIと30往復ほどの自然な対話。チャットのように、構えずに話せる設計です。",
     text: "text-mark-2",
   },
   {
     n: "03",
     label: "AI解析",
-    body: "会話に含まれる言葉のニュアンスや入力のためらいといった微細なシグナルから、AIが心理的リスクを検知します。",
+    body: "言葉のニュアンスや入力のためらいといった微細なシグナルから、心理的リスクを検知します。",
     note: "生のログは非公開",
     text: "text-mark-3",
   },
   {
     n: "04",
     label: "リスクレポート",
-    body: "会話の内容そのものが教員に公開されることはありません。",
+    body: "対応が必要な生徒を示す、要点のみのレポートが生成されます。",
     text: "text-mark-1",
   },
   {
     n: "05",
     label: "教員",
-    body: "届くのは、対応が必要な生徒を示す要点のみのレポートです。",
+    body: "教員が受け取るのはこのレポートだけ。会話の内容そのものが公開されることはありません。",
     text: "text-mark-2",
   },
 ];
@@ -76,6 +100,19 @@ export function HowItWorks() {
       </Reveal>
 
       {/*
+        Reads top to bottom without touching anything. The deck below walks
+        the same flow stage by stage, but nobody should have to click five
+        times to find out what the product does.
+      */}
+      <Stagger className="max-w-2xl space-y-6" stagger={0.1}>
+        {LEAD.map((text, i) => (
+          <RevealItem key={i}>
+            <Lines className="measure-jp text-muted">{text}</Lines>
+          </RevealItem>
+        ))}
+      </Stagger>
+
+      {/*
         The cards carry every stage's title and body in the markup, so this
         list exists for the no-script reading order — the noscript rule in the
         root layout promotes it to visible copy.
@@ -96,7 +133,7 @@ export function HowItWorks() {
         the deck — and the body and privacy note come with it, which is what
         lets every card shrink to just its label.
       */}
-      <div className="grid items-baseline gap-x-8 gap-y-4 sm:grid-cols-[auto_1fr]">
+      <div className="mt-16 grid items-baseline gap-x-8 gap-y-4 border-t border-line pt-12 sm:grid-cols-[auto_1fr]">
         <p
           aria-hidden
           className={`text-[clamp(3.5rem,9vw,6rem)] font-semibold leading-[0.8] tabular-nums ${stage.text}`}
