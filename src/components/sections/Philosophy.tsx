@@ -19,9 +19,10 @@ const PHOTO: { src: string; alt: string } | null = {
  * hole. It carries a ring in the page ground colour so the two read as two
  * photographs rather than one collaged edge.
  */
-const PHOTO_ACCENT: { src: string; alt: string } | null = null;
-// Once /public/photos/philosophy-2.png exists, replace the line above with:
-// const PHOTO_ACCENT = { src: "/photos/philosophy-2.png", alt: "" };
+const PHOTO_ACCENT: { src: string; alt: string } | null = {
+  src: "/photos/philosophy-2.png",
+  alt: "",
+};
 
 const PARAGRAPHS = [
   `私たちはテクノロジーに囲まれて生きながら、
