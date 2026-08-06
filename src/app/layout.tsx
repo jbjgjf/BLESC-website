@@ -1,46 +1,49 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_JP } from "next/font/google";
-import MotionProvider from "@/components/ui/MotionProvider";
 import "./globals.css";
+import { Footer } from "@/components/Footer";
+import { Nav } from "@/components/Nav";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { ScrollProgress } from "@/components/ScrollProgress";
+import { SmoothScroll } from "@/components/SmoothScroll";
 
+/**
+ * One sans, varied only by weight and size. Inter covers Latin and the
+ * numerals; Noto Sans JP picks up kana and kanji, which Inter has no glyphs
+ * for. They share a humanist skeleton, so the page still reads as a single
+ * typeface rather than a display/body pairing.
+ */
 const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
 });
 
-const notoSansJP = Noto_Sans_JP({
+const notoSansJp = Noto_Sans_JP({
+  variable: "--font-noto-jp",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
   display: "swap",
-  variable: "--font-noto-sans-jp",
 });
 
 export const metadata: Metadata = {
-  title: "blesc ── 生徒のSOSを可視化する。",
-  description: "日常の会話に現れる早期のサインをAIが捉え、支援が必要な生徒を、孤立する前に可視化します。京都大学の臨床心理学研究との協働開発。",
+  title: "Blesc — 生徒のSOSを可視化する",
+  description:
+    "Blescは、月に一度のホームルームでの自然な対話から、生徒の心理的リスクの早期サインをAIが検知する学校向けプラットフォームです。会話ログそのものが教員に公開されることはありません。",
   openGraph: {
-    type: "website",
-    siteName: "blesc",
-    title: "blesc ── 生徒のSOSを可視化する。",
-    description: "日常の会話に現れる早期のサインをAIが捉え、支援が必要な生徒を、孤立する前に可視化します。京都大学の臨床心理学研究との協働開発。",
-    url: "https://blesc.jp/",
-    images: [{ url: "https://blesc.jp/assets/logo_with_flower.png" }],
+    title: "Blesc — 生徒のSOSを可視化する",
+    description:
+      "声にならないSOSに、気づける社会へ。生徒の早期のサインをAIが捉え、孤立する前に可視化します。",
     locale: "ja_JP",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "blesc ── 生徒のSOSを可視化する。",
-    description: "日常の会話に現れる早期のサインをAIが捉え、支援が必要な生徒を、孤立する前に可視化します。",
-    images: ["https://blesc.jp/assets/logo_with_flower.png"],
+    type: "website",
   },
 };
 
-// The canvas is warm ivory (--bg-primary: #faf8f2). Declaring a dark scheme
-// here made browsers render form controls and scrollbars for a dark page and
-// tinted the mobile browser chrome near-black against an ivory site.
 export const viewport: Viewport = {
-  colorScheme: "light",
-  themeColor: "#faf8f2",
+  themeColor: "#0a0b0d",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -49,16 +52,46 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`}>
+    // suppressHydrationWarning: the head script stamps data-theme on <html>
+    // before React hydrates, so the server's attribute intentionally differs.
+    <html
+      lang="ja"
+      data-theme="dark"
+      suppressHydrationWarning
+      className={`${inter.variable} ${notoSansJp.variable}`}
+    >
       <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0&display=swap"
-          rel="stylesheet"
+        {/*
+          Blocking, before first paint. Applying the stored theme from an
+          effect instead would flash the wrong palette on every load for
+          anyone whose preference differs from the server default.
+        */}
+        <script
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
         />
-        <link rel="canonical" href="https://blesc.jp/" />
+        {/*
+          Reveals are server-rendered with their hidden inline styles, so
+          without JS the page would read as blank. This forces every animated
+          element to its resting state instead.
+        */}
+        <noscript>
+          <style>{`
+            main [style], header [style] { opacity: 1 !important; filter: none !important; transform: none !important; }
+            /* The carousel needs script to show a stage, so promote
+               its always-present fallback list to the visible copy instead. */
+            .stage-fallback { position: static !important; width: auto !important; height: auto !important; margin: 0 !important; clip: auto !important; clip-path: none !important; white-space: normal !important; }
+            .stage-fallback li { margin-bottom: 2rem; }
+          `}</style>
+        </noscript>
       </head>
-      <body>
-        <MotionProvider>{children}</MotionProvider>
+      <body className="antialiased">
+        <ThemeProvider>
+          <SmoothScroll />
+          <ScrollProgress />
+          <Nav />
+          <main>{children}</main>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );
