@@ -53,6 +53,15 @@
   --color-border-strong: #586170;
   /* raised planes: the Why Blesc cards and the step media wells */
   --surface-raised: #14171b;
+  /*
+   * Wells sunk INTO a raised plane — chat bubbles, the message field, the
+   * risk-bar tracks. --color-bg-alt was doing this job and measured 1.03:1
+   * against the card it sat on, i.e. invisible; it only ever worked because
+   * the light build happens to land at 1.14:1. This is the dark equivalent
+   * of that separation, taken slightly further because a dark ground needs
+   * more of it. Muted copy still holds 9.1:1 here.
+   */
+  --surface-inset: #232830;
 
   /*
    * Label colour for anything filled with --color-primary.
@@ -74,6 +83,17 @@
   /* TiltCard sheen: a light wash lifts a dark card. */
   --color-glare: #ffffff;
   --glare-opacity: 0.15;
+
+  /*
+   * Risk levels for the teacher-report mockup. The first non-blue colours on
+   * the site, and the only ones justified: severity is the whole point of
+   * that table. 高/中/低 is printed beside every bar, so colour is never the
+   * sole signal — which keeps it usable for red-green colour blindness and
+   * satisfies WCAG 1.4.1.
+   */
+  --risk-high: #f87171;
+  --risk-mid: #fbbf24;
+  --risk-low: #4ade80;
 
   /* the "expo-out" curve — default premium easing across the whole site */
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -101,6 +121,7 @@
   /* 3.56:1 on the light ground — still clears WCAG 1.4.11. */
   --color-border-strong: #8a8477;
   --surface-raised: #ffffff;
+  --surface-inset: #f2f0ec;
 
   --on-accent: #1a2332;
 
@@ -121,6 +142,11 @@
    */
   --color-glare: #1a2332;
   --glare-opacity: 0.1;
+
+  /* Darkened for a white card; the dark-theme tints would wash out. */
+  --risk-high: #dc2626;
+  --risk-mid: #b45309;
+  --risk-low: #15803d;
 }
 
 @theme inline {
@@ -132,10 +158,14 @@
   --color-line: var(--color-border);
   --color-line-strong: var(--color-border-strong);
   --color-surface: var(--surface-raised);
+  --color-inset: var(--surface-inset);
   --color-on-accent: var(--on-accent);
   --color-mark-1: var(--mark-1);
   --color-mark-2: var(--mark-2);
   --color-mark-3: var(--mark-3);
+  --color-risk-high: var(--risk-high);
+  --color-risk-mid: var(--risk-mid);
+  --color-risk-low: var(--risk-low);
 
   --font-sans: var(--font-inter), var(--font-noto-jp), ui-sans-serif, system-ui,
     "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
@@ -233,6 +263,32 @@ body {
   .br-wide {
     display: inline;
   }
+}
+
+/*
+ * The "AI is composing" dots in the student-screen mockup. The only looping
+ * animation on the site; it earns that by being the one thing that says the
+ * chat is live rather than a still. The reduced-motion block below flattens
+ * it to a static row of dots.
+ */
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+.typing-dot {
+  animation: typing-dot 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
 }
 
 /* Material Symbols — outlined style only, never filled. */

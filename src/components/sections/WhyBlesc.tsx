@@ -42,7 +42,7 @@ const ITEMS = [
  */
 export function WhyBlesc() {
   return (
-    <Section>
+    <Section alt>
       <Reveal>
         <SectionTitle accent="bg-mark-3">Why Blesc</SectionTitle>
       </Reveal>

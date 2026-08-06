@@ -4,7 +4,7 @@ import { SectionTitle, Lines, Section } from "@/components/ui";
 
 export function Technology() {
   return (
-    <Section id="technology" alt>
+    <Section id="technology">
       <Reveal>
         <SectionTitle accent="bg-mark-1">テクノロジー</SectionTitle>
       </Reveal>

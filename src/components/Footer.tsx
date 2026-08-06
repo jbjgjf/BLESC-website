@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { GradientFooter } from "@/components/GradientFooter";
+import { usePathname } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
 import { ButtonLink, Container, Icon } from "@/components/ui";
-import { CONTACT_EMAIL, CTA, NAV_LINKS } from "@/lib/site";
+import {
+  CONTACT_EMAIL,
+  CONTACT_PATH,
+  CTA,
+  NAV_LINKS,
+  sectionHref,
+} from "@/lib/site";
 
 /**
  * Glow ramp per theme. Dark rises toward light at the core; light deepens
@@ -33,66 +39,9 @@ const LIGHT_STOPS = [
   { offset: 1, color: "#85C0ED00" },
 ];
 
-function ContactForm() {
-  const [email, setEmail] = useState("");
-
-  /*
-   * No backend exists yet, so this hands off to the visitor's mail client
-   * with their address in the body. It genuinely works and sends nothing
-   * anywhere on its own — which matters here, because silently collecting
-   * an address on a page about student mental health and doing nothing with
-   * it would be worse than not offering the field.
-   *
-   * TODO: point at a real endpoint and drop the mailto handoff.
-   */
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const address = email.trim();
-    if (!address) return;
-
-    const subject = encodeURIComponent("Blesc へのお問い合わせ");
-    const body = encodeURIComponent(`ご連絡先メールアドレス: ${address}\n\n`);
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
-  };
-
-  return (
-    <form onSubmit={onSubmit} className="mt-8 max-w-sm">
-      <label
-        htmlFor="contact-email"
-        className="block text-[0.8rem] font-medium text-ink"
-      >
-        ご連絡先メールアドレス
-      </label>
-
-      <div className="relative mt-3">
-        <input
-          id="contact-email"
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="name@school.ac.jp"
-          autoComplete="email"
-          className="h-12 w-full rounded-full border border-line bg-canvas-alt pl-5 pr-14 text-[0.9rem] text-ink placeholder:text-muted focus:border-accent focus:outline-none"
-        />
-        <button
-          type="submit"
-          aria-label="お問い合わせ内容の作成に進む"
-          className="absolute right-1.5 top-1.5 flex size-9 items-center justify-center rounded-full bg-accent text-on-accent transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.05]"
-        >
-          <Icon name="send" size={18} />
-        </button>
-      </div>
-
-      <p className="mt-3 text-[0.75rem] text-muted">
-        送信するとメールソフトが開きます。内容を確認のうえ送信してください。
-      </p>
-    </form>
-  );
-}
-
 export function Footer() {
   const { theme } = useTheme();
+  const onHome = usePathname() === "/";
 
   return (
     <GradientFooter
@@ -108,10 +57,14 @@ export function Footer() {
             </h2>
             <p className="measure-jp mt-4 max-w-sm text-[0.95rem] text-muted">
               資料のご請求、導入のご相談を承っております。
+              お問い合わせフォームよりご連絡ください。
             </p>
 
-            <ContactForm />
-
+            {/*
+              The email field that used to sit here is now the first field of
+              the real form at /contact. One place to enquire, not two that
+              collect different amounts of information.
+            */}
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink variant="secondary" href={CTA.document.href}>
                 {CTA.document.label}
@@ -128,10 +81,10 @@ export function Footer() {
             </h3>
             <nav aria-label="フッターナビゲーション" className="mt-5">
               <ul className="flex flex-col gap-3">
-                {NAV_LINKS.map(({ href, label }) => (
-                  <li key={href}>
+                {NAV_LINKS.map(({ id, label }) => (
+                  <li key={id}>
                     <a
-                      href={href}
+                      href={sectionHref(id, onHome)}
                       className="text-[0.9rem] text-muted transition-colors duration-300 hover:text-ink"
                     >
                       {label}
@@ -146,14 +99,26 @@ export function Footer() {
             <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.15em] text-mark-1">
               お問い合わせ
             </h3>
-            <a
-              href={`mailto:${CONTACT_EMAIL}`}
-              className="mt-5 inline-flex items-start gap-2 text-[0.9rem] text-muted transition-colors duration-300 hover:text-ink"
-            >
-              <Icon name="mail" size={18} className="shrink-0" />
-              {CONTACT_EMAIL}
-            </a>
-
+            <ul className="mt-5 flex flex-col gap-3">
+              <li>
+                <a
+                  href={CONTACT_PATH}
+                  className="inline-flex items-start gap-2 text-[0.9rem] text-muted transition-colors duration-300 hover:text-ink"
+                >
+                  <Icon name="edit_note" size={18} className="shrink-0" />
+                  お問い合わせフォーム
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`mailto:${CONTACT_EMAIL}`}
+                  className="inline-flex items-start gap-2 text-[0.9rem] text-muted transition-colors duration-300 hover:text-ink"
+                >
+                  <Icon name="mail" size={18} className="shrink-0" />
+                  {CONTACT_EMAIL}
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
 

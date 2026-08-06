@@ -47,7 +47,7 @@ const MARKS = ["text-mark-1", "text-mark-2", "text-mark-3"] as const;
 
 export function News() {
   return (
-    <Section id="news">
+    <Section id="news" alt>
       <Reveal>
         <SectionTitle accent="bg-mark-3">ニュース</SectionTitle>
       </Reveal>

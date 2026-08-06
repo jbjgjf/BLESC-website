@@ -1,10 +1,11 @@
 "use client";
 
 import { useMotionValueEvent, useScroll } from "motion/react";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GlassSurface } from "@/components/GlassSurface";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { CTA, NAV_LINKS } from "@/lib/site";
+import { CTA, NAV_LINKS, sectionHref } from "@/lib/site";
 
 /**
  * Fixed nav. Transparent at rest, easing to a solid --color-bg bar with a
@@ -22,14 +23,23 @@ export function Nav() {
   const [solid, setSolid] = useState(false);
   const [activeId, setActiveId] = useState<string>("");
 
+  /*
+   * The sections only exist on the home page. Off it the links have to point
+   * back at "/" instead of at a fragment of whatever page you happen to be
+   * on, and the scroll-spy below simply finds nothing and stays quiet.
+   */
+  const onHome = usePathname() === "/";
+
   useMotionValueEvent(scrollY, "change", (y) => setSolid(y > SOLID_AT));
 
   // Scroll-spy: whichever section straddles the upper third of the viewport
   // owns the active indicator.
   useEffect(() => {
-    const sections = NAV_LINKS.map(({ href }) =>
-      document.querySelector<HTMLElement>(href),
+    const sections = NAV_LINKS.map(({ id }) =>
+      document.getElementById(id),
     ).filter((el): el is HTMLElement => el !== null);
+
+    if (sections.length === 0) return;
 
     // IntersectionObserver hands entries back in no guaranteed order, so
     // track membership and resolve the winner in document order instead.
@@ -44,7 +54,7 @@ export function Nav() {
 
         const first = sections.find((section) => visible.has(section));
         if (first) {
-          setActiveId(`#${first.id}`);
+          setActiveId(first.id);
         } else if (window.scrollY < sections[0].offsetTop) {
           // Above the first section (i.e. in the hero) nothing is current.
           // Below the last one, the previous value deliberately sticks.
@@ -76,7 +86,7 @@ export function Nav() {
         className="mx-auto flex h-20 w-full max-w-[68rem] items-center justify-between px-6 md:px-10"
       >
         <a
-          href="#top"
+          href={onHome ? "#top" : "/"}
           className="text-xl font-semibold tracking-[-0.02em] text-ink"
         >
           Blesc
@@ -84,12 +94,12 @@ export function Nav() {
 
         <div className="flex items-center gap-4 md:gap-6">
           <ul className="hidden items-center gap-5 md:flex lg:gap-8">
-            {NAV_LINKS.map(({ href, label }) => {
-              const isActive = activeId === href;
+            {NAV_LINKS.map(({ id, label }) => {
+              const isActive = activeId === id;
               return (
-                <li key={href}>
+                <li key={id}>
                   <a
-                    href={href}
+                    href={sectionHref(id, onHome)}
                     aria-current={isActive ? "true" : undefined}
                     className={`group relative block py-1 text-[0.9rem] transition-colors duration-300 ${
                       isActive ? "text-ink" : "text-muted hover:text-ink"
