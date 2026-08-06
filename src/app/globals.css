@@ -248,6 +248,27 @@ body {
   --glass-tint: rgba(255, 255, 255, 0.92);
 }
 
+/* ---------------------------------------------------------------------------
+   Brand mark, one file per theme. Both ship in the markup and CSS picks;
+   the pre-paint script has already set data-theme, so the right one is
+   correct on the first frame rather than corrected after hydration.
+
+   Layered so a Tailwind utility can still override `display` if the mark
+   ever needs to be hidden at a breakpoint — unlayered, these would silently
+   beat every `hidden`/`md:block` in the codebase.
+--------------------------------------------------------------------------- */
+@layer components {
+  .logo-on-light {
+    display: none;
+  }
+  :root[data-theme="light"] .logo-on-dark {
+    display: none;
+  }
+  :root[data-theme="light"] .logo-on-light {
+    display: block;
+  }
+}
+
 /* Japanese paragraph text needs more air than Latin to stay readable. */
 .measure-jp {
   line-height: 1.9;

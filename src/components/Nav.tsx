@@ -4,6 +4,7 @@ import { useMotionValueEvent, useScroll } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GlassSurface } from "@/components/GlassSurface";
+import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CTA, NAV_LINKS, sectionHref } from "@/lib/site";
 
@@ -85,11 +86,13 @@ export function Nav() {
         aria-label="メインナビゲーション"
         className="mx-auto flex h-20 w-full max-w-[68rem] items-center justify-between px-6 md:px-10"
       >
+        {/* Images are decorative; the link carries the name. */}
         <a
           href={onHome ? "#top" : "/"}
-          className="text-xl font-semibold tracking-[-0.02em] text-ink"
+          aria-label="Blesc"
+          className="flex items-center"
         >
-          Blesc
+          <Logo className="h-6 w-auto md:h-7" />
         </a>
 
         <div className="flex items-center gap-4 md:gap-6">

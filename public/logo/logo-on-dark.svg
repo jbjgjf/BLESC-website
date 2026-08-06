@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 32" width="120" height="32">
+  <!--
+    PLACEHOLDER — replace this file with the real logo.
+    This is the version shown on the DARK theme, so the artwork needs to be
+    light. Any size works; the aspect ratio is what the layout follows.
+  -->
+  <rect x="0.75" y="0.75" width="118.5" height="30.5" rx="6" fill="none"
+        stroke="#586170" stroke-width="1.5" stroke-dasharray="5 4" />
+  <text x="60" y="16" text-anchor="middle" dominant-baseline="central"
+        font-family="ui-sans-serif, system-ui, -apple-system, sans-serif"
+        font-size="10" font-weight="600" letter-spacing="1.6" fill="#c3ccd8">LOGO</text>
+</svg>

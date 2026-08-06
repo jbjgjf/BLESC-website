@@ -22,6 +22,23 @@ export const NAV_LINKS = [
 export const sectionHref = (id: string, onHome: boolean) =>
   onHome ? `#${id}` : `/#${id}`;
 
+/**
+ * Brand mark. Two files, because a mark that reads against the near-black
+ * ground will not read against the near-white one.
+ *
+ * Both are placeholders right now. To use the real logo, either overwrite
+ * the two files in /public/logo keeping these names, or drop yours in beside
+ * them and change the paths here — any web format works, not just SVG, since
+ * these are plain <img> sources. Nothing else needs touching: the three
+ * places the mark appears all render <Logo />.
+ */
+export const LOGO = {
+  /** Shown on the dark theme, so this artwork should be light. */
+  onDark: "/logo/logo-on-dark.svg",
+  /** Shown on the light theme, so this artwork should be dark. */
+  onLight: "/logo/logo-on-light.svg",
+} as const;
+
 export const CONTACT_EMAIL = "blesc.official@gmail.com";
 
 export const CONTACT_PATH = "/contact";

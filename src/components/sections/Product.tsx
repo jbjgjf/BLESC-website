@@ -1,3 +1,4 @@
+import { Logo } from "@/components/Logo";
 import { Reveal } from "@/components/Reveal";
 import { Icon, Lines, Section, SectionTitle } from "@/components/ui";
 
@@ -61,11 +62,13 @@ const FRAME =
 function StudentScreen() {
   return (
     <div className={FRAME}>
-      <div className="flex items-center gap-2.5 border-b border-line px-5 py-4">
-        <span className="size-2.5 rounded-full bg-accent" />
-        <span className="text-[0.85rem] font-medium tracking-[-0.01em] text-ink">
-          blesc
-        </span>
+      {/*
+        h-5 matches the height the old dot-and-wordmark lockup occupied, so
+        swapping in the mark leaves the frame the same height as the teacher
+        panel beside it.
+      */}
+      <div className="flex items-center border-b border-line px-5 py-4">
+        <Logo className="h-5 w-auto" />
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-5">
