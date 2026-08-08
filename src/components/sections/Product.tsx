@@ -130,39 +130,77 @@ export default function Product() {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <span className={styles.productPanelTag}>教員の画面</span>
+            {/* Mirrors the educator surface after 2026-08-06: observations with
+                their evidence and timestamp, never a risk classification. The
+                previous mock showed 高/中/低 bands, which the product no longer
+                produces — see BLESC docs/educator_display_policy.md. */}
             <div className={styles.mockReport}>
               <div className={styles.mockReportHeader}>
-                <span className={styles.mockReportTitle}>今月のリスクレポート</span>
-                <span className={styles.mockReportBadge}>3件の要対応</span>
+                <span className={styles.mockReportTitle}>今月の観測レポート</span>
+                <span className={styles.mockReportBadge}>3件の要確認</span>
               </div>
               <ul className={styles.mockReportList}>
-                <li className={styles.mockReportRow}>
+                <li className={styles.mockObservationRow}>
                   <span className={styles.mockReportId}>3年2組 #14</span>
-                  <span className={styles.riskMeter}><span className={`${styles.riskFill} ${styles.riskHigh}`}></span></span>
-                  <span className={`${styles.riskLabel} ${styles.riskLabelHigh}`}>高</span>
+                  <span className={styles.mockObservation}>自傷に関する直接的な表現</span>
+                  <span className={styles.mockObservationMeta}>8/3 22:14 · 決定的マッチ</span>
                 </li>
-                <li className={styles.mockReportRow}>
+                <li className={styles.mockObservationRow}>
                   <span className={styles.mockReportId}>3年1組 #08</span>
-                  <span className={styles.riskMeter}><span className={`${styles.riskFill} ${styles.riskMid}`}></span></span>
-                  <span className={`${styles.riskLabel} ${styles.riskLabelMid}`}>中</span>
+                  <span className={styles.mockObservation}>「消えたい」など離脱を示唆する表現</span>
+                  <span className={styles.mockObservationMeta}>8/2 19:40 · 決定的マッチ</span>
                 </li>
-                <li className={styles.mockReportRow}>
-                  <span className={styles.mockReportId}>3年2組 #27</span>
-                  <span className={styles.riskMeter}><span className={`${styles.riskFill} ${styles.riskMid}`}></span></span>
-                  <span className={`${styles.riskLabel} ${styles.riskLabelMid}`}>中</span>
-                </li>
-                <li className={styles.mockReportRow}>
+                <li className={styles.mockObservationRow}>
                   <span className={styles.mockReportId}>3年3組 #03</span>
-                  <span className={styles.riskMeter}><span className={`${styles.riskFill} ${styles.riskLow}`}></span></span>
-                  <span className={`${styles.riskLabel} ${styles.riskLabelLow}`}>低</span>
+                  <span className={styles.mockObservation}>基準値の学習中（残り 6 日）</span>
+                  <span className={styles.mockObservationMeta}>比較は表示されません</span>
                 </li>
               </ul>
               <div className={styles.mockReportNote}>
                 <span className="material-symbols-outlined">lock</span>
-                会話ログは共有されません
+                会話ログは共有されません／本ツールは診断を行いません
               </div>
             </div>
-            <p className={styles.productCaption}>届くのは要点のみ。会話の中身は非公開。</p>
+            <p className={styles.productCaption}>構えずに話せる、月に一度の対話。</p>
+          </motion.div>
+
+          {/* Teacher report mockup */}
+          <motion.div 
+            className={styles.productPanel}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <span className={styles.productPanelTag}>教員の画面</span>
+            <div className={styles.mockReport}>
+              <div className={styles.mockReportHeader}>
+                <span className={styles.mockReportTitle}>今月の観測レポート</span>
+                <span className={styles.mockReportBadge}>3件の要確認</span>
+              </div>
+              <ul className={styles.mockReportList}>
+                <li className={styles.mockObservationRow}>
+                  <span className={styles.mockReportId}>3年2組 #14</span>
+                  <span className={styles.mockObservation}>自傷に関する直接的な表現</span>
+                  <span className={styles.mockObservationMeta}>8/3 22:14 · 決定的マッチ</span>
+                </li>
+                <li className={styles.mockObservationRow}>
+                  <span className={styles.mockReportId}>3年1組 #08</span>
+                  <span className={styles.mockObservation}>「消えたい」など離脱を示唆する表現</span>
+                  <span className={styles.mockObservationMeta}>8/2 19:40 · 決定的マッチ</span>
+                </li>
+                <li className={styles.mockObservationRow}>
+                  <span className={styles.mockReportId}>3年3組 #03</span>
+                  <span className={styles.mockObservation}>基準値の学習中（残り 6 日）</span>
+                  <span className={styles.mockObservationMeta}>比較は表示されません</span>
+                </li>
+              </ul>
+              <div className={styles.mockReportNote}>
+                <span className="material-symbols-outlined">lock</span>
+                会話ログは共有されません／本ツールは診断を行いません
+              </div>
+            </div>
+            <p className={styles.productCaption}>届くのは観測された事実と時刻のみ。リスクの判定は行いません。</p>
           </motion.div>
         </div>
       </div>

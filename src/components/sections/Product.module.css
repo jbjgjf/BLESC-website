@@ -243,3 +243,25 @@
     gap: 40px;
   }
 }
+
+/* Observation rows replaced the risk meter and 高/中/低 labels: the product
+   shows what was observed and when, not a classification of the student.
+   See BLESC docs/educator_display_policy.md. */
+.mockObservationRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.mockObservation {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.mockObservationMeta {
+  grid-column: 2;
+  font-size: 12px;
+  color: var(--text-muted);
+}

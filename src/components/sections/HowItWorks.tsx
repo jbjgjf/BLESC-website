@@ -75,7 +75,7 @@ export default function HowItWorks() {
               <motion.div className={styles.textSection} style={{ opacity: step2Opacity }}>
                 <h3 className={styles.stepTitle}>02. 独自のAI解析</h3>
                 <p className="text-body">
-                  会話に含まれる言葉のニュアンスや入力のためらいといった微細なシグナルから、<strong>AIが心理的リスクを検知</strong>します。
+                  会話に含まれる言葉のニュアンスや入力のためらいといった微細なシグナルを、<strong>AIが捉えて可視化</strong>します。心理的リスクの判定は行いません。
                 </p>
               </motion.div>
 
