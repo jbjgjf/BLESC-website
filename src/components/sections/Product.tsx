@@ -20,38 +20,35 @@ const CHAT = [
  * Full class names throughout — Tailwind scans source text, so an
  * interpolated `bg-risk-${level}` would never be generated.
  */
-const ROWS = [
+/**
+ * Observations, not a risk classification.
+ *
+ * The previous rows carried 高/中/低 per student. The product stopped
+ * producing that on 2026-08-06: "wrote a direct statement about self-harm at
+ * 22:14" is a fact, while "risk: high" is an inference about a minor's
+ * internal state whose positive predictive value is poor at school-level
+ * prevalence no matter how good the model gets. The third row shows the
+ * ramp-up state on purpose, so the screen is honest about what it cannot say
+ * yet. See BLESC docs/educator_display_policy.md.
+ */
+const OBSERVATIONS = [
   {
     klass: "3年2組",
     no: "#14",
-    level: "高",
-    width: "88%",
-    bar: "bg-risk-high",
-    text: "text-risk-high",
+    observation: "自傷に関する直接的な表現",
+    meta: "8/3 22:14 · 決定的マッチ",
   },
   {
     klass: "3年1組",
     no: "#08",
-    level: "中",
-    width: "63%",
-    bar: "bg-risk-mid",
-    text: "text-risk-mid",
-  },
-  {
-    klass: "3年2組",
-    no: "#27",
-    level: "中",
-    width: "54%",
-    bar: "bg-risk-mid",
-    text: "text-risk-mid",
+    observation: "「消えたい」など離脱を示唆する表現",
+    meta: "8/2 19:40 · 決定的マッチ",
   },
   {
     klass: "3年3組",
     no: "#03",
-    level: "低",
-    width: "21%",
-    bar: "bg-risk-low",
-    text: "text-risk-low",
+    observation: "基準値の学習中（残り 6 日）",
+    meta: "比較は表示されません",
   },
 ] as const;
 
@@ -106,48 +103,38 @@ function TeacherScreen() {
     <div className={FRAME}>
       <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
         <span className="text-[0.85rem] font-medium tracking-[-0.01em] text-ink">
-          今月のリスクレポート
+          今月の観測レポート
         </span>
-        <span className="shrink-0 rounded-full bg-risk-high/15 px-2.5 py-1 text-[0.7rem] font-medium text-risk-high">
-          3件の要対応
+        <span className="shrink-0 rounded-full bg-inset px-2.5 py-1 text-[0.7rem] font-medium text-muted">
+          3件の要確認
         </span>
       </div>
 
       <div className="flex flex-1 flex-col justify-center divide-y divide-line">
-        {ROWS.map((row) => (
-          <div
-            key={`${row.klass}${row.no}`}
-            className="flex items-center gap-4 px-5 py-4"
-          >
-            <span className="w-[5.5rem] shrink-0 text-[0.8rem] tabular-nums text-muted">
-              {row.klass}{" "}
-              <span className="text-ink">{row.no}</span>
-            </span>
-
-            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-inset">
-              <span
-                className={`block h-full rounded-full ${row.bar}`}
-                style={{ width: row.width }}
-              />
-            </span>
-
-            {/*
-              The level is printed, not merely coloured. Red-amber-green is
-              the worst possible pairing for colour blindness, so the label
-              is what actually carries the meaning — WCAG 1.4.1.
-            */}
-            <span
-              className={`w-4 shrink-0 text-right text-[0.8rem] font-medium ${row.text}`}
-            >
-              {row.level}
-            </span>
+        {OBSERVATIONS.map((row) => (
+          <div key={`${row.klass}${row.no}`} className="px-5 py-4">
+            <div className="flex items-baseline gap-3">
+              <span className="w-[5.5rem] shrink-0 text-[0.8rem] tabular-nums text-muted">
+                {row.klass} <span className="text-ink">{row.no}</span>
+              </span>
+              {/*
+                No bar and no colour band. A meter reads as a measurement, and
+                red-amber-green would carry a severity judgement the product
+                does not make — so the observation itself is the content.
+              */}
+              <span className="text-[0.8rem] leading-relaxed text-ink">
+                {row.observation}
+              </span>
+            </div>
+            <div className="mt-1 pl-[5.5rem] text-[0.7rem] text-muted">
+              {row.meta}
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="flex items-center gap-2 border-t border-line px-5 py-4 text-[0.78rem] text-muted">
-        <Icon name="lock" size={16} className="shrink-0" />
-        会話ログは共有されません
+      <div className="border-t border-line px-5 py-3 text-[0.7rem] text-muted">
+        会話ログは共有されません／本ツールは診断を行いません
       </div>
     </div>
   );
