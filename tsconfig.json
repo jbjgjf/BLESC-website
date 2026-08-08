@@ -30,5 +30,15 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  // "video" MUST stay excluded. It is a separate Remotion workspace with its
+  // own node_modules, which Vercel does not install — dropping it from this
+  // list makes `next build` fail on the deploy with "Cannot find module
+  // '@remotion/cli/config'" while still passing locally, because a local
+  // checkout has those modules. That is exactly how production sat broken
+  // from 2026-08-06: the site kept serving the previous deployment and the
+  // failure was invisible from the site itself.
+  "exclude": [
+    "node_modules",
+    "video"
+  ]
 }
