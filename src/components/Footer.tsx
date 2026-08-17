@@ -122,8 +122,14 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 border-t border-line pt-8">
+        <div className="mt-16 flex items-center justify-between border-t border-line pt-8">
           <p className="text-[0.78rem] text-muted">© 2026 Blesc</p>
+          <a
+            href="/root"
+            className="text-[0.78rem] text-muted transition-colors duration-300 hover:text-ink"
+          >
+            決算公告
+          </a>
         </div>
       </Container>
     </GradientFooter>
