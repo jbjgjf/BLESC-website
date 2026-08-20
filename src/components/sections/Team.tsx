@@ -121,7 +121,7 @@ export function Team() {
             type="button"
             onClick={() => stepRef.current?.(-1)}
             aria-label="前のメンバーを表示"
-            className="flex size-11 items-center justify-center rounded-full border-2 border-line-strong text-muted transition-[color,border-color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] hover:border-ink/40 hover:text-ink"
+            className="flex size-11 items-center justify-center rounded-full border-2 border-line-strong text-muted transition-[color,border-color,scale] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] hover:border-ink/40 hover:text-ink"
           >
             <Icon name="arrow_back" size={20} />
           </button>
@@ -132,7 +132,7 @@ export function Team() {
             type="button"
             onClick={() => stepRef.current?.(1)}
             aria-label="次のメンバーを表示"
-            className="flex size-11 items-center justify-center rounded-full border-2 border-line-strong text-muted transition-[color,border-color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] hover:border-ink/40 hover:text-ink"
+            className="flex size-11 items-center justify-center rounded-full border-2 border-line-strong text-muted transition-[color,border-color,scale] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] hover:border-ink/40 hover:text-ink"
           >
             <Icon name="arrow_forward" size={20} />
           </button>

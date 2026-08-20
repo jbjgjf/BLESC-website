@@ -10,8 +10,6 @@ type Stage = {
   body: string;
   /** Shown only on the stage where it matters. */
   note?: string;
-  /** Full class name — Tailwind scans source text, so no interpolation. */
-  text: string;
 };
 
 const STAGES: Stage[] = [
@@ -19,32 +17,27 @@ const STAGES: Stage[] = [
     n: "01",
     label: "生徒",
     body: "毎日5分、ホームルームの時間に実施します。対象は希望者ではなく全生徒で、新しい習慣も専用の準備も必要ありません。",
-    text: "text-mark-1",
   },
   {
     n: "02",
     label: "日記を書く",
     body: "その日にあったことを、5分で短く綴るだけ。内容も長さも自由です。誰かに読ませるための文章ではなく、自分のための記録として書けることが、本音が残る条件になります。",
-    text: "text-mark-2",
   },
   {
     n: "03",
     label: "AIが深掘り",
     body: "独自のAIが、書かれた内容に短い問いを返します。「たぶん大丈夫」で終わる一行の奥にあるものを、対話ではなく一問一答のかたちで、静かに引き出します。",
-    text: "text-mark-3",
   },
   {
     n: "04",
     label: "リスク解析",
     body: "言葉のニュアンス、書くことをためらった間、日々の書きぶりの変化。こうした微細なシグナルを積み重ねて、心理的リスクを検知します。毎日書かれるからこそ、一日の落ち込みと、続いている不調とを区別できます。",
     note: "本文は非公開",
-    text: "text-mark-1",
   },
   {
     n: "05",
     label: "教員",
     body: "教員が受け取るのは、対応が必要な生徒を示す要点のみのレポートです。日記の本文そのものが公開されることはなく、教員の側に新しい業務が生まれることもありません。",
-    text: "text-mark-2",
   },
 ];
 
@@ -121,22 +114,28 @@ export function HowItWorks() {
                 aria-controls={`how-panel-${i}`}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setActive(i)}
-                className={`rounded-2xl border p-4 text-left transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:p-5 ${
+                className={`group cursor-pointer rounded-2xl border p-4 text-left transition-[translate,background-color,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[translate] md:p-5 ${
                   selected
-                    ? "border-line-strong bg-surface"
-                    : "border-line bg-transparent hover:bg-surface/60"
+                    ? "-translate-y-1.5 border-line-strong bg-surface shadow-[var(--shadow-card)]"
+                    : "border-line bg-transparent hover:-translate-y-0.5 hover:border-line-strong hover:bg-surface/60"
                 }`}
               >
+                {/*
+                  One blue for all five. Selection is carried by the lift and
+                  the surface behind it, so the number only has to vary in
+                  weight — and hover brings it to full strength, which makes
+                  the box feel live before you commit to it.
+                */}
                 <span
-                  className={`block text-[1.375rem] font-semibold leading-none tabular-nums md:text-[1.625rem] ${
-                    selected ? s.text : "text-muted"
+                  className={`block text-[1.375rem] font-semibold leading-none tabular-nums text-mark-1 transition-opacity duration-300 md:text-[1.625rem] ${
+                    selected ? "opacity-100" : "opacity-55 group-hover:opacity-100"
                   }`}
                 >
                   {s.n}
                 </span>
                 <span
-                  className={`mt-3 block text-[0.85rem] leading-snug tracking-[-0.01em] md:text-[0.9rem] ${
-                    selected ? "text-ink" : "text-muted"
+                  className={`mt-3 block text-[0.85rem] leading-snug tracking-[-0.01em] transition-colors duration-300 md:text-[0.9rem] ${
+                    selected ? "text-ink" : "text-muted group-hover:text-ink"
                   }`}
                 >
                   {s.label}
@@ -174,7 +173,7 @@ export function HowItWorks() {
               >
                 <p
                   aria-hidden
-                  className={`text-[clamp(3rem,8vw,5rem)] font-semibold leading-[0.8] tabular-nums ${s.text}`}
+                  className="text-[clamp(3rem,8vw,5rem)] font-semibold leading-[0.8] tabular-nums text-mark-1"
                 >
                   {s.n}
                 </p>

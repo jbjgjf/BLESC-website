@@ -138,12 +138,25 @@ function PinnedDeck() {
   });
 
   return (
+    /*
+      75vh of scroll per item rather than a full screen each: three screens
+      of travel for three short items was more scrolling than they earn.
+    */
     <div
       ref={trackRef}
       className="relative mt-12"
-      style={{ height: `${ITEMS.length * 100}vh` }}
+      style={{ height: `${ITEMS.length * 75}vh` }}
     >
-      <div className="sticky top-0 flex h-screen flex-col justify-center">
+      {/*
+        70vh tall inside a 100vh viewport, rather than the full height.
+        Centring a 412px block in a full screen left 244px idle above and
+        below it, and at the two ends of the track that idle space is
+        exactly what reads as a gap between this section and its
+        neighbours. 15vh at each edge keeps the block centred on screen
+        while handing most of that space back — 109px a side at 900px, and
+        still clear of the content at the 640px floor where pinning stops.
+      */}
+      <div className="sticky top-[15vh] flex h-[70vh] flex-col justify-center">
         {/*
           All three stay in the accessibility tree rather than being
           aria-hidden while faded. They are all real content in a real
@@ -187,7 +200,11 @@ export function Limitations() {
   const pinned = useCanPin() && !reduce;
 
   return (
-    <Section>
+    /*
+      pb-0 only when pinned: the deck already ends on a wide margin of its
+      own. The stacked fallback has no such margin and needs the padding.
+    */
+    <Section className={pinned ? "pb-0 md:pb-0" : ""}>
       <Reveal>
         <SectionTitle accent="bg-mark-2">構造的な限界</SectionTitle>
       </Reveal>
