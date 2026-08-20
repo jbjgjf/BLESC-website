@@ -95,6 +95,27 @@
   --risk-mid: #fbbf24;
   --risk-low: #4ade80;
 
+  /*
+   * Spotlight. The pointer position is published to :root by
+   * SpotlightPointer; it starts far off-screen so nothing is lit before the
+   * first move.
+   *
+   * The hue arc is taken from the palette rather than invented: --mark-1 is
+   * hsl(206 74% 73%) and --mark-2 is hsl(250 74% 77%), so sweeping 200 → 255
+   * across the viewport travels between the site's own two blues and cannot
+   * wander off-brand. The component this came from swept 200 degrees from a
+   * blue base, which runs through purple, red and orange.
+   */
+  --pointer-x: -9999;
+  --pointer-y: -9999;
+  --pointer-xp: 0.5;
+  --spot-base: 200;
+  --spot-spread: 55;
+  --spot-sat: 74;
+  --spot-light: 73;
+  --spot-wash: 0.13;
+  --spot-ring: 1;
+
   /* the "expo-out" curve — default premium easing across the whole site */
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -142,6 +163,15 @@
    */
   --color-glare: #1a2332;
   --glare-opacity: 0.1;
+
+  /*
+   * A 73%-lightness glow is invisible on a near-white card, so light mode
+   * darkens the spotlight and pulls both opacities down — the same cue,
+   * inverted, exactly as the tilt sheen does.
+   */
+  --spot-light: 52;
+  --spot-wash: 0.07;
+  --spot-ring: 0.75;
 
   /* Darkened for a white card; the dark-theme tints would wash out. */
   --risk-high: #dc2626;
@@ -266,6 +296,78 @@ body {
   }
   :root[data-theme="light"] .logo-on-light {
     display: block;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Spotlight cards.
+
+   Gated on a fine pointer: the effect follows a cursor, and the
+   `background-attachment: fixed` it depends on is unreliable on mobile
+   Safari. Gated on reduced motion too, since the glow tracks the pointer
+   continuously. Outside those conditions the cards keep their ordinary
+   border and surface and nothing else changes.
+
+   Coordinates are viewport-space, which is why the backgrounds are fixed:
+   that lets one set of :root variables drive every card without any card
+   having to know where it sits on the page.
+--------------------------------------------------------------------------- */
+.spotlight {
+  position: relative;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .spotlight {
+    --spot-hue: calc(var(--spot-base) + var(--pointer-xp) * var(--spot-spread));
+    --spot-tint: hsl(
+      var(--spot-hue) calc(var(--spot-sat) * 1%) calc(var(--spot-light) * 1%)
+    );
+
+    /* Interior wash. Sits over the card's own background-color. */
+    background-image: radial-gradient(
+      34rem 34rem at calc(var(--pointer-x) * 1px) calc(var(--pointer-y) * 1px),
+      hsl(
+          var(--spot-hue) calc(var(--spot-sat) * 1%)
+            calc(var(--spot-light) * 1%) / var(--spot-wash)
+        )
+        0%,
+      transparent 100%
+    );
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  /*
+   * The lit edge. A 1px ring drawn with the padding-box/border-box mask
+   * trick, which survives `overflow: hidden` on the host — the pseudo-element
+   * inset the original used would be clipped away by it.
+   */
+  .spotlight::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(
+      28rem 28rem at calc(var(--pointer-x) * 1px) calc(var(--pointer-y) * 1px),
+      hsl(
+          var(--spot-hue) calc(var(--spot-sat) * 1%)
+            calc(var(--spot-light) * 1%) / var(--spot-ring)
+        )
+        0%,
+      transparent 100%
+    );
+    background-attachment: fixed;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
   }
 }
 

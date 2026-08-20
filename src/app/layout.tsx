@@ -6,6 +6,7 @@ import { Nav } from "@/components/Nav";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import { ScrollProgress } from "@/components/ScrollProgress";
+import { SpotlightPointer } from "@/components/SpotlightPointer";
 import { SmoothScroll } from "@/components/SmoothScroll";
 
 /**
@@ -87,6 +88,7 @@ export default function RootLayout({
       <body className="antialiased">
         <ThemeProvider>
           <SmoothScroll />
+          <SpotlightPointer />
           <ScrollProgress />
           <Nav />
           <main>{children}</main>

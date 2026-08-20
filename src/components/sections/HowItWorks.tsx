@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Reveal } from "@/components/Reveal";
+import { SPOTLIGHT } from "@/components/SpotlightCard";
 import { Icon, Section, SectionTitle } from "@/components/ui";
 
 type Stage = {
@@ -114,7 +115,7 @@ export function HowItWorks() {
                 aria-controls={`how-panel-${i}`}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setActive(i)}
-                className={`group cursor-pointer rounded-2xl border p-4 text-left transition-[translate,background-color,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[translate] md:p-5 ${
+                className={`${SPOTLIGHT} group cursor-pointer rounded-2xl border p-4 text-left transition-[translate,background-color,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[translate] md:p-5 ${
                   selected
                     ? "-translate-y-1.5 border-line-strong bg-surface shadow-[var(--shadow-card)]"
                     : "border-line bg-transparent hover:-translate-y-0.5 hover:border-line-strong hover:bg-surface/60"

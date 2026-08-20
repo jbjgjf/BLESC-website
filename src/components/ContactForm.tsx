@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { SPOTLIGHT } from "@/components/SpotlightCard";
 import { Icon } from "@/components/ui";
 import {
   CONTACT_EMAIL,
@@ -101,7 +102,7 @@ export function ContactForm() {
             return (
               <label
                 key={key}
-                className={`flex flex-1 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 text-[0.95rem] transition-colors duration-300 ${
+                className={`${SPOTLIGHT} flex flex-1 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 text-[0.95rem] transition-colors duration-300 ${
                   active
                     ? "border-accent bg-accent/10 text-ink"
                     : "border-line bg-canvas-alt text-muted hover:text-ink"

@@ -1,4 +1,5 @@
 import { Logo } from "@/components/Logo";
+import { SpotlightCard } from "@/components/SpotlightCard";
 import { Reveal } from "@/components/Reveal";
 import { Icon, Lines, Section, SectionTitle } from "@/components/ui";
 
@@ -70,12 +71,12 @@ const ROWS = [
   },
 ] as const;
 
-const FRAME =
-  "flex flex-1 flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-[var(--shadow-card)]";
+/** Chrome comes from SpotlightCard; this is only the layout. */
+const FRAME = "flex flex-1 flex-col overflow-hidden";
 
 function StudentScreen() {
   return (
-    <div className={FRAME}>
+    <SpotlightCard className={FRAME}>
       {/* h-5 keeps this header the height the old lockup occupied. */}
       <div className="flex items-center border-b border-line px-5 py-4">
         <Logo className="h-5 w-auto" />
@@ -127,13 +128,13 @@ function StudentScreen() {
           提出する
         </span>
       </div>
-    </div>
+    </SpotlightCard>
   );
 }
 
 function TeacherScreen() {
   return (
-    <div className={FRAME}>
+    <SpotlightCard className={FRAME}>
       <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
         <span className="text-[0.85rem] font-medium tracking-[-0.01em] text-ink">
           今月のリスクレポート
@@ -178,7 +179,7 @@ function TeacherScreen() {
         <Icon name="lock" size={16} className="shrink-0" />
         日記の本文は共有されません
       </div>
-    </div>
+    </SpotlightCard>
   );
 }
 
