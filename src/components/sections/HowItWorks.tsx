@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
-import { Icon, Lines, Section, SectionTitle } from "@/components/ui";
+import { Reveal } from "@/components/Reveal";
+import { Icon, Section, SectionTitle } from "@/components/ui";
 
 type Stage = {
   n: string;
@@ -14,58 +14,39 @@ type Stage = {
   text: string;
 };
 
-/**
- * The section's own explanation, verbatim in structure from the brief but
- * rewritten for the diary model: the student writes rather than talks.
- *
- * This reads top to bottom without touching anything. The five stages below
- * walk the same flow one at a time, but nobody should have to click five
- * times to find out what the product does.
- */
-const LEAD = [
-  `毎日5分、ホームルームの時間に、生徒は短い日記を書きます。
-誰かに読ませるための文章ではなく、自分のための記録です。`,
-  `独自のAIが書かれた内容を深掘りし、言葉のニュアンスや
-書くことをためらった間といった微細なシグナルから、心理的リスクを検知します。`,
-  `日記の本文そのものが教員に公開されることはありません。
-届くのは、対応が必要な生徒を示す要点のみのレポートです。`,
-];
-
 const STAGES: Stage[] = [
   {
     n: "01",
     label: "生徒",
-    body: "毎日5分、ホームルームの時間に実施します。全生徒が対象です。",
+    body: "毎日5分、ホームルームの時間に実施します。対象は希望者ではなく全生徒で、新しい習慣も専用の準備も必要ありません。",
     text: "text-mark-1",
   },
   {
     n: "02",
     label: "日記を書く",
-    body: "その日にあったことを5分で綴ります。書く内容も長さも自由です。",
+    body: "その日にあったことを、5分で短く綴るだけ。内容も長さも自由です。誰かに読ませるための文章ではなく、自分のための記録として書けることが、本音が残る条件になります。",
     text: "text-mark-2",
   },
   {
     n: "03",
     label: "AIが深掘り",
-    body: "独自のAIが日記の内容に問いを返し、言葉の奥にあるサインまで引き出します。",
+    body: "独自のAIが、書かれた内容に短い問いを返します。「たぶん大丈夫」で終わる一行の奥にあるものを、対話ではなく一問一答のかたちで、静かに引き出します。",
     text: "text-mark-3",
   },
   {
     n: "04",
     label: "リスク解析",
-    body: "言葉のニュアンスや書きためらいといった微細なシグナルから、心理的リスクを検知します。",
+    body: "言葉のニュアンス、書くことをためらった間、日々の書きぶりの変化。こうした微細なシグナルを積み重ねて、心理的リスクを検知します。毎日書かれるからこそ、一日の落ち込みと、続いている不調とを区別できます。",
     note: "本文は非公開",
     text: "text-mark-1",
   },
   {
     n: "05",
     label: "教員",
-    body: "教員が受け取るのはこのレポートだけ。日記の本文が公開されることはありません。",
+    body: "教員が受け取るのは、対応が必要な生徒を示す要点のみのレポートです。日記の本文そのものが公開されることはなく、教員の側に新しい業務が生まれることもありません。",
     text: "text-mark-2",
   },
 ];
-
-const PANEL_ID = "how-panel";
 
 export function HowItWorks() {
   const [active, setActive] = useState(0);
@@ -96,21 +77,11 @@ export function HowItWorks() {
     tabRefs.current[next]?.focus();
   };
 
-  const stage = STAGES[active];
-
   return (
     <Section id="how" alt>
       <Reveal>
         <SectionTitle accent="bg-mark-1">仕組み</SectionTitle>
       </Reveal>
-
-      <Stagger className="max-w-2xl space-y-5" stagger={0.1}>
-        {LEAD.map((text, i) => (
-          <RevealItem key={i}>
-            <Lines className="measure-jp text-muted">{text}</Lines>
-          </RevealItem>
-        ))}
-      </Stagger>
 
       {/*
         The panel below carries only the selected stage, so this list is what
@@ -128,7 +99,7 @@ export function HowItWorks() {
         ))}
       </ol>
 
-      <Reveal className="mt-12">
+      <Reveal>
         <div
           role="tablist"
           aria-label="仕組みのステップ"
@@ -147,7 +118,7 @@ export function HowItWorks() {
                 role="tab"
                 id={`how-tab-${i}`}
                 aria-selected={selected}
-                aria-controls={PANEL_ID}
+                aria-controls={`how-panel-${i}`}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setActive(i)}
                 className={`rounded-2xl border p-4 text-left transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:p-5 ${
@@ -176,38 +147,55 @@ export function HowItWorks() {
         </div>
 
         {/*
-          min-h stops the section resizing as you click between stages of
-          different copy lengths — the boxes above would otherwise shift
-          under the cursor.
-        */}
-        <div
-          id={PANEL_ID}
-          role="tabpanel"
-          aria-labelledby={`how-tab-${active}`}
-          tabIndex={0}
-          className="mt-10 grid items-baseline gap-x-8 gap-y-3 sm:grid-cols-[auto_1fr]"
-        >
-          <p
-            aria-hidden
-            className={`text-[clamp(3rem,8vw,5rem)] font-semibold leading-[0.8] tabular-nums ${stage.text}`}
-          >
-            {stage.n}
-          </p>
+          All five panels occupy one grid cell, so the cell is as tall as the
+          longest of them and the boxes above never shift when you click. A
+          fixed min-height could only ever be correct at one viewport width —
+          this is right at every width, with no magic number.
 
-          <div className="min-h-[6.5rem]">
-            <h3 className="text-[clamp(1.375rem,3.2vw,2rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
-              {stage.label}
-            </h3>
-            <p className="measure-jp mt-3 max-w-xl text-[0.98rem] text-muted">
-              {stage.body}
-            </p>
-            {stage.note && (
-              <p className="mt-3 flex items-center gap-2 text-[0.85rem] text-mark-1">
-                <Icon name="lock" size={16} />
-                {stage.note}
-              </p>
-            )}
-          </div>
+          Inactive panels are `invisible`, not `hidden`: visibility:hidden
+          still occupies its grid area, which is what does the sizing, and it
+          is equally removed from the accessibility tree, which is what the
+          tabs pattern requires.
+        */}
+        <div className="mt-10 grid">
+          {STAGES.map((s, i) => {
+            const selected = i === active;
+            return (
+              <div
+                key={s.n}
+                id={`how-panel-${i}`}
+                role="tabpanel"
+                aria-labelledby={`how-tab-${i}`}
+                tabIndex={selected ? 0 : -1}
+                style={{ gridArea: "1 / 1" }}
+                className={`grid items-baseline gap-x-8 gap-y-3 sm:grid-cols-[auto_1fr] ${
+                  selected ? "" : "invisible"
+                }`}
+              >
+                <p
+                  aria-hidden
+                  className={`text-[clamp(3rem,8vw,5rem)] font-semibold leading-[0.8] tabular-nums ${s.text}`}
+                >
+                  {s.n}
+                </p>
+
+                <div>
+                  <h3 className="text-[clamp(1.375rem,3.2vw,2rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
+                    {s.label}
+                  </h3>
+                  <p className="measure-jp mt-3 max-w-xl text-[0.98rem] text-muted">
+                    {s.body}
+                  </p>
+                  {s.note && (
+                    <p className="mt-3 flex items-center gap-2 text-[0.85rem] text-mark-1">
+                      <Icon name="lock" size={16} />
+                      {s.note}
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </Reveal>
     </Section>
