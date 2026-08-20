@@ -30,7 +30,10 @@ export function Stats() {
               to={37}
               className="text-[clamp(4rem,11vw,7.5rem)] font-medium leading-none tracking-[-0.045em] tabular-nums"
             />
-            <span className="ml-1 text-[clamp(1.5rem,4vw,2.5rem)] font-normal leading-none tracking-[-0.03em] text-muted">
+            <span className="text-[clamp(1.5rem,4vw,2.5rem)] font-normal leading-none tracking-[-0.03em]">
+              位
+            </span>
+            <span className="ml-2 text-[clamp(1.5rem,4vw,2.5rem)] font-normal leading-none tracking-[-0.03em] text-muted">
               / 38
             </span>
           </p>
@@ -48,7 +51,10 @@ export function Stats() {
               to={350000}
               className="text-[clamp(3rem,9vw,7.5rem)] font-medium leading-none tracking-[-0.045em] tabular-nums"
             />
-            <span className="ml-1 text-[clamp(1.5rem,4vw,2.5rem)] font-normal leading-none tracking-[-0.03em] text-muted">
+            <span className="text-[clamp(1.5rem,4vw,2.5rem)] font-normal leading-none tracking-[-0.03em]">
+              人
+            </span>
+            <span className="text-[clamp(1.5rem,4vw,2.5rem)] font-normal leading-none tracking-[-0.03em] text-muted">
               +
             </span>
           </p>
