@@ -11,9 +11,16 @@ import { Icon, Lines, Section, SectionTitle } from "@/components/ui";
  */
 const ENTRY = {
   date: "8月20日（木）",
-  prompt: "この一か月を、ふりかえって。",
+  prompt: "今日はどんな一日だった？",
   body: "部活がきつくて、最近あんまり眠れてない。朝がしんどいけど、みんなも同じだと思うから、たぶん大丈夫。",
   count: "48",
+  /**
+   * The deep-dive. Not a chat: the diary is still the interface, and the AI
+   * returns a single question about what was actually written rather than
+   * opening a conversation. "たぶん大丈夫" is the kind of line it exists to
+   * push gently on.
+   */
+  followUp: "「あんまり眠れてない」のは、いつごろから？",
 };
 
 /**
@@ -92,6 +99,22 @@ function StudentScreen() {
           <span className="mt-auto pt-3 text-right text-[0.7rem] tabular-nums text-muted">
             {ENTRY.count}字
           </span>
+        </div>
+
+        {/*
+          Tinted rather than bordered so it reads as the system speaking back,
+          not as another field to fill in. The label uses mark-1, not accent:
+          #85c0ed is a fill colour and measures 1.87:1 as text on the light
+          ground, while mark-1 flips with the theme.
+        */}
+        <div className="rounded-2xl bg-accent/10 p-4">
+          <p className="flex items-center gap-1.5 text-[0.7rem] font-medium tracking-[0.06em] text-mark-1">
+            <Icon name="auto_awesome" size={14} className="shrink-0" />
+            AIからの問いかけ
+          </p>
+          <p className="mt-2 text-[0.85rem] leading-relaxed text-ink">
+            {ENTRY.followUp}
+          </p>
         </div>
       </div>
 
@@ -206,21 +229,21 @@ export function Product() {
 
       <Reveal className="max-w-3xl">
         <p className="text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.5] tracking-[-0.02em] text-ink">
-          生徒が綴り、教員は要点だけを受け取る。
+          毎日5分の日記から、心理的リスクを捉える。
         </p>
       </Reveal>
 
       <Reveal className="mt-6 max-w-2xl">
         <Lines className="measure-jp text-muted">
-          {`生徒側は、月に一度の短い日記。誰かに読ませるための文章ではありません。
-教員側は、対応が必要な生徒だけが浮かび上がる要点レポート。
-日記の本文そのものが教員に共有されることはありません。`}
+          {`生徒が書くのは、1日5分の短い日記だけ。
+独自のAIがその内容を深掘りし、言葉の奥にあるサインまで捉えます。
+教員に届くのは要点のみで、日記の本文が共有されることはありません。`}
         </Lines>
       </Reveal>
 
       <Reveal className="mt-14">
         <div className="grid items-stretch gap-10 md:grid-cols-2 md:gap-8">
-          <Screen label="生徒の画面" caption="構えずに書ける、月に一度の日記。">
+          <Screen label="生徒の画面" caption="毎日5分。書いた内容に、AIが問いを返します。">
             <StudentScreen />
           </Screen>
 
