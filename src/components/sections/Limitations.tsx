@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   motion,
   useMotionValueEvent,
@@ -11,9 +12,18 @@ import { FIGURES, type FigureName } from "@/components/LimitationFigures";
 import { Reveal } from "@/components/Reveal";
 import { Section, SectionTitle } from "@/components/ui";
 
+/**
+ * Flip to true once the three photographs are in /public/photos. Until
+ * then the drawn figures render, so a missing file can never ship as a
+ * broken image.
+ */
+const PHOTOS_READY = false;
+
 type Limitation = {
   n: string;
   figure: FigureName;
+  /** 4:3, matching the drawn figure it replaces. */
+  photo: string;
   title: string;
   body: string;
   /** Full class names — Tailwind scans source text, so no interpolation. */
@@ -25,6 +35,7 @@ const ITEMS: Limitation[] = [
   {
     n: "01",
     figure: "survey",
+    photo: "/photos/limitation-01.png",
     title: "アンケートでは本音が表れない。",
     body: "「はい／いいえ」形式では、生徒は大人が望む無難な回答を選びます。",
     text: "text-mark-1",
@@ -33,6 +44,7 @@ const ITEMS: Limitation[] = [
   {
     n: "02",
     figure: "withdrawal",
+    photo: "/photos/limitation-02.png",
     title: "深刻なケースほど見えなくなる。",
     body: "追い詰められた生徒ほど周囲を拒み、孤立します。SOSを待つ仕組みでは間に合いません。",
     text: "text-mark-2",
@@ -41,6 +53,7 @@ const ITEMS: Limitation[] = [
   {
     n: "03",
     figure: "capacity",
+    photo: "/photos/limitation-03.png",
     title: "教員のリソースには限界がある。",
     body: "40名を一人ひとり見守り、心の機微まで捉えることは現実的ではありません。",
     text: "text-mark-3",
@@ -98,8 +111,25 @@ function Row({ item }: { item: Limitation }) {
         </p>
       </div>
 
+      {/*
+        alt="" on purpose: the heading and body beside each photograph
+        already carry the point, so announcing the image as well would only
+        repeat it.
+      */}
       <div>
-        <Figure className={`w-full ${item.text} opacity-90`} />
+        {PHOTOS_READY ? (
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-line">
+            <Image
+              src={item.photo}
+              alt=""
+              fill
+              sizes="(min-width: 768px) 30rem, 100vw"
+              className="object-cover"
+            />
+          </div>
+        ) : (
+          <Figure className={`w-full ${item.text} opacity-90`} />
+        )}
       </div>
     </div>
   );
