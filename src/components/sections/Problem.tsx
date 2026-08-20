@@ -25,7 +25,7 @@ Blescは、そのタイミングを根本から変えます。`}
         </RevealItem>
         <RevealItem>
           <Lines className="measure-jp text-muted">
-            {`日常の会話に現れる早期のサインをAIが捉え、
+            {`月に一度の日記に綴られた言葉から早期のサインをAIが捉え、
 支援が必要な生徒を、孤立する前に可視化します。`}
           </Lines>
         </RevealItem>

@@ -44,7 +44,7 @@ Blescは、その声を聴き逃さないための仕組みです。
  */
 export function Philosophy() {
   return (
-    <section className="relative overflow-hidden bg-canvas-alt py-28 md:py-40">
+    <section className="relative overflow-hidden bg-canvas py-20 md:py-28">
       {/*
         The copy here sits in a 2xl column inside a much wider container, so
         the margins are the emptiest space on the page. Shown from lg up only —
@@ -70,7 +70,7 @@ export function Philosophy() {
               </h2>
             </Reveal>
 
-            <Stagger className="mt-16 space-y-10" stagger={0.14}>
+            <Stagger className="mt-12 space-y-10" stagger={0.14}>
               {PARAGRAPHS.map((text, i) => (
                 <RevealItem key={i}>
                   <Lines className="measure-jp text-muted">{text}</Lines>

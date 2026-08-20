@@ -112,7 +112,7 @@ export function Section({
   return (
     <section
       id={id}
-      className={`scroll-mt-24 py-20 md:py-28 ${
+      className={`scroll-mt-24 py-16 md:py-24 ${
         alt ? "bg-canvas-alt" : "bg-canvas"
       } ${className}`}
     >
@@ -141,7 +141,7 @@ export function SectionTitle({
   accent?: string;
 }) {
   return (
-    <div className="mb-10 md:mb-12">
+    <div className="mb-8 md:mb-10">
       <span aria-hidden className={`block h-1 w-14 rounded-full ${accent}`} />
       <h2 className="mt-6 text-[clamp(2rem,5vw,3.25rem)] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
         {children}

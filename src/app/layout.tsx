@@ -30,7 +30,7 @@ const notoSansJp = Noto_Sans_JP({
 export const metadata: Metadata = {
   title: "Blesc — 生徒のSOSを可視化する",
   description:
-    "Blescは、月に一度のホームルームでの自然な対話から、生徒の心理的リスクの早期サインをAIが検知する学校向けプラットフォームです。会話ログそのものが教員に公開されることはありません。",
+    "Blescは、月に一度のホームルームで生徒が綴る短い日記から、心理的リスクの早期サインをAIが検知する学校向けプラットフォームです。日記の本文そのものが教員に公開されることはありません。",
   openGraph: {
     title: "Blesc — 生徒のSOSを可視化する",
     description:

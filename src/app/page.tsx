@@ -8,7 +8,6 @@ import { Product } from "@/components/sections/Product";
 import { Stats } from "@/components/sections/Stats";
 import { Team } from "@/components/sections/Team";
 import { Technology } from "@/components/sections/Technology";
-import { WhyBlesc } from "@/components/sections/WhyBlesc";
 
 export default function Home() {
   return (
@@ -20,7 +19,6 @@ export default function Home() {
       <HowItWorks />
       {/* Straight after the flow that produces them: this is what it looks like. */}
       <Product />
-      <WhyBlesc />
       <Technology />
       <Philosophy />
       <Team />

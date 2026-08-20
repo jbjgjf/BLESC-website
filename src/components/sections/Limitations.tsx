@@ -204,7 +204,7 @@ export function Limitations() {
           simply stack and read top to bottom — no tall track, no fading,
           nothing to sit through.
         */
-        <div className="mt-20 flex flex-col gap-24 md:gap-32">
+        <div className="mt-14 flex flex-col gap-20 md:gap-24">
           {ITEMS.map((item) => (
             <Reveal key={item.n}>
               <Row item={item} />

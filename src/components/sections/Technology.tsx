@@ -4,7 +4,7 @@ import { SectionTitle, Lines, Section } from "@/components/ui";
 
 export function Technology() {
   return (
-    <Section id="technology">
+    <Section id="technology" alt>
       <Reveal>
         <SectionTitle accent="bg-mark-1">テクノロジー</SectionTitle>
       </Reveal>
@@ -15,7 +15,7 @@ export function Technology() {
         </p>
       </Reveal>
 
-      <Reveal className="mt-12 max-w-2xl">
+      <Reveal className="mt-8 max-w-2xl">
         <Lines className="measure-jp text-muted">
           {`「睡眠不足 → 認知機能の低下 → 抑うつ傾向」といった心理の因果連鎖を、
 医学的研究にもとづいて構造化したオントロジー知識グラフをAIに実装しています。
@@ -28,11 +28,11 @@ export function Technology() {
         the chain is the section's centrepiece now, not a margin note, so it
         takes the full container width.
       */}
-      <div className="mt-14">
+      <div className="mt-12">
         <CausalChain />
       </div>
 
-      <Reveal className="mt-16 max-w-2xl">
+      <Reveal className="mt-12 max-w-2xl">
         <Lines className="measure-jp text-muted">
           {`このモデルは京都大学の臨床心理学研究との協働によって開発しています。
 プラットフォーム基盤は、学校環境の要件に耐えうるスケーラブルな設計を、
