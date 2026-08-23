@@ -37,8 +37,58 @@ export function Icon({
 
 type ButtonLinkProps = ComponentProps<"a"> & {
   variant?: "primary" | "secondary";
+  /** md is the page CTAs; sm is the nav pill. */
+  size?: "sm" | "md";
   children: ReactNode;
 };
+
+const SIZES = {
+  sm: { padding: "0.625rem 1.25rem", text: "text-[0.85rem]" },
+  md: { padding: "0.875rem 1.75rem", text: "text-[0.95rem]" },
+} as const;
+
+/**
+ * Hover choreography: the label leaves to the left, and the label with an
+ * arrow arrives from the right.
+ *
+ * The incoming layer is absolutely positioned rather than sharing a grid
+ * cell, so the button does not have to reserve width for an arrow it only
+ * shows on hover — the pill keeps exactly the width it has today, and the
+ * wider hover label spills into the horizontal padding, which is 28px at md
+ * and 20px at sm against the ~24px the arrow and its gap need.
+ *
+ * The duplicate label is aria-hidden. Without that every CTA would announce
+ * its own text twice, which is what the component this came from does.
+ *
+ * `transition-[translate,…]` and not `transform`: Tailwind v4 emits
+ * translate as its own CSS property, so a transform transition would leave
+ * this snapping rather than easing.
+ */
+export function HoverSwap({
+  children,
+  icon = "arrow_forward",
+}: {
+  children: ReactNode;
+  icon?: string;
+}) {
+  const ease =
+    "transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]";
+
+  return (
+    <span className="relative flex items-center justify-center">
+      <span className={`${ease} group-hover:-translate-x-2 group-hover:opacity-0`}>
+        {children}
+      </span>
+      <span
+        aria-hidden
+        className={`absolute inset-0 flex translate-x-2 items-center justify-center gap-1.5 whitespace-nowrap opacity-0 ${ease} group-hover:translate-x-0 group-hover:opacity-100`}
+      >
+        {children}
+        <Icon name={icon} size={18} className="shrink-0" />
+      </span>
+    </span>
+  );
+}
 
 /**
  * Liquid-glass control. The anchor keeps the semantics, focus ring and the
@@ -50,30 +100,31 @@ type ButtonLinkProps = ComponentProps<"a"> & {
  */
 export function ButtonLink({
   variant = "primary",
+  size = "md",
   className = "",
   children,
   ...props
 }: ButtonLinkProps) {
   return (
     <a
-      className={`glass-btn-${variant} inline-block rounded-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:scale-[1.02] ${className}`}
+      className={`glass-btn-${variant} group inline-block rounded-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:scale-[1.02] ${className}`}
       {...props}
     >
       <GlassSurface
-        className={`flex items-center justify-center gap-2 text-[0.95rem] font-medium tracking-wide ${
+        className={`flex items-center justify-center gap-2 ${SIZES[size].text} font-medium tracking-wide ${
           variant === "primary" ? "text-on-accent" : "text-ink"
         }`}
         style={{
           background: "var(--glass-tint)",
           borderRadius: 9999,
-          padding: "0.875rem 1.75rem",
+          padding: SIZES[size].padding,
           transition: "background 300ms cubic-bezier(0.16,1,0.3,1)",
           ...(variant === "secondary"
             ? { border: "1px solid rgba(242,241,238,0.16)" }
             : null),
         }}
       >
-        {children}
+        <HoverSwap>{children}</HoverSwap>
       </GlassSurface>
     </a>
   );

@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { SPOTLIGHT } from "@/components/SpotlightCard";
-import { Icon } from "@/components/ui";
+import { HoverSwap } from "@/components/ui";
 import {
   CONTACT_EMAIL,
   ENQUIRY_TYPES,
@@ -198,10 +198,10 @@ export function ContactForm() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <button
           type="submit"
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-8 py-3.5 text-[0.95rem] font-medium text-on-accent transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02]"
+          className="group inline-flex items-center justify-center rounded-full bg-accent px-8 py-3.5 text-[0.95rem] font-medium text-on-accent transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02]"
         >
-          <Icon name="send" size={18} />
-          送信する
+          {/* send, not an arrow: it is the semantically right icon here. */}
+          <HoverSwap icon="send">送信する</HoverSwap>
         </button>
 
         <p className="measure-jp text-[0.8rem] text-muted">
