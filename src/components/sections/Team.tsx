@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { CircularGallery, type GalleryItem } from "@/components/CircularGallery";
 import { Reveal } from "@/components/Reveal";
@@ -50,6 +51,56 @@ const MEMBERS: Member[] = [
   { name: "松本 龍", initials: "RY", role: "CFO", photo: "/team/ryu.png" },
 ];
 
+/**
+ * The arrow beside the name opens that person's introduction.
+ *
+ * Hover alone would put the copy out of reach on a touch screen and for
+ * anyone on a keyboard, so this is a real disclosure button: pointer users
+ * get it on hover, everyone else gets it on click or focus. It is remounted
+ * per person by its key, so moving through the roster always starts closed.
+ */
+function MemberBio({ name, description }: { name: string; description: string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        className="flex size-7 shrink-0 items-center justify-center rounded-full border border-line text-mark-1 transition-[background-color,border-color,rotate] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-mark-1 hover:bg-mark-1/10"
+      >
+        <Icon
+          name="expand_more"
+          size={16}
+          className={`transition-[rotate] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+        <span className="sr-only">{`${name}の紹介を${open ? "閉じる" : "表示する"}`}</span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.p
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="measure-jp col-span-full overflow-hidden text-[0.95rem] text-muted"
+          >
+            <span className="block pt-4">{description}</span>
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
 export function Team() {
   const [active, setActive] = useState(0);
   const stepRef = useRef<((delta: number) => void) | null>(null);
@@ -99,16 +150,20 @@ export function Team() {
         {/* Shrinks to the name alone until roles arrive, rather than
             reserving space for copy that does not exist yet. */}
         <div aria-live="polite" aria-atomic="true" className="min-h-[3.5rem]">
-          <p className="text-xl font-medium tracking-[-0.01em] text-ink">
-            {person.name}
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-2.5">
+            <p className="text-xl font-medium tracking-[-0.01em] text-ink">
+              {person.name}
+            </p>
+            {person.description && (
+              <MemberBio
+                key={active}
+                name={person.name}
+                description={person.description}
+              />
+            )}
+          </div>
           {person.role && (
             <p className="mt-2 text-[0.9rem] text-mark-1">{person.role}</p>
-          )}
-          {person.description && (
-            <p className="measure-jp mt-4 text-[0.95rem] text-muted">
-              {person.description}
-            </p>
           )}
         </div>
 

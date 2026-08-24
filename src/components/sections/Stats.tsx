@@ -1,6 +1,6 @@
 import { Counter } from "@/components/Counter";
 import { FlowerScatter } from "@/components/Flower";
-import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
+import { Reveal, SlideIn } from "@/components/Reveal";
 import { RankTable, StudentPictogram } from "@/components/StatFigures";
 import { Section, SectionTitle } from "@/components/ui";
 
@@ -27,9 +27,9 @@ export function Stats() {
         <SectionTitle accent="bg-mark-1">数字が示す現実</SectionTitle>
       </Reveal>
 
-      <Stagger stagger={0.12}>
+      <div>
         {/* Figure left, evidence right. */}
-        <RevealItem>
+        <SlideIn from="left">
           <div className="grid items-center gap-10 md:grid-cols-2 md:gap-14">
             <div>
               <p className="text-[0.75rem] font-medium uppercase tracking-[0.16em] text-mark-1">
@@ -57,10 +57,10 @@ export function Stats() {
 
             <RankTable />
           </div>
-        </RevealItem>
+        </SlideIn>
 
         {/* Mirrored: the picture takes the left, the figure the right. */}
-        <RevealItem>
+        <SlideIn from="right">
           <div className="mt-24 grid items-center gap-10 md:grid-cols-2 md:gap-14 lg:mt-28">
             <StudentPictogram />
 
@@ -88,8 +88,8 @@ export function Stats() {
               </p>
             </div>
           </div>
-        </RevealItem>
-      </Stagger>
+        </SlideIn>
+      </div>
     </Section>
   );
 }

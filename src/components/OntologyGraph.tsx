@@ -1,6 +1,12 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "motion/react";
+import { useRef } from "react";
 import { VIEWPORT } from "@/lib/motion";
 
 /**
@@ -78,11 +84,57 @@ const EDGES: [string, string, boolean?][] = [
 const BY_ID = Object.fromEntries(NODES.map((n) => [n.id, n]));
 const H = 34;
 
+/** The named chain, in the order it is walked. */
+const TRACE = [
+  { x: 140, y: 160 },
+  { x: 350, y: 105 },
+  { x: 700, y: 175 },
+];
+
 export function OntologyGraph() {
   const reduce = useReducedMotion();
+  const ref = useRef<HTMLElement>(null);
+
+  /*
+   * Tied to scroll position rather than fired once on entry: the chain is
+   * drawn as you move down the page, so how far along it you are is a
+   * function of where you are. The window runs from the graph reaching the
+   * lower part of the viewport to it leaving the upper part, which is
+   * exactly the span it is on screen and readable.
+   */
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start 0.85", "end 0.35"],
+  });
+
+  // Two segments, drawn one after the other across that window.
+  const firstLeg = useTransform(scrollYProgress, [0, 0.5], [0, 1], {
+    clamp: true,
+  });
+  const secondLeg = useTransform(scrollYProgress, [0.5, 1], [0, 1], {
+    clamp: true,
+  });
+  const legs = [firstLeg, secondLeg];
+
+  // The head of the trace rides along the same two segments.
+  const headX = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    TRACE.map((p) => p.x),
+  );
+  const headY = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    TRACE.map((p) => p.y),
+  );
+  const headOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.04, 0.96, 1],
+    [0, 1, 1, 0],
+  );
 
   return (
-    <figure>
+    <figure ref={ref}>
       {/*
         Scrolls in its own container below ~640px rather than shrinking the
         labels past legibility.
@@ -108,9 +160,10 @@ export function OntologyGraph() {
             </filter>
           </defs>
           <g>
-            {EDGES.map(([from, to, lit]) => {
+            {EDGES.map(([from, to, lit], edgeIndex) => {
               const a = BY_ID[from];
               const b = BY_ID[to];
+              const legIndex = lit ? EDGES.filter((e) => e[2]).indexOf(EDGES[edgeIndex]) : -1;
               return (
                 <motion.line
                   key={`${from}-${to}`}
@@ -123,14 +176,23 @@ export function OntologyGraph() {
                   strokeLinecap="round"
                   opacity={lit ? 1 : 0.4}
                   filter={lit ? "url(#og-glow)" : undefined}
-                  variants={{
-                    hidden: { pathLength: reduce ? 1 : 0, opacity: 0 },
-                    show: {
-                      pathLength: 1,
-                      opacity: lit ? 1 : 0.45,
-                      transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
-                    },
-                  }}
+                  style={
+                    lit && !reduce
+                      ? { pathLength: legs[legIndex] ?? firstLeg }
+                      : undefined
+                  }
+                  variants={
+                    lit
+                      ? { hidden: { opacity: 1 }, show: { opacity: 1 } }
+                      : {
+                          hidden: { pathLength: reduce ? 1 : 0, opacity: 0 },
+                          show: {
+                            pathLength: 1,
+                            opacity: 0.4,
+                            transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+                          },
+                        }
+                  }
                 />
               );
             })}
@@ -187,29 +249,15 @@ export function OntologyGraph() {
           </g>
 
           {/*
-            A pulse down the named chain. The section's claim is that the
-            chain is a path through the structure, and a path is a thing
-            that gets travelled — a static highlight only ever asserted it.
+            The head of the trace. It is the same scroll value that draws
+            the line, so the dot is always exactly where the line stops.
           */}
           {!reduce && (
             <motion.circle
               r={5}
               fill="var(--mark-1)"
               filter="url(#og-glow)"
-              initial={{ cx: 140, cy: 160, opacity: 0 }}
-              animate={{
-                cx: [140, 350, 700],
-                cy: [160, 105, 175],
-                opacity: [0, 1, 1, 0],
-              }}
-              transition={{
-                duration: 2.8,
-                times: [0, 0.5, 1],
-                opacity: { duration: 2.8, times: [0, 0.12, 0.8, 1] },
-                repeat: Infinity,
-                repeatDelay: 1.2,
-                ease: "easeInOut",
-              }}
+              style={{ cx: headX, cy: headY, opacity: headOpacity }}
             />
           )}
         </motion.svg>

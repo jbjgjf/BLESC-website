@@ -2,7 +2,7 @@
 
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useRef } from "react";
-import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
+import { Reveal } from "@/components/Reveal";
 import { SPOTLIGHT } from "@/components/SpotlightCard";
 import { Icon, Section, SectionTitle } from "@/components/ui";
 
@@ -55,75 +55,85 @@ const AFTER: Stage[] = [
 ];
 
 /**
- * The node fills and grows while its step is the one you are reading.
+ * Clockwise, 01 → 02 → 03 → 04, then out through the gate to 05.
  *
- * The margin collapses the observer's root to a single line across the
- * middle of the viewport, so the current step is whichever one that line is
- * inside. A band with height instead of a line lights two nodes at once
- * wherever the boundary between two steps falls inside it.
- *
- * This works because each row's box includes its own bottom padding, so
- * consecutive rows are contiguous — the line is always inside exactly one
- * of them, and never falls through a gap between them.
+ * DOM order stays 01–04, which is both the reading order and the order a
+ * screen reader gets; only the grid placement is clockwise. Explicit
+ * col/row starts rather than reordering the array, because the sequence is
+ * the content and the square is presentation.
  */
-const READING_LINE = "-50% 0px -50% 0px";
+const CELL = [
+  "md:col-start-1 md:row-start-1",
+  "md:col-start-2 md:row-start-1",
+  "md:col-start-2 md:row-start-2",
+  "md:col-start-1 md:row-start-2",
+];
 
 function Step({
   stage,
-  last,
-  padded = true,
+  index,
+  feature = false,
 }: {
   stage: Stage;
-  last: boolean;
-  padded?: boolean;
+  index: number;
+  /** The destination, on the far side of the gate. */
+  feature?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
-  const current = useInView(ref, { margin: READING_LINE });
-  const active = current && !reduce;
+  const shown = useInView(ref, { margin: "0px 0px -20% 0px", once: true });
 
   return (
-    <div
+    <motion.div
       ref={ref}
-      className={`relative grid grid-cols-[3rem_1fr] gap-5 md:grid-cols-[3.5rem_1fr] md:gap-8 ${
-        padded ? "pb-10 md:pb-12" : ""
+      className={`${SPOTLIGHT} flex h-full flex-col rounded-3xl border p-6 shadow-[var(--shadow-card)] md:p-7 ${
+        feature ? "border-mark-1/40 bg-mark-1/[0.07]" : "border-line bg-surface"
       }`}
+      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.97 }}
+      animate={
+        shown
+          ? { opacity: 1, y: 0, scale: 1 }
+          : reduce
+            ? { opacity: 0 }
+            : { opacity: 0, y: 24, scale: 0.97 }
+      }
+      transition={{
+        duration: 0.7,
+        ease: [0.16, 1, 0.3, 1],
+        delay: reduce ? 0 : index * 0.08,
+      }}
     >
-      {/*
-        Connector, from the bottom of this node to the top of the next. Drawn
-        per step rather than once behind the list so it can simply be omitted
-        on the last one instead of being masked.
-      */}
-      {!last && (
-        <span
-          aria-hidden
-          className="absolute left-6 top-12 h-[calc(100%-3rem)] w-px -translate-x-1/2 bg-line md:left-7 md:top-14 md:h-[calc(100%-3.5rem)]"
-        />
-      )}
-
-      <motion.span
+      <span
         aria-hidden
-        animate={{ scale: active ? 1.12 : 1 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className={`relative z-10 flex size-12 origin-center items-center justify-center rounded-full border text-[0.95rem] font-semibold tabular-nums transition-colors duration-500 md:size-14 md:text-[1.05rem] ${
-          active
-            ? "border-mark-1 bg-mark-1 text-on-accent"
-            : "border-line bg-surface text-mark-1"
-        }`}
+        className="flex size-12 items-center justify-center rounded-full bg-mark-1 text-[0.95rem] font-semibold tabular-nums text-on-accent md:size-14 md:text-[1.05rem]"
       >
         {stage.n}
-      </motion.span>
+      </span>
 
-      <div className="pt-2 md:pt-3">
-        <h3 className="text-[clamp(1.2rem,2.4vw,1.6rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
-          <span className="sr-only">{`ステップ ${stage.n}、`}</span>
-          {stage.label}
-        </h3>
-        <p className="measure-jp mt-3 max-w-xl text-[0.98rem] text-muted">
-          {stage.body}
-        </p>
-      </div>
-    </div>
+      <h3 className="mt-5 text-[clamp(1.2rem,2.4vw,1.55rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
+        <span className="sr-only">{`ステップ ${stage.n}、`}</span>
+        {stage.label}
+      </h3>
+      <p className="measure-jp mt-3 text-[0.95rem] text-muted">{stage.body}</p>
+    </motion.div>
+  );
+}
+
+/** Sits in a gap between the cards, pointing the way round. */
+function Turn({
+  icon,
+  className,
+}: {
+  icon: string;
+  className: string;
+}) {
+  return (
+    <span
+      aria-hidden
+      className={`absolute z-10 hidden size-8 items-center justify-center rounded-full border border-line bg-canvas-alt text-mark-1 md:flex ${className}`}
+    >
+      <Icon name={icon} size={18} />
+    </span>
   );
 }
 
@@ -166,13 +176,19 @@ export function HowItWorks() {
           <GroupLabel>生徒とAIのあいだ</GroupLabel>
         </Reveal>
 
-        <Stagger as="ol" stagger={0.08}>
-          {BEFORE.map((stage, i) => (
-            <RevealItem as="li" key={stage.n}>
-              <Step stage={stage} last={i === BEFORE.length - 1} />
-            </RevealItem>
-          ))}
-        </Stagger>
+        <div className="relative">
+          <Turn icon="arrow_forward" className="left-1/2 top-1/4 -translate-x-1/2 -translate-y-1/2" />
+          <Turn icon="arrow_downward" className="left-3/4 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+          <Turn icon="arrow_back" className="left-1/2 top-3/4 -translate-x-1/2 -translate-y-1/2" />
+
+          <ol className="grid gap-5 md:auto-rows-fr md:grid-cols-2 md:gap-9">
+            {BEFORE.map((stage, i) => (
+              <li key={stage.n} className={CELL[i]}>
+                <Step stage={stage} index={i} />
+              </li>
+            ))}
+          </ol>
+        </div>
 
         {/*
           The boundary, not a footnote. Everything above touches what the
@@ -198,17 +214,13 @@ export function HowItWorks() {
             <GroupLabel accent>教員に届くもの</GroupLabel>
           </Reveal>
 
-          <Reveal>
-            <ol
-              className={`${SPOTLIGHT} rounded-3xl border border-line bg-surface p-6 shadow-[var(--shadow-card)] md:p-8`}
-            >
-              {AFTER.map((stage) => (
-                <li key={stage.n}>
-                  <Step stage={stage} last padded={false} />
-                </li>
-              ))}
-            </ol>
-          </Reveal>
+          <ol>
+            {AFTER.map((stage) => (
+              <li key={stage.n}>
+                <Step stage={stage} index={0} feature />
+              </li>
+            ))}
+          </ol>
         </div>
       </div>
     </Section>

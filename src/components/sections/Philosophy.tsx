@@ -72,6 +72,15 @@ Blescは、その声を聴き逃さないための仕組みです。`,
   },
 ];
 
+/**
+ * The closing statement leaves the text column and runs the full width
+ * below the grid. The photographs stop above it, so the right-hand side is
+ * empty there — and the line that says why any of this exists should not be
+ * the one squeezed into a 2xl measure.
+ */
+const CLOSE = BLOCKS[BLOCKS.length - 1];
+const BODY = BLOCKS.slice(0, -1);
+
 const SPLIT = /(\[\[.*?\]\])/g;
 
 function Rich({ text, className }: { text: string; className?: string }) {
@@ -104,8 +113,9 @@ function Rich({ text, className }: { text: string; className?: string }) {
 const STYLE = {
   body: "measure-jp text-muted",
   pull: "text-[clamp(1.35rem,3vw,1.95rem)] font-medium leading-[1.6] tracking-[-0.02em] text-ink",
+  /* Runs the full container width, so it can carry more size. */
   close:
-    "text-[clamp(1.5rem,3.6vw,2.4rem)] font-medium leading-[1.55] tracking-[-0.025em] text-ink",
+    "text-[clamp(1.6rem,4.6vw,3.25rem)] font-medium leading-[1.45] tracking-[-0.03em] text-ink",
 } as const;
 
 /**
@@ -168,7 +178,7 @@ export function Philosophy() {
             </Reveal>
 
             <div className="mt-12 space-y-11 md:space-y-12">
-              {BLOCKS.map((block, i) => (
+              {BODY.map((block, i) => (
                 <LitBlock key={i} block={block} />
               ))}
             </div>
@@ -238,6 +248,10 @@ export function Philosophy() {
               )}
             </div>
           </Reveal>
+        </div>
+
+        <div className="mt-16 md:mt-20">
+          <LitBlock block={CLOSE} />
         </div>
       </Container>
     </section>
