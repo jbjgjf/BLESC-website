@@ -78,10 +78,6 @@ export default function RootLayout({
         <noscript>
           <style>{`
             main [style], header [style] { opacity: 1 !important; filter: none !important; transform: none !important; }
-            /* The carousel needs script to show a stage, so promote
-               its always-present fallback list to the visible copy instead. */
-            .stage-fallback { position: static !important; width: auto !important; height: auto !important; margin: 0 !important; clip: auto !important; clip-path: none !important; white-space: normal !important; }
-            .stage-fallback li { margin-bottom: 2rem; }
           `}</style>
         </noscript>
       </head>

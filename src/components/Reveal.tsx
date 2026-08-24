@@ -45,6 +45,13 @@ type StaggerProps = {
   /** Gap between children. Spec range is 0.08–0.12s. */
   stagger?: number;
   delayChildren?: number;
+  /**
+   * Render as an ordered list instead of a div. A numbered sequence of steps
+   * is a list, and wrapping <li> in a motion.div would put a div between
+   * <ol> and its items — which is invalid, and drops the list out of the
+   * accessibility tree.
+   */
+  as?: "div" | "ol";
 };
 
 /** Reveals its <RevealItem> descendants one after another. */
@@ -53,9 +60,12 @@ export function Stagger({
   className,
   stagger = 0.1,
   delayChildren = 0,
+  as = "div",
 }: StaggerProps) {
+  const Tag = as === "ol" ? motion.ol : motion.div;
+
   return (
-    <motion.div
+    <Tag
       className={className}
       initial="hidden"
       whileInView="show"
@@ -63,27 +73,30 @@ export function Stagger({
       variants={staggerVariants(stagger, delayChildren)}
     >
       {children}
-    </motion.div>
+    </Tag>
   );
 }
 
-/** A single participant in a <Stagger>. */
+/** A single participant in a <Stagger>. Pass as="li" inside as="ol". */
 export function RevealItem({
   children,
   className,
+  as = "div",
 }: {
   children: ReactNode;
   className?: string;
+  as?: "div" | "li";
 }) {
   const reduce = useReducedMotion();
+  const Tag = as === "li" ? motion.li : motion.div;
 
   return (
-    <motion.div
+    <Tag
       className={className}
       variants={reduce ? reducedVariants : revealVariants}
     >
       {children}
-    </motion.div>
+    </Tag>
   );
 }
 

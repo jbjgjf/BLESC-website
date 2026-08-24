@@ -1,19 +1,24 @@
-"use client";
-
-import { useRef, useState } from "react";
-import { Reveal } from "@/components/Reveal";
-import { SPOTLIGHT } from "@/components/SpotlightCard";
+import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
 import { Icon, Section, SectionTitle } from "@/components/ui";
 
 type Stage = {
   n: string;
   label: string;
   body: string;
-  /** Shown only on the stage where it matters. */
-  note?: string;
 };
 
-const STAGES: Stage[] = [
+/**
+ * One flow, read top to bottom.
+ *
+ * This was five tabs. Clicking through five panels to learn what the product
+ * does made the reader do work the page should do for them, and any one
+ * numbered box looks like every other numbered box. All five are on the page
+ * at once now, and the thing that gives them structure is the boundary they
+ * cross: everything above the gate touches what the student actually wrote,
+ * and only the summary passes below it. That is the product's whole claim,
+ * so it is the divider rather than a footnote on step 04.
+ */
+const BEFORE: Stage[] = [
   {
     n: "01",
     label: "生徒",
@@ -33,8 +38,10 @@ const STAGES: Stage[] = [
     n: "04",
     label: "リスク解析",
     body: "言葉のニュアンス、書くことをためらった間、日々の書きぶりの変化。こうした微細なシグナルを積み重ねて、心理的リスクを検知します。毎日書かれるからこそ、一日の落ち込みと、続いている不調とを区別できます。",
-    note: "本文は非公開",
   },
+];
+
+const AFTER: Stage[] = [
   {
     n: "05",
     label: "教員",
@@ -42,162 +49,102 @@ const STAGES: Stage[] = [
   },
 ];
 
+function Step({ stage, last }: { stage: Stage; last: boolean }) {
+  return (
+    <div className="relative grid grid-cols-[3rem_1fr] gap-5 pb-10 md:grid-cols-[3.5rem_1fr] md:gap-8 md:pb-12">
+      {/*
+        Connector, from the bottom of this node to the top of the next. Drawn
+        per step rather than once behind the list so it can simply be omitted
+        on the last one instead of being masked.
+      */}
+      {!last && (
+        <span
+          aria-hidden
+          className="absolute left-6 top-12 h-[calc(100%-3rem)] w-px -translate-x-1/2 bg-line md:left-7 md:top-14 md:h-[calc(100%-3.5rem)]"
+        />
+      )}
+
+      <span
+        aria-hidden
+        className="relative z-10 flex size-12 items-center justify-center rounded-full border border-line bg-surface text-[0.95rem] font-semibold tabular-nums text-mark-1 md:size-14 md:text-[1.05rem]"
+      >
+        {stage.n}
+      </span>
+
+      <div className="pt-2 md:pt-3">
+        <h3 className="text-[clamp(1.2rem,2.4vw,1.6rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
+          <span className="sr-only">{`ステップ ${stage.n}、`}</span>
+          {stage.label}
+        </h3>
+        <p className="measure-jp mt-3 max-w-xl text-[0.98rem] text-muted">
+          {stage.body}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function GroupLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mb-7 text-[0.75rem] font-medium uppercase tracking-[0.16em] text-muted">
+      {children}
+    </p>
+  );
+}
+
 export function HowItWorks() {
-  const [active, setActive] = useState(0);
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-
-  /*
-   * Arrow keys move between tabs, per the WAI-ARIA tabs pattern. Combined
-   * with the roving tabindex below this means one Tab stop for the whole
-   * group rather than five, and the arrows do the walking.
-   */
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    const last = STAGES.length - 1;
-    let next: number | null = null;
-
-    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-      next = active === last ? 0 : active + 1;
-    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-      next = active === 0 ? last : active - 1;
-    } else if (e.key === "Home") {
-      next = 0;
-    } else if (e.key === "End") {
-      next = last;
-    }
-
-    if (next === null) return;
-    e.preventDefault();
-    setActive(next);
-    tabRefs.current[next]?.focus();
-  };
-
   return (
     <Section id="how" alt>
       <Reveal>
         <SectionTitle accent="bg-mark-1">仕組み</SectionTitle>
       </Reveal>
 
-      {/*
-        The panel below carries only the selected stage, so this list is what
-        keeps all five in the markup — for the no-script reading order, which
-        the noscript rule in the root layout promotes to visible copy, and
-        for indexing.
-      */}
-      <ol className="stage-fallback sr-only">
-        {STAGES.map((s) => (
-          <li key={s.n}>
-            <h3>{`${s.n} ${s.label}`}</h3>
-            <p>{s.body}</p>
-            {s.note && <p>{s.note}</p>}
-          </li>
-        ))}
-      </ol>
+      <Reveal className="max-w-2xl">
+        <p className="text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.5] tracking-[-0.02em] text-ink">
+          毎日5分の日記が、一枚のレポートになるまで。
+        </p>
+      </Reveal>
 
-      <Reveal>
-        <div
-          role="tablist"
-          aria-label="仕組みのステップ"
-          onKeyDown={onKeyDown}
-          className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5"
-        >
-          {STAGES.map((s, i) => {
-            const selected = i === active;
-            return (
-              <button
-                key={s.n}
-                ref={(el) => {
-                  tabRefs.current[i] = el;
-                }}
-                type="button"
-                role="tab"
-                id={`how-tab-${i}`}
-                aria-selected={selected}
-                aria-controls={`how-panel-${i}`}
-                tabIndex={selected ? 0 : -1}
-                onClick={() => setActive(i)}
-                className={`${SPOTLIGHT} group cursor-pointer rounded-2xl border p-4 text-left transition-[translate,background-color,border-color,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[translate] md:p-5 ${
-                  selected
-                    ? "-translate-y-1.5 border-line-strong bg-surface shadow-[var(--shadow-card)]"
-                    : "border-line bg-transparent hover:-translate-y-0.5 hover:border-line-strong hover:bg-surface/60"
-                }`}
-              >
-                {/*
-                  One blue for all five. Selection is carried by the lift and
-                  the surface behind it, so the number only has to vary in
-                  weight — and hover brings it to full strength, which makes
-                  the box feel live before you commit to it.
-                */}
-                <span
-                  className={`block text-[1.375rem] font-semibold leading-none tabular-nums text-mark-1 transition-opacity duration-300 md:text-[1.625rem] ${
-                    selected ? "opacity-100" : "opacity-55 group-hover:opacity-100"
-                  }`}
-                >
-                  {s.n}
-                </span>
-                <span
-                  className={`mt-3 block text-[0.85rem] leading-snug tracking-[-0.01em] transition-colors duration-300 md:text-[0.9rem] ${
-                    selected ? "text-ink" : "text-muted group-hover:text-ink"
-                  }`}
-                >
-                  {s.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+      <div className="mt-14">
+        <Reveal>
+          <GroupLabel>生徒とAIのあいだ</GroupLabel>
+        </Reveal>
+
+        <Stagger as="ol" stagger={0.08}>
+          {BEFORE.map((stage, i) => (
+            <RevealItem as="li" key={stage.n}>
+              <Step stage={stage} last={i === BEFORE.length - 1} />
+            </RevealItem>
+          ))}
+        </Stagger>
 
         {/*
-          All five panels occupy one grid cell, so the cell is as tall as the
-          longest of them and the boxes above never shift when you click. A
-          fixed min-height could only ever be correct at one viewport width —
-          this is right at every width, with no magic number.
-
-          Inactive panels are `invisible`, not `hidden`: visibility:hidden
-          still occupies its grid area, which is what does the sizing, and it
-          is equally removed from the accessibility tree, which is what the
-          tabs pattern requires.
+          The boundary, not a footnote. Everything above touches what the
+          student wrote; only the summary passes below.
         */}
-        <div className="mt-10 grid">
-          {STAGES.map((s, i) => {
-            const selected = i === active;
-            return (
-              <div
-                key={s.n}
-                id={`how-panel-${i}`}
-                role="tabpanel"
-                aria-labelledby={`how-tab-${i}`}
-                tabIndex={selected ? 0 : -1}
-                style={{ gridArea: "1 / 1" }}
-                className={`grid items-baseline gap-x-8 gap-y-3 sm:grid-cols-[auto_1fr] ${
-                  selected ? "" : "invisible"
-                }`}
-              >
-                <p
-                  aria-hidden
-                  className="text-[clamp(3rem,8vw,5rem)] font-semibold leading-[0.8] tabular-nums text-mark-1"
-                >
-                  {s.n}
-                </p>
+        <Reveal>
+          <div className="my-2 flex items-center gap-4 rounded-2xl border border-dashed border-mark-1/40 bg-mark-1/[0.07] px-5 py-4 md:px-6 md:py-5">
+            <Icon name="lock" size={20} className="shrink-0 text-mark-1" />
+            <p className="text-[0.9rem] font-medium leading-snug text-ink md:text-[0.98rem]">
+              日記の本文は、ここから先に渡りません。
+            </p>
+          </div>
+        </Reveal>
 
-                <div>
-                  <h3 className="text-[clamp(1.375rem,3.2vw,2rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
-                    {s.label}
-                  </h3>
-                  <p className="measure-jp mt-3 max-w-xl text-[0.98rem] text-muted">
-                    {s.body}
-                  </p>
-                  {s.note && (
-                    <p className="mt-3 flex items-center gap-2 text-[0.85rem] text-mark-1">
-                      <Icon name="lock" size={16} />
-                      {s.note}
-                    </p>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+        <div className="mt-12">
+          <Reveal>
+            <GroupLabel>教員に届くもの</GroupLabel>
+          </Reveal>
+
+          <Stagger as="ol" stagger={0.08}>
+            {AFTER.map((stage) => (
+              <RevealItem as="li" key={stage.n}>
+                <Step stage={stage} last />
+              </RevealItem>
+            ))}
+          </Stagger>
         </div>
-      </Reveal>
+      </div>
     </Section>
   );
 }
