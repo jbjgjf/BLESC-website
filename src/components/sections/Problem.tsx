@@ -14,8 +14,9 @@ import { Icon, Lines, Section } from "@/components/ui";
 type Phase = {
   label: string;
   caption: string;
-  /** Full class name — Tailwind scans source text, so no interpolation. */
+  /** Full class names — Tailwind scans source text, so no interpolation. */
   dot: string;
+  ring: string;
   mark?: string;
   markClass?: string;
   /** The point Blesc acts on, so it gets the halo. */
@@ -27,6 +28,7 @@ const PHASES: Phase[] = [
     label: "兆候",
     caption: "本人も言葉にできない、小さな変化",
     dot: "bg-mark-1",
+    ring: "ring-mark-1/25",
     mark: "Blescが気づく",
     markClass: "text-mark-1",
     lead: true,
@@ -35,11 +37,13 @@ const PHASES: Phase[] = [
     label: "孤立",
     caption: "周囲を拒み、見えなくなる",
     dot: "bg-risk-mid",
+    ring: "ring-risk-mid/25",
   },
   {
     label: "危機",
     caption: "気づいたときには、選べる手が少ない",
     dot: "bg-risk-high",
+    ring: "ring-risk-high/25",
     mark: "これまでは、ここ",
     markClass: "text-muted",
   },
@@ -55,20 +59,25 @@ function Escalation() {
       */}
       <span
         aria-hidden
-        className="absolute left-[16.667%] right-[16.667%] top-[7px] h-px bg-[linear-gradient(90deg,var(--mark-1),var(--risk-mid),var(--risk-high))] opacity-70"
+        className="absolute left-[16.667%] right-[16.667%] top-[15px] h-[3px] -translate-y-1/2 rounded-full bg-[linear-gradient(90deg,var(--mark-1),var(--risk-mid),var(--risk-high))]"
       />
 
       <div className="relative grid grid-cols-3 gap-3 md:gap-6">
         {PHASES.map((phase) => (
           <div key={phase.label} className="flex flex-col items-center text-center">
-            <span
-              aria-hidden
-              className={`size-3.5 rounded-full ${phase.dot} ${
-                phase.lead ? "ring-4 ring-mark-1/20" : ""
-              }`}
-            />
+            {/*
+              Fixed-height rail so the lead dot can be larger without
+              dropping off the track the others sit on.
+            */}
+            <span aria-hidden className="flex h-[30px] items-center justify-center">
+              <span
+                className={`rounded-full ${phase.dot} ${phase.ring} ${
+                  phase.lead ? "size-[18px] ring-[7px]" : "size-3.5 ring-[5px]"
+                }`}
+              />
+            </span>
 
-            <span className="mt-5 text-[clamp(1.05rem,2.4vw,1.5rem)] font-medium tracking-[-0.02em] text-ink">
+            <span className="mt-4 text-[clamp(1.05rem,2.4vw,1.5rem)] font-medium tracking-[-0.02em] text-ink">
               {phase.label}
             </span>
 

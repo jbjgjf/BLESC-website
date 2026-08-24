@@ -24,18 +24,44 @@ const PHOTO_ACCENT: { src: string; alt: string } | null = {
   alt: "",
 };
 
-const PARAGRAPHS = [
-  `私たちはテクノロジーに囲まれて生きながら、
+/**
+ * Same words, given weight.
+ *
+ * Four paragraphs of uniformly muted copy buried the two lines the section
+ * actually turns on — the realisation, and the reason. Both were mid-
+ * paragraph. They are lifted out here at size and in full-strength ink, so
+ * the passage has somewhere to build to instead of reading at one pitch
+ * from top to bottom. Nothing was rewritten.
+ */
+type Block = { text: string; kind: "body" | "pull" | "close" };
+
+const BLOCKS: Block[] = [
+  {
+    kind: "body",
+    text: `私たちはテクノロジーに囲まれて生きながら、
 人と人とのつながりは、かつてないほど希薄になっています。`,
-  `私たち自身、身近な友人が抱えていた苦しみに誰も気づけないまま
-手遅れになる状況を、目の当たりにしてきました。
-サインは、確かにそこにあったはずでした。`,
-  `苦しんでいる人に気づけるのが「何かが起きた後」だけ。
+  },
+  {
+    kind: "body",
+    text: `私たち自身、身近な友人が抱えていた苦しみに誰も気づけないまま
+手遅れになる状況を、目の当たりにしてきました。`,
+  },
+  { kind: "pull", text: `サインは、確かにそこにあったはずでした。` },
+  {
+    kind: "body",
+    text: `苦しんでいる人に気づけるのが「何かが起きた後」だけ。
 私たちは、その現実を受け入れることができませんでした。`,
-  `忙しい学校生活のなかで消えていく、小さく静かなSOS。
-Blescは、その声を聴き逃さないための仕組みです。
-誰かが孤立する前に、見えないものを可視化する。
+  },
+  {
+    kind: "body",
+    text: `忙しい学校生活のなかで消えていく、小さく静かなSOS。
+Blescは、その声を聴き逃さないための仕組みです。`,
+  },
+  {
+    kind: "close",
+    text: `誰かが孤立する前に、見えないものを可視化する。
 それが、私たちがBlescをつくる理由です。`,
+  },
 ];
 
 /**
@@ -71,9 +97,31 @@ export function Philosophy() {
             </Reveal>
 
             <Stagger className="mt-12 space-y-10" stagger={0.14}>
-              {PARAGRAPHS.map((text, i) => (
+              {BLOCKS.map((block, i) => (
                 <RevealItem key={i}>
-                  <Lines className="measure-jp text-muted">{text}</Lines>
+                  {block.kind === "body" && (
+                    <Lines className="measure-jp text-muted">{block.text}</Lines>
+                  )}
+
+                  {block.kind === "pull" && (
+                    <div className="py-2">
+                      <span
+                        aria-hidden
+                        className="mb-5 block h-0.5 w-10 rounded-full bg-mark-1"
+                      />
+                      <Lines className="text-[clamp(1.25rem,2.8vw,1.75rem)] font-medium leading-[1.65] tracking-[-0.02em] text-ink">
+                        {block.text}
+                      </Lines>
+                    </div>
+                  )}
+
+                  {block.kind === "close" && (
+                    <div className="rounded-2xl bg-mark-1/[0.07] p-6 md:p-8">
+                      <Lines className="text-[clamp(1.3rem,3vw,1.95rem)] font-medium leading-[1.6] tracking-[-0.02em] text-ink">
+                        {block.text}
+                      </Lines>
+                    </div>
+                  )}
                 </RevealItem>
               ))}
             </Stagger>

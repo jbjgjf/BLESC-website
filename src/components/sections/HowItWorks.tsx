@@ -1,4 +1,9 @@
+"use client";
+
+import { motion, useInView, useReducedMotion } from "motion/react";
+import { useRef } from "react";
 import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
+import { SPOTLIGHT } from "@/components/SpotlightCard";
 import { Icon, Section, SectionTitle } from "@/components/ui";
 
 type Stage = {
@@ -49,9 +54,41 @@ const AFTER: Stage[] = [
   },
 ];
 
-function Step({ stage, last }: { stage: Stage; last: boolean }) {
+/**
+ * The node fills and grows while its step is the one you are reading.
+ *
+ * The margin collapses the observer's root to a single line across the
+ * middle of the viewport, so the current step is whichever one that line is
+ * inside. A band with height instead of a line lights two nodes at once
+ * wherever the boundary between two steps falls inside it.
+ *
+ * This works because each row's box includes its own bottom padding, so
+ * consecutive rows are contiguous — the line is always inside exactly one
+ * of them, and never falls through a gap between them.
+ */
+const READING_LINE = "-50% 0px -50% 0px";
+
+function Step({
+  stage,
+  last,
+  padded = true,
+}: {
+  stage: Stage;
+  last: boolean;
+  padded?: boolean;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const current = useInView(ref, { margin: READING_LINE });
+  const active = current && !reduce;
+
   return (
-    <div className="relative grid grid-cols-[3rem_1fr] gap-5 pb-10 md:grid-cols-[3.5rem_1fr] md:gap-8 md:pb-12">
+    <div
+      ref={ref}
+      className={`relative grid grid-cols-[3rem_1fr] gap-5 md:grid-cols-[3.5rem_1fr] md:gap-8 ${
+        padded ? "pb-10 md:pb-12" : ""
+      }`}
+    >
       {/*
         Connector, from the bottom of this node to the top of the next. Drawn
         per step rather than once behind the list so it can simply be omitted
@@ -64,12 +101,18 @@ function Step({ stage, last }: { stage: Stage; last: boolean }) {
         />
       )}
 
-      <span
+      <motion.span
         aria-hidden
-        className="relative z-10 flex size-12 items-center justify-center rounded-full border border-line bg-surface text-[0.95rem] font-semibold tabular-nums text-mark-1 md:size-14 md:text-[1.05rem]"
+        animate={{ scale: active ? 1.12 : 1 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className={`relative z-10 flex size-12 origin-center items-center justify-center rounded-full border text-[0.95rem] font-semibold tabular-nums transition-colors duration-500 md:size-14 md:text-[1.05rem] ${
+          active
+            ? "border-mark-1 bg-mark-1 text-on-accent"
+            : "border-line bg-surface text-mark-1"
+        }`}
       >
         {stage.n}
-      </span>
+      </motion.span>
 
       <div className="pt-2 md:pt-3">
         <h3 className="text-[clamp(1.2rem,2.4vw,1.6rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
@@ -84,9 +127,22 @@ function Step({ stage, last }: { stage: Stage; last: boolean }) {
   );
 }
 
-function GroupLabel({ children }: { children: React.ReactNode }) {
+function GroupLabel({
+  children,
+  accent = false,
+}: {
+  children: React.ReactNode;
+  accent?: boolean;
+}) {
   return (
-    <p className="mb-7 text-[0.75rem] font-medium uppercase tracking-[0.16em] text-muted">
+    <p
+      className={`mb-7 flex items-center gap-2.5 text-[0.75rem] font-medium uppercase tracking-[0.16em] ${
+        accent ? "text-mark-1" : "text-muted"
+      }`}
+    >
+      {accent && (
+        <span aria-hidden className="h-px w-6 shrink-0 bg-mark-1" />
+      )}
       {children}
     </p>
   );
@@ -131,18 +187,28 @@ export function HowItWorks() {
           </div>
         </Reveal>
 
+        {/*
+          The teacher half sits on a raised card. Rendered like the four
+          steps above it, the destination read as just another item in the
+          same list — but it is the other side of the boundary, and it is
+          the only thing anyone outside the student ever sees.
+        */}
         <div className="mt-12">
           <Reveal>
-            <GroupLabel>教員に届くもの</GroupLabel>
+            <GroupLabel accent>教員に届くもの</GroupLabel>
           </Reveal>
 
-          <Stagger as="ol" stagger={0.08}>
-            {AFTER.map((stage) => (
-              <RevealItem as="li" key={stage.n}>
-                <Step stage={stage} last />
-              </RevealItem>
-            ))}
-          </Stagger>
+          <Reveal>
+            <ol
+              className={`${SPOTLIGHT} rounded-3xl border border-line bg-surface p-6 shadow-[var(--shadow-card)] md:p-8`}
+            >
+              {AFTER.map((stage) => (
+                <li key={stage.n}>
+                  <Step stage={stage} last padded={false} />
+                </li>
+              ))}
+            </ol>
+          </Reveal>
         </div>
       </div>
     </Section>

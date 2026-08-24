@@ -1,4 +1,4 @@
-import { CausalChain } from "@/components/CausalChain";
+import { OntologyGraph } from "@/components/OntologyGraph";
 import { Reveal } from "@/components/Reveal";
 import { SectionTitle, Lines, Section } from "@/components/ui";
 
@@ -29,7 +29,7 @@ export function Technology() {
         takes the full container width.
       */}
       <div className="mt-12">
-        <CausalChain />
+        <OntologyGraph />
       </div>
 
       <Reveal className="mt-12 max-w-2xl">
