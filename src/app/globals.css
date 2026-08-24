@@ -371,6 +371,27 @@ body {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Stacked panels (構造的な限界).
+
+   Each panel sticks a header's height further down than the one before it,
+   so they pile up with every previous header still showing. The offsets
+   live here rather than inline because they change at the md breakpoint,
+   and an inline style cannot carry a media query.
+
+   --stack-top clears the fixed 5rem nav.
+--------------------------------------------------------------------------- */
+.stack {
+  --stack-top: 5.5rem;
+  --stack-header: 4.5rem;
+}
+@media (min-width: 768px) {
+  .stack {
+    --stack-top: 6rem;
+    --stack-header: 5.5rem;
+  }
+}
+
 /* Japanese paragraph text needs more air than Latin to stay readable. */
 .measure-jp {
   line-height: 1.9;
