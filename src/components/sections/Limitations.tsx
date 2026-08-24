@@ -81,13 +81,14 @@ function Panel({ item, index }: { item: Limitation; index: number }) {
 
   return (
     <div
-      className="sticky"
+      className="sticky flex flex-col"
       style={{
         top: `calc(var(--stack-top) + ${index} * var(--stack-header))`,
+        minHeight: `calc(var(--stack-release) - ${index} * var(--stack-header))`,
       }}
     >
-      <article className="border-t border-line bg-canvas">
-        <div className="grid gap-x-10 gap-y-6 md:grid-cols-[1fr_20rem]">
+      <article className="flex flex-1 flex-col border-t border-line bg-canvas">
+        <div className="grid flex-1 gap-x-10 gap-y-6 md:grid-cols-[1fr_20rem]">
           <div className="flex flex-col">
             {/*
               Fixed height, and the same value the sticky offsets step by —
@@ -96,17 +97,23 @@ function Panel({ item, index }: { item: Limitation; index: number }) {
             */}
             <div className="flex h-[var(--stack-header)] shrink-0 items-center gap-4 md:gap-6">
               <span aria-hidden className={`size-2 shrink-0 rounded-full ${item.dot}`} />
+              {/*
+                Plain numeral in the site's own face. The N°001 of the
+                reference is set in a monospace this site does not load, and
+                the degree sign plus wide tracking read as a rendering fault
+                in Inter rather than as a label.
+              */}
               <span
-                className={`shrink-0 text-[0.75rem] tabular-nums tracking-[0.18em] ${item.text}`}
+                className={`shrink-0 text-[1.05rem] font-semibold tabular-nums ${item.text}`}
               >
-                {`N°${item.n}`}
+                {item.n}
               </span>
               <h3 className="text-[clamp(1.25rem,3.2vw,2.25rem)] font-medium leading-tight tracking-[-0.025em] text-ink">
                 {item.title}
               </h3>
             </div>
 
-            <p className="measure-jp max-w-md pb-14 pt-2 text-[0.98rem] text-muted md:pb-20">
+            <p className="measure-jp max-w-md pt-2 text-[0.98rem] text-muted">
               {item.body}
             </p>
           </div>
@@ -116,9 +123,15 @@ function Panel({ item, index }: { item: Limitation; index: number }) {
             covers this one, the part still showing inside the header band is
             the top of this photograph.
           */}
-          <div className="row-start-1 md:col-start-2">
+          {/*
+            Fills the panel's height from md up rather than holding a fixed
+            ratio. Aligning the release means the upper panels are padded
+            taller than their copy needs, and that slack would otherwise read
+            as an accidental hole under the text; here it becomes picture.
+          */}
+          <div className="row-start-1 pb-14 md:col-start-2 md:pb-20">
             {PHOTOS_READY ? (
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-line">
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-line md:aspect-auto md:h-full">
                 <Image
                   src={item.photo}
                   alt=""

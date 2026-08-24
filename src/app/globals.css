@@ -384,11 +384,24 @@ body {
 .stack {
   --stack-top: 5.5rem;
   --stack-header: 4.5rem;
+  /*
+   * Every panel is padded so that, once stuck, its bottom edge lands on the
+   * same line — panel 0 sits highest so it is the tallest. That is what
+   * makes all of them come unstuck at the same scroll position and leave
+   * together. Without it they release in sequence, shortest range first, and
+   * the pile unpeels from the bottom instead of moving as one.
+   *
+   * The value has to clear the tallest panel's own content, or that panel
+   * grows past its share and releases early. Mobile stacks the photograph
+   * under the copy, so it needs considerably more.
+   */
+  --stack-release: 46rem;
 }
 @media (min-width: 768px) {
   .stack {
     --stack-top: 6rem;
     --stack-header: 5.5rem;
+    --stack-release: 32rem;
   }
 }
 
