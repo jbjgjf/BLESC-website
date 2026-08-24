@@ -74,7 +74,7 @@ export function Team() {
   const person = MEMBERS[active];
 
   return (
-    <Section id="team" alt>
+    <Section id="team">
       <Reveal>
         <SectionTitle accent="bg-mark-2">チーム</SectionTitle>
       </Reveal>

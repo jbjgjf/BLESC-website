@@ -1,7 +1,11 @@
+"use client";
+
+import { motion, useInView, useReducedMotion } from "motion/react";
 import Image from "next/image";
+import { Fragment, useRef } from "react";
 import { FlowerScatter } from "@/components/Flower";
-import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
-import { Container, Icon, Lines } from "@/components/ui";
+import { Reveal } from "@/components/Reveal";
+import { Container, Icon } from "@/components/ui";
 
 /**
  * Set this to show a real photograph in the right-hand slot; the dashed
@@ -25,13 +29,17 @@ const PHOTO_ACCENT: { src: string; alt: string } | null = {
 };
 
 /**
- * Same words, given weight.
+ * Same words, lit as you read them.
  *
- * Four paragraphs of uniformly muted copy buried the two lines the section
- * actually turns on — the realisation, and the reason. Both were mid-
- * paragraph. They are lifted out here at size and in full-strength ink, so
- * the passage has somewhere to build to instead of reading at one pitch
- * from top to bottom. Nothing was rewritten.
+ * The boxes this replaces were the wrong instrument — they fenced the two
+ * key lines off rather than drawing the eye to them, and two bordered
+ * panels inside a passage of prose just read as clutter. Instead the copy
+ * starts dim and comes up to full strength line by line as it reaches the
+ * upper part of the viewport, and inside the two lines that matter a single
+ * phrase carries the accent and an underline. The eye lands on the phrase,
+ * not on a container.
+ *
+ * `[[…]]` marks that phrase. Nothing here was rewritten.
  */
 type Block = { text: string; kind: "body" | "pull" | "close" };
 
@@ -46,7 +54,7 @@ const BLOCKS: Block[] = [
     text: `私たち自身、身近な友人が抱えていた苦しみに誰も気づけないまま
 手遅れになる状況を、目の当たりにしてきました。`,
   },
-  { kind: "pull", text: `サインは、確かにそこにあったはずでした。` },
+  { kind: "pull", text: `[[サイン]]は、確かにそこにあったはずでした。` },
   {
     kind: "body",
     text: `苦しんでいる人に気づけるのが「何かが起きた後」だけ。
@@ -59,10 +67,67 @@ Blescは、その声を聴き逃さないための仕組みです。`,
   },
   {
     kind: "close",
-    text: `誰かが孤立する前に、見えないものを可視化する。
+    text: `誰かが孤立する前に、[[見えないものを可視化する]]。
 それが、私たちがBlescをつくる理由です。`,
   },
 ];
+
+const SPLIT = /(\[\[.*?\]\])/g;
+
+function Rich({ text, className }: { text: string; className?: string }) {
+  return (
+    <p className={className}>
+      {text
+        .trim()
+        .split("\n")
+        .map((line, i, lines) => (
+          <Fragment key={i}>
+            {line.split(SPLIT).map((part, j) =>
+              part.startsWith("[[") ? (
+                <em
+                  key={j}
+                  className="font-medium not-italic text-mark-1 underline decoration-mark-1/35 decoration-2 underline-offset-[0.4em]"
+                >
+                  {part.slice(2, -2)}
+                </em>
+              ) : (
+                <Fragment key={j}>{part}</Fragment>
+              ),
+            )}
+            {i < lines.length - 1 && <br className="br-wide" />}
+          </Fragment>
+        ))}
+    </p>
+  );
+}
+
+const STYLE = {
+  body: "measure-jp text-muted",
+  pull: "text-[clamp(1.35rem,3vw,1.95rem)] font-medium leading-[1.6] tracking-[-0.02em] text-ink",
+  close:
+    "text-[clamp(1.5rem,3.6vw,2.4rem)] font-medium leading-[1.55] tracking-[-0.025em] text-ink",
+} as const;
+
+/**
+ * Comes up from dim to full as it reaches the upper part of the viewport,
+ * and stays there — dimming again on the way past would fight the reading
+ * rather than support it.
+ */
+function LitBlock({ block }: { block: Block }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const lit = useInView(ref, { margin: "0px 0px -35% 0px", once: true });
+
+  return (
+    <motion.div
+      ref={ref}
+      animate={{ opacity: reduce || lit ? 1 : 0.32 }}
+      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <Rich text={block.text} className={STYLE[block.kind]} />
+    </motion.div>
+  );
+}
 
 /**
  * Deliberately slows the page down: more vertical air, a narrower measure,
@@ -70,7 +135,7 @@ Blescは、その声を聴き逃さないための仕組みです。`,
  */
 export function Philosophy() {
   return (
-    <section className="relative overflow-hidden bg-canvas py-20 md:py-28">
+    <section className="relative overflow-hidden bg-canvas-alt py-20 md:py-28">
       {/*
         The copy here sits in a 2xl column inside a much wider container, so
         the margins are the emptiest space on the page. Shown from lg up only —
@@ -78,10 +143,16 @@ export function Philosophy() {
       */}
       <FlowerScatter
         items={[
-          { top: "13%", left: "4%", size: 62, rotate: 12, opacity: 0.5, className: "hidden text-mark-1 lg:block" },
-          { top: "36%", left: "2%", size: 44, rotate: -22, opacity: 0.44, className: "hidden text-mark-3 xl:block" },
-          { top: "58%", left: "7%", size: 38, rotate: 38, opacity: 0.42, className: "hidden text-mark-2 lg:block" },
-          { top: "77%", left: "6%", size: 54, rotate: -8, opacity: 0.48, className: "hidden text-mark-1 xl:block" },
+          /*
+            xl only, and inside 4% of the edge. The copy column sits at the
+            container's padding — roughly 136px in at 1280 — so the wider
+            placements these had were landing on top of the text once this
+            section moved and its measure changed.
+          */
+          { top: "13%", left: "2%", size: 58, rotate: 12, opacity: 0.5, className: "hidden text-mark-1 xl:block" },
+          { top: "38%", left: "4%", size: 40, rotate: -22, opacity: 0.44, className: "hidden text-mark-3 xl:block" },
+          { top: "62%", left: "1.5%", size: 36, rotate: 38, opacity: 0.42, className: "hidden text-mark-2 xl:block" },
+          { top: "82%", left: "3.5%", size: 50, rotate: -8, opacity: 0.48, className: "hidden text-mark-1 xl:block" },
         ]}
       />
 
@@ -96,35 +167,11 @@ export function Philosophy() {
               </h2>
             </Reveal>
 
-            <Stagger className="mt-12 space-y-10" stagger={0.14}>
+            <div className="mt-12 space-y-11 md:space-y-12">
               {BLOCKS.map((block, i) => (
-                <RevealItem key={i}>
-                  {block.kind === "body" && (
-                    <Lines className="measure-jp text-muted">{block.text}</Lines>
-                  )}
-
-                  {block.kind === "pull" && (
-                    <div className="py-2">
-                      <span
-                        aria-hidden
-                        className="mb-5 block h-0.5 w-10 rounded-full bg-mark-1"
-                      />
-                      <Lines className="text-[clamp(1.25rem,2.8vw,1.75rem)] font-medium leading-[1.65] tracking-[-0.02em] text-ink">
-                        {block.text}
-                      </Lines>
-                    </div>
-                  )}
-
-                  {block.kind === "close" && (
-                    <div className="rounded-2xl bg-mark-1/[0.07] p-6 md:p-8">
-                      <Lines className="text-[clamp(1.3rem,3vw,1.95rem)] font-medium leading-[1.6] tracking-[-0.02em] text-ink">
-                        {block.text}
-                      </Lines>
-                    </div>
-                  )}
-                </RevealItem>
+                <LitBlock key={i} block={block} />
               ))}
-            </Stagger>
+            </div>
           </div>
 
           {/*

@@ -20,8 +20,9 @@ export default function Home() {
       {/* Straight after the flow that produces them: this is what it looks like. */}
       <Product />
       <Technology />
-      <Philosophy />
       <Team />
+      {/* The closing argument, so it sits last before the news. */}
+      <Philosophy />
       <News />
     </>
   );
