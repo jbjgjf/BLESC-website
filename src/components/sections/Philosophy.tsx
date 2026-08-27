@@ -155,7 +155,7 @@ function LitBlock({ block }: { block: Block }) {
  */
 export function Philosophy() {
   return (
-    <section className="relative overflow-hidden bg-canvas-alt py-20 md:py-28">
+    <section className="relative overflow-hidden bg-canvas-alt py-16 md:py-24">
       {/*
         The copy here sits in a 2xl column inside a much wider container, so
         the margins are the emptiest space on the page. Shown from lg up only —
@@ -177,7 +177,7 @@ export function Philosophy() {
       />
 
       <Container>
-        <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-20">
+        <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-16">
           <div className="max-w-2xl">
             <Reveal>
               <h2 className="text-[clamp(1.625rem,4vw,2.5rem)] font-medium leading-[1.5] tracking-[-0.02em] text-ink">
@@ -187,7 +187,7 @@ export function Philosophy() {
               </h2>
             </Reveal>
 
-            <div className="mt-12 space-y-11 md:space-y-12">
+            <div className="mt-8 space-y-6 md:space-y-7">
               {BODY.map((block, i) => (
                 <LitBlock key={i} block={block} />
               ))}
@@ -210,12 +210,12 @@ export function Philosophy() {
           */}
           <Reveal className="relative lg:sticky lg:top-28 lg:mt-12 lg:self-start">
             {PHOTO ? (
-              <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl border border-line">
+              <div className="relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-line">
                 <Image
                   src={PHOTO.src}
                   alt={PHOTO.alt}
                   fill
-                  sizes="(min-width: 1024px) 22rem, 100vw"
+                  sizes="(min-width: 1024px) 23rem, 100vw"
                   className="object-cover"
                 />
               </div>
@@ -260,7 +260,12 @@ export function Philosophy() {
           </Reveal>
         </div>
 
-        <div className="mt-16 md:mt-20">
+        {/*
+          Sits directly under the photograph now. It used to clear the copy
+          column, which ran 264px past the image, so the closing line landed
+          in open space with nothing near it.
+        */}
+        <div className="mt-8 md:mt-10">
           <LitBlock block={CLOSE} />
         </div>
       </Container>
