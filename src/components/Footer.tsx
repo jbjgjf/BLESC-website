@@ -49,7 +49,7 @@ export function Footer() {
       className="border-t border-line bg-canvas pt-16"
       stops={theme === "light" ? LIGHT_STOPS : DARK_STOPS}
     >
-      <Container>
+      <Container className="relative z-10">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* 導入について, folded in from the old standalone CTA section. */}
           <div className="lg:col-span-2">
@@ -129,12 +129,16 @@ export function Footer() {
       </Container>
 
       {/*
-        Last child, so it lands between the footer's content and the glow —
-        which is fixed to the viewport bottom and painted after everything
-        here. Hidden below md: it is a wide wordmark, and at phone widths it
-        either shrinks to nothing or crowds the copyright.
+        Pulled up far enough that the capitals break above the rule over the
+        copyright, and pushed behind it — the footer's own Container carries
+        z-10 — so the line and the copyright read across the letters rather
+        than being covered by them.
+
+        Hidden below md: it is a wide wordmark, and at phone widths it either
+        shrinks to nothing or collides with the copyright it is meant to sit
+        behind.
       */}
-      <div className="mt-4 hidden md:block">
+      <div className="relative z-0 -mt-[7.5rem] hidden md:block lg:-mt-[8.5rem]">
         <WordmarkReveal />
       </div>
     </GradientFooter>

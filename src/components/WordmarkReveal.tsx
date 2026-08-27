@@ -87,6 +87,17 @@ export function WordmarkReveal({
       onMouseLeave={() => setHovered(false)}
       onMouseMove={track}
       className={`w-full select-none ${className}`}
+      /*
+       * Its own fade, nothing to do with the footer glow beneath it. The
+       * letters dissolve downward so the wordmark reads as sinking behind
+       * the band rather than sitting on top of it and stopping dead.
+       */
+      style={{
+        WebkitMaskImage:
+          "linear-gradient(to bottom, #000 38%, rgba(0,0,0,0.35) 78%, transparent 100%)",
+        maskImage:
+          "linear-gradient(to bottom, #000 38%, rgba(0,0,0,0.35) 78%, transparent 100%)",
+      }}
     >
       <defs>
         <linearGradient id="wm-colours" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="300" y2="0">
