@@ -56,9 +56,19 @@ export function WordmarkReveal({
     });
   };
 
+  /*
+   * The viewBox is cropped to the capitals rather than to the font's em
+   * box. At 0 0 300 100 the glyphs left 8.8 units of air above and 16.1
+   * below — nearly a quarter of the element's height rendering as nothing,
+   * which at this width was over 100px of dead space at each end.
+   *
+   * y is an absolute user unit, not a percentage: BLESC has no descenders,
+   * so its optical centre sits above the em box's centre, and a flat 50%
+   * hangs it low in the crop.
+   */
   const common = {
     x: "50%",
-    y: "52%",
+    y: 31.5,
     textAnchor: "middle" as const,
     dominantBaseline: "middle" as const,
     fontSize: 62,
@@ -71,7 +81,7 @@ export function WordmarkReveal({
     <svg
       ref={svgRef}
       aria-hidden
-      viewBox="0 0 300 100"
+      viewBox="0 0 300 52"
       xmlns="http://www.w3.org/2000/svg"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

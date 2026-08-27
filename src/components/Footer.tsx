@@ -134,7 +134,7 @@ export function Footer() {
         here. Hidden below md: it is a wide wordmark, and at phone widths it
         either shrinks to nothing or crowds the copyright.
       */}
-      <div className="mt-10 hidden md:block">
+      <div className="mt-4 hidden md:block">
         <WordmarkReveal />
       </div>
     </GradientFooter>
