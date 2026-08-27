@@ -1,6 +1,7 @@
 "use client";
 
 import { GradientFooter } from "@/components/GradientFooter";
+import { WordmarkReveal } from "@/components/WordmarkReveal";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
 import { ButtonLink, Container, Icon } from "@/components/ui";
@@ -126,6 +127,16 @@ export function Footer() {
           <p className="text-[0.78rem] text-muted">© 2026 Blesc</p>
         </div>
       </Container>
+
+      {/*
+        Last child, so it lands between the footer's content and the glow —
+        which is fixed to the viewport bottom and painted after everything
+        here. Hidden below md: it is a wide wordmark, and at phone widths it
+        either shrinks to nothing or crowds the copyright.
+      */}
+      <div className="mt-10 hidden md:block">
+        <WordmarkReveal />
+      </div>
     </GradientFooter>
   );
 }
