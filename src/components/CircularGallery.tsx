@@ -11,6 +11,7 @@ import {
   type OGLRenderingContext,
 } from "ogl";
 import { useEffect, useRef } from "react";
+import { useTheme } from "@/components/ThemeProvider";
 
 export interface GalleryItem {
   image: string;
@@ -577,6 +578,7 @@ export function CircularGallery({
   onReady,
 }: CircularGalleryProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
 
   // Callbacks are read through refs so a new function identity never tears
   // down and rebuilds the whole WebGL scene. Declared first so this effect
@@ -615,7 +617,13 @@ export function CircularGallery({
     readyRef.current?.({ step: (delta) => app.step(delta) });
 
     return () => app.destroy();
-  }, [items, bend, borderRadius, scrollSpeed, scrollEase]);
+    /*
+     * theme is in the dependency list because the label colour is baked
+     * into a canvas texture at build time, not read live from CSS. Without
+     * it the names keep whatever colour the palette had on first paint —
+     * white, and invisible, once the page is switched to light.
+     */
+  }, [items, bend, borderRadius, scrollSpeed, scrollEase, theme]);
 
   return (
     <div

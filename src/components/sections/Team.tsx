@@ -128,13 +128,18 @@ const TEAM_INTRO =
  * The panel sits outside the aria-live region deliberately. Inside it, an
  * atomic region would re-read the entire biography every time the carousel
  * moved to another person.
+ *
+ * It opens upward, over the gallery. Below the name it pushed the roster
+ * controls down the page every time it opened, and the copy landed where
+ * the eye had already left; over the photographs it covers something the
+ * reader is done with and arrives where they are still looking.
  */
 function MemberCard({ person }: { person: Member }) {
   const [open, setOpen] = useState(false);
   const bio = person.description;
 
   return (
-    <div onMouseLeave={() => setOpen(false)}>
+    <div className="relative" onMouseLeave={() => setOpen(false)}>
       <div aria-live="polite" aria-atomic="true" className="min-h-[3.5rem]">
         <div className="flex items-center justify-center gap-2.5">
           <p className="text-xl font-medium tracking-[-0.01em] text-ink">
@@ -172,16 +177,14 @@ function MemberCard({ person }: { person: Member }) {
       <AnimatePresence initial={false}>
         {open && bio && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden"
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.98 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute bottom-full left-1/2 z-20 mb-4 w-[min(34rem,calc(100vw-3rem))] -translate-x-1/2 rounded-2xl border border-line bg-surface p-5 text-left shadow-[var(--shadow-card)] md:p-6"
           >
             {/* Left-aligned: several sentences of Japanese centred is hard work. */}
-            <p className="measure-jp mx-auto max-w-lg pt-5 text-left text-[0.95rem] text-muted">
-              {bio}
-            </p>
+            <p className="measure-jp text-[0.95rem] text-muted">{bio}</p>
           </motion.div>
         )}
       </AnimatePresence>

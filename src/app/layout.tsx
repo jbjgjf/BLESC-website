@@ -42,7 +42,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0b0d",
+  themeColor: "#fafaf8",
   width: "device-width",
   initialScale: 1,
 };
@@ -57,7 +57,7 @@ export default function RootLayout({
     // before React hydrates, so the server's attribute intentionally differs.
     <html
       lang="ja"
-      data-theme="dark"
+      data-theme="light"
       suppressHydrationWarning
       className={`${inter.variable} ${notoSansJp.variable}`}
     >

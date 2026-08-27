@@ -8,11 +8,10 @@ import { SPOTLIGHT } from "@/components/SpotlightCard";
 import {
   DiaryMock,
   ProbeMock,
-  ReportMock,
   RosterMock,
   SignalMock,
 } from "@/components/StepMockups";
-import { Icon, Section, SectionTitle } from "@/components/ui";
+import { Section, SectionTitle } from "@/components/ui";
 
 type Stage = {
   n: string;
@@ -57,15 +56,6 @@ const BEFORE: Stage[] = [
     mock: SignalMock,
     label: "リスク解析",
     body: "言葉のニュアンス、書くことをためらった間、日々の書きぶりの変化。こうした微細なシグナルを積み重ねて、心理的リスクを検知します。毎日書かれるからこそ、一日の落ち込みと、続いている不調とを区別できます。",
-  },
-];
-
-const AFTER: Stage[] = [
-  {
-    n: "05",
-    mock: ReportMock,
-    label: "教員",
-    body: "教員が受け取るのは、対応が必要な生徒を示す要点のみのレポートです。日記の本文そのものが公開されることはなく、教員の側に新しい業務が生まれることもありません。",
   },
 ];
 
@@ -119,7 +109,7 @@ function Step({
       <div className="flex items-center gap-4">
         <span
           aria-hidden
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-mark-1 text-[0.9rem] font-semibold tabular-nums text-on-accent md:size-12"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-accent text-[0.9rem] font-semibold tabular-nums text-on-accent md:size-12"
         >
           {stage.n}
         </span>
@@ -145,27 +135,6 @@ function Step({
   );
 }
 
-function GroupLabel({
-  children,
-  accent = false,
-}: {
-  children: React.ReactNode;
-  accent?: boolean;
-}) {
-  return (
-    <p
-      className={`mb-7 flex items-center gap-2.5 text-[0.75rem] font-medium uppercase tracking-[0.16em] ${
-        accent ? "text-mark-1" : "text-muted"
-      }`}
-    >
-      {accent && (
-        <span aria-hidden className="h-px w-6 shrink-0 bg-mark-1" />
-      )}
-      {children}
-    </p>
-  );
-}
-
 export function HowItWorks() {
   return (
     <Section id="how" alt>
@@ -182,10 +151,6 @@ export function HowItWorks() {
       <GlassFilter />
 
       <div className="mt-14">
-        <Reveal>
-          <GroupLabel>生徒とAIのあいだ</GroupLabel>
-        </Reveal>
-
         <ol className="space-y-5 md:space-y-8">
           <li>
             <div className="grid gap-5 md:grid-cols-[4fr_8fr] md:gap-8">
@@ -207,38 +172,6 @@ export function HowItWorks() {
           </li>
         </ol>
 
-        {/*
-          The boundary, not a footnote. Everything above touches what the
-          student wrote; only the summary passes below.
-        */}
-        <Reveal>
-          <div className="my-2 flex items-center gap-4 rounded-2xl border border-dashed border-mark-1/40 bg-mark-1/[0.07] px-5 py-4 md:px-6 md:py-5">
-            <Icon name="lock" size={20} className="shrink-0 text-mark-1" />
-            <p className="text-[0.9rem] font-medium leading-snug text-ink md:text-[0.98rem]">
-              日記の本文は、ここから先に渡りません。
-            </p>
-          </div>
-        </Reveal>
-
-        {/*
-          The teacher half sits on a raised card. Rendered like the four
-          steps above it, the destination read as just another item in the
-          same list — but it is the other side of the boundary, and it is
-          the only thing anyone outside the student ever sees.
-        */}
-        <div className="mt-12">
-          <Reveal>
-            <GroupLabel accent>教員に届くもの</GroupLabel>
-          </Reveal>
-
-          <ol>
-            {AFTER.map((stage) => (
-              <li key={stage.n}>
-                <Step stage={stage} index={0} feature />
-              </li>
-            ))}
-          </ol>
-        </div>
       </div>
     </Section>
   );

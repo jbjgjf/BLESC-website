@@ -198,6 +198,23 @@ export function OntologyGraph() {
             })}
           </g>
 
+          {/*
+            The head of the trace. It is the same scroll value that draws
+            the line, so the dot is always exactly where the line stops.
+
+            Painted before the nodes, so a pill it passes behind occludes it
+            rather than the other way round — the dot travels through the
+            graph, not across the top of it.
+          */}
+          {!reduce && (
+            <motion.circle
+              r={5}
+              fill="var(--mark-1)"
+              filter="url(#og-glow)"
+              style={{ cx: headX, cy: headY, opacity: headOpacity }}
+            />
+          )}
+
           <g>
             {NODES.map((n) => (
               <motion.g
@@ -227,7 +244,7 @@ export function OntologyGraph() {
                   height={H}
                   rx={H / 2}
                   fill={DOMAINS[n.domain].color}
-                  fillOpacity={n.lit ? 0.16 : 0.07}
+                  fillOpacity={n.lit ? 0.1 : 0.035}
                   stroke={DOMAINS[n.domain].color}
                   strokeWidth={n.lit ? 2 : 1}
                   strokeOpacity={n.lit ? 1 : 0.45}
@@ -248,18 +265,6 @@ export function OntologyGraph() {
             ))}
           </g>
 
-          {/*
-            The head of the trace. It is the same scroll value that draws
-            the line, so the dot is always exactly where the line stops.
-          */}
-          {!reduce && (
-            <motion.circle
-              r={5}
-              fill="var(--mark-1)"
-              filter="url(#og-glow)"
-              style={{ cx: headX, cy: headY, opacity: headOpacity }}
-            />
-          )}
         </motion.svg>
       </div>
 

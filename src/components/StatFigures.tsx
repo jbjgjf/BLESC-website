@@ -92,31 +92,33 @@ export function RankTable() {
   );
 }
 
-/** One figure per 10,000 students. */
-const PICTOGRAM_COUNT = 35;
+/**
+ * A crowd, not a count.
+ *
+ * This used to be a captioned unit chart — 35 figures at one 万人 each, with
+ * the key printed under it. It reads better as texture: blurred back behind
+ * the figure it belongs to, it gives the number a crowd to sit on without
+ * asking anyone to count anything, which is why the key has gone with it.
+ */
+const PICTOGRAM_COUNT = 84;
 
 export function StudentPictogram() {
   return (
-    <div>
-      <div
-        aria-hidden
-        className="grid max-w-[26rem] grid-cols-7 gap-x-3 gap-y-2.5 sm:gap-x-4 sm:gap-y-3"
-      >
-        {Array.from({ length: PICTOGRAM_COUNT }, (_, i) => (
-          <svg
-            key={i}
-            viewBox="0 0 12 17"
-            className="h-auto w-full text-mark-1"
-            fill="currentColor"
-          >
-            <circle cx="6" cy="3.4" r="3.4" />
-            <path d="M6 8.2c-3.1 0-5.4 2.1-5.4 5.1V17h10.8v-3.7c0-3-2.3-5.1-5.4-5.1Z" />
-          </svg>
-        ))}
-      </div>
-      <p className="mt-5 text-[0.75rem] tabular-nums text-muted">
-        1体 = 1万人
-      </p>
+    <div
+      aria-hidden
+      className="grid w-full grid-cols-12 gap-x-3 gap-y-2 sm:gap-x-4 sm:gap-y-3"
+    >
+      {Array.from({ length: PICTOGRAM_COUNT }, (_, i) => (
+        <svg
+          key={i}
+          viewBox="0 0 12 17"
+          className="h-auto w-full text-mark-1"
+          fill="currentColor"
+        >
+          <circle cx="6" cy="3.4" r="3.4" />
+          <path d="M6 8.2c-3.1 0-5.4 2.1-5.4 5.1V17h10.8v-3.7c0-3-2.3-5.1-5.4-5.1Z" />
+        </svg>
+      ))}
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import { Counter } from "@/components/Counter";
 import { FlowerScatter } from "@/components/Flower";
-import { Reveal, SlideIn } from "@/components/Reveal";
+import { SlideIn } from "@/components/Reveal";
 import { RankTable, StudentPictogram } from "@/components/StatFigures";
-import { Section, SectionTitle } from "@/components/ui";
+import { Section } from "@/components/ui";
 
 /**
  * NEW COPY: 数字が示す現実 is my wording, not from the brief. The section had
@@ -23,10 +23,6 @@ export function Stats() {
         ]}
       />
 
-      <Reveal>
-        <SectionTitle accent="bg-mark-1">数字が示す現実</SectionTitle>
-      </Reveal>
-
       <div>
         {/* Figure left, evidence right. */}
         <SlideIn from="left">
@@ -39,7 +35,7 @@ export function Stats() {
               <p className="mt-5 flex items-baseline text-mark-1">
                 <Counter
                   to={37}
-                  className="text-[clamp(4.5rem,13vw,9rem)] font-medium leading-none tracking-[-0.045em] tabular-nums"
+                  className="text-[clamp(5rem,15vw,11rem)] font-semibold leading-none tracking-[-0.05em] tabular-nums"
                 />
                 <span className="text-[clamp(1.75rem,4.5vw,3rem)] font-normal leading-none tracking-[-0.03em]">
                   位
@@ -59,30 +55,40 @@ export function Stats() {
           </div>
         </SlideIn>
 
-        {/* Mirrored: the picture takes the left, the figure the right. */}
+        {/*
+          The crowd is the ground here, not a chart beside one: blurred and
+          held back, with the figure standing on it. A drop shadow is what
+          keeps the numeral legible over the busiest part of the pattern.
+        */}
         <SlideIn from="right">
-          <div className="mt-24 grid items-center gap-10 md:grid-cols-2 md:gap-14 lg:mt-28">
-            <StudentPictogram />
+          <div className="relative mt-24 flex min-h-[16rem] items-center justify-center overflow-hidden rounded-3xl px-6 py-12 md:mt-28 md:min-h-[20rem]">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.28] blur-[3px]"
+            >
+              <StudentPictogram />
+            </div>
 
-            <div className="md:text-right">
+            <div className="relative text-center">
               <p className="text-[0.75rem] font-medium uppercase tracking-[0.16em] text-mark-3">
                 不登校児童・生徒
               </p>
-
-              <p className="mt-5 flex items-baseline text-mark-3 md:justify-end">
+              <p
+                className="mt-3 flex items-baseline justify-center text-mark-3"
+                style={{ filter: "drop-shadow(0 2px 20px var(--color-bg-alt)) drop-shadow(0 0 8px var(--color-bg-alt))" }}
+              >
                 <Counter
                   to={350000}
-                  className="text-[clamp(3rem,9vw,6.5rem)] font-medium leading-none tracking-[-0.045em] tabular-nums"
+                  className="text-[clamp(3.25rem,11vw,8rem)] font-semibold leading-none tracking-[-0.05em] tabular-nums"
                 />
-                <span className="text-[clamp(1.35rem,3.2vw,2.25rem)] font-normal leading-none tracking-[-0.03em]">
+                <span className="text-[clamp(1.5rem,3.6vw,2.5rem)] font-normal leading-none tracking-[-0.03em]">
                   人
                 </span>
-                <span className="text-[clamp(1.35rem,3.2vw,2.25rem)] font-normal leading-none tracking-[-0.03em] text-muted">
+                <span className="text-[clamp(1.5rem,3.6vw,2.5rem)] font-normal leading-none tracking-[-0.03em] text-muted">
                   +
                 </span>
               </p>
-
-              <p className="measure-jp mt-6 text-[0.95rem] text-muted md:ml-auto md:max-w-sm">
+              <p className="measure-jp mx-auto mt-5 max-w-md text-[0.95rem] text-muted">
                 <span className="text-ink">35万人を超え、増加が続いています。</span>
                 そのすべてに、気づかれなかった時間がありました。
               </p>

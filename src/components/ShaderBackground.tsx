@@ -297,7 +297,7 @@ export type ShaderColor = readonly [number, number, number];
 /** Everything from the generated preset except the palette. */
 const PRESET = {
   scale: 1.3,
-  intensity: 0.56,
+  intensity: 0.72,
   paramA: 0.67,
   warp: 0.192,
   detail: 2.016,

@@ -10,19 +10,20 @@ export const THEME_STORAGE_KEY = "blesc-theme";
  * preference differs from the default gets a full-page flash of the wrong
  * theme on every load.
  *
- * Falls back to the OS preference when nothing is stored, and to dark if
- * storage is unavailable (private mode, blocked cookies).
+ * Light is the primary build, so an unset visitor gets light regardless of
+ * what their OS asks for. That is a deliberate override of
+ * prefers-color-scheme rather than an oversight: the site has a designed
+ * default and a toggle two clicks from anywhere, and honouring the OS here
+ * would hand half of all first impressions to the secondary palette.
  */
 export const THEME_INIT_SCRIPT = `
 (function(){
   try {
     var t = localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});
-    if (t !== "light" && t !== "dark") {
-      t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-    }
+    if (t !== "light" && t !== "dark") t = "light";
     document.documentElement.dataset.theme = t;
   } catch (e) {
-    document.documentElement.dataset.theme = "dark";
+    document.documentElement.dataset.theme = "light";
   }
 })();
 `.trim();
