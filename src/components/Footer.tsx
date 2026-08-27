@@ -138,7 +138,7 @@ export function Footer() {
         shrinks to nothing or collides with the copyright it is meant to sit
         behind.
       */}
-      <div className="relative z-0 -mt-[7.5rem] hidden md:block lg:-mt-[8.5rem]">
+      <div className="relative z-0 -mt-[6.25rem] hidden md:block lg:-mt-[7.25rem]">
         <WordmarkReveal />
       </div>
     </GradientFooter>

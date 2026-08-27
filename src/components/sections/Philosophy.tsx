@@ -39,31 +39,36 @@ const PHOTO_ACCENT: { src: string; alt: string } | null = {
  * phrase carries the accent and an underline. The eye lands on the phrase,
  * not on a container.
  *
- * `[[…]]` marks that phrase. Nothing here was rewritten.
+ * `[[…]]` marks that phrase.
+ *
+ * The prose was condensed to roughly 70% of its original length on request
+ * — 221 characters down to 160. Each paragraph keeps its own claim and its
+ * order in the argument; what went was qualification, not substance. The
+ * pull line and the closing statement are untouched.
  */
 type Block = { text: string; kind: "body" | "pull" | "close" };
 
 const BLOCKS: Block[] = [
   {
     kind: "body",
-    text: `私たちはテクノロジーに囲まれて生きながら、
-人と人とのつながりは、かつてないほど希薄になっています。`,
+    text: `テクノロジーに囲まれながら、
+人とのつながりは希薄になっています。`,
   },
   {
     kind: "body",
-    text: `私たち自身、身近な友人が抱えていた苦しみに誰も気づけないまま
-手遅れになる状況を、目の当たりにしてきました。`,
+    text: `身近な友人の苦しみに誰も気づけないまま、
+手遅れになるのを見てきました。`,
   },
   { kind: "pull", text: `[[サイン]]は、確かにそこにあったはずでした。` },
   {
     kind: "body",
-    text: `苦しんでいる人に気づけるのが「何かが起きた後」だけ。
-私たちは、その現実を受け入れることができませんでした。`,
+    text: `気づけるのが「何かが起きた後」だけ。
+その現実を、受け入れられませんでした。`,
   },
   {
     kind: "body",
-    text: `忙しい学校生活のなかで消えていく、小さく静かなSOS。
-Blescは、その声を聴き逃さないための仕組みです。`,
+    text: `学校生活のなかで消えていく小さなSOS。
+Blescは、その声を聴き逃さない仕組みです。`,
   },
   {
     kind: "close",
@@ -113,9 +118,14 @@ function Rich({ text, className }: { text: string; className?: string }) {
 const STYLE = {
   body: "measure-jp text-muted",
   pull: "text-[clamp(1.35rem,3vw,1.95rem)] font-medium leading-[1.6] tracking-[-0.02em] text-ink",
-  /* Runs the full container width, so it can carry more size. */
+  /*
+   * Runs the full container width. Capped at 2.75rem rather than 3.25 so
+   * 誰かが孤立する前に、見えないものを可視化する。 holds one line inside the
+   * 68rem measure — 22 characters at the old size ran about 140px past it
+   * and wrapped.
+   */
   close:
-    "text-[clamp(1.6rem,4.6vw,3.25rem)] font-medium leading-[1.45] tracking-[-0.03em] text-ink",
+    "text-[clamp(1.45rem,3.9vw,2.75rem)] font-medium leading-[1.45] tracking-[-0.03em] text-ink",
 } as const;
 
 /**
