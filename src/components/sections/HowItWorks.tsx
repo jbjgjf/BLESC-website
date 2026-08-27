@@ -2,14 +2,24 @@
 
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useRef } from "react";
+import { GlassFilter, LiquidGlass } from "@/components/LiquidGlass";
 import { Reveal } from "@/components/Reveal";
 import { SPOTLIGHT } from "@/components/SpotlightCard";
+import {
+  DiaryMock,
+  ProbeMock,
+  ReportMock,
+  RosterMock,
+  SignalMock,
+} from "@/components/StepMockups";
 import { Icon, Section, SectionTitle } from "@/components/ui";
 
 type Stage = {
   n: string;
   label: string;
   body: string;
+  /** The screen this stage looks like. */
+  mock: () => React.ReactElement;
 };
 
 /**
@@ -26,21 +36,25 @@ type Stage = {
 const BEFORE: Stage[] = [
   {
     n: "01",
+    mock: RosterMock,
     label: "生徒",
     body: "毎日5分、ホームルームの時間に実施します。対象は希望者ではなく全生徒で、新しい習慣も専用の準備も必要ありません。",
   },
   {
     n: "02",
+    mock: DiaryMock,
     label: "日記を書く",
     body: "その日にあったことを、5分で短く綴るだけ。内容も長さも自由です。誰かに読ませるための文章ではなく、自分のための記録として書けることが、本音が残る条件になります。",
   },
   {
     n: "03",
+    mock: ProbeMock,
     label: "AIが深掘り",
     body: "独自のAIが、書かれた内容に短い問いを返します。「たぶん大丈夫」で終わる一行の奥にあるものを、対話ではなく一問一答のかたちで、静かに引き出します。",
   },
   {
     n: "04",
+    mock: SignalMock,
     label: "リスク解析",
     body: "言葉のニュアンス、書くことをためらった間、日々の書きぶりの変化。こうした微細なシグナルを積み重ねて、心理的リスクを検知します。毎日書かれるからこそ、一日の落ち込みと、続いている不調とを区別できます。",
   },
@@ -49,26 +63,24 @@ const BEFORE: Stage[] = [
 const AFTER: Stage[] = [
   {
     n: "05",
+    mock: ReportMock,
     label: "教員",
     body: "教員が受け取るのは、対応が必要な生徒を示す要点のみのレポートです。日記の本文そのものが公開されることはなく、教員の側に新しい業務が生まれることもありません。",
   },
 ];
 
 /**
- * Clockwise, 01 → 02 → 03 → 04, then out through the gate to 05.
+ * Clockwise still — 01 across to 02, down to 03, back to 04 — but the two
+ * rows no longer share a column template, so all four widths differ: 4/8
+ * on the top row and 7/5 on the bottom. One grid cannot vary its columns
+ * per row, so this is two grids, and 03 and 04 are placed explicitly rather
+ * than reordered in the markup, which keeps the DOM in reading order.
  *
- * DOM order stays 01–04, which is both the reading order and the order a
- * screen reader gets; only the grid placement is clockwise. Explicit
- * col/row starts rather than reordering the array, because the sequence is
- * the content and the square is presentation.
+ * The arrows that used to sit in the gaps are gone. They were positioned by
+ * percentage against equal columns; against unequal ones they no longer
+ * land on the boundary, and four cards this size do not need them to read
+ * as a sequence.
  */
-const CELL = [
-  "md:col-start-1 md:row-start-1",
-  "md:col-start-2 md:row-start-1",
-  "md:col-start-2 md:row-start-2",
-  "md:col-start-1 md:row-start-2",
-];
-
 function Step({
   stage,
   index,
@@ -82,11 +94,12 @@ function Step({
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const shown = useInView(ref, { margin: "0px 0px -20% 0px", once: true });
+  const Mock = stage.mock;
 
   return (
     <motion.div
       ref={ref}
-      className={`${SPOTLIGHT} flex h-full flex-col rounded-3xl border p-6 shadow-[var(--shadow-card)] md:p-7 ${
+      className={`${SPOTLIGHT} flex h-full flex-col rounded-3xl border p-5 shadow-[var(--shadow-card)] md:p-6 ${
         feature ? "border-mark-1/40 bg-mark-1/[0.07]" : "border-line bg-surface"
       }`}
       initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.97 }}
@@ -103,37 +116,32 @@ function Step({
         delay: reduce ? 0 : index * 0.08,
       }}
     >
-      <span
-        aria-hidden
-        className="flex size-12 items-center justify-center rounded-full bg-mark-1 text-[0.95rem] font-semibold tabular-nums text-on-accent md:size-14 md:text-[1.05rem]"
+      <div className="flex items-center gap-4">
+        <span
+          aria-hidden
+          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-mark-1 text-[0.9rem] font-semibold tabular-nums text-on-accent md:size-12"
+        >
+          {stage.n}
+        </span>
+        <h3 className="text-[clamp(1.15rem,2.2vw,1.45rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
+          <span className="sr-only">{`ステップ ${stage.n}、`}</span>
+          {stage.label}
+        </h3>
+      </div>
+
+      <p className="measure-jp mt-4 text-[0.92rem] text-muted">{stage.body}</p>
+
+      {/*
+        The screen sits at the foot of the card, on glass. mt-auto so the
+        panels line up along the bottom whatever length the copy runs to.
+      */}
+      <LiquidGlass
+        radius="0.9rem"
+        className="mt-6 h-[11rem] border border-line/60"
       >
-        {stage.n}
-      </span>
-
-      <h3 className="mt-5 text-[clamp(1.2rem,2.4vw,1.55rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
-        <span className="sr-only">{`ステップ ${stage.n}、`}</span>
-        {stage.label}
-      </h3>
-      <p className="measure-jp mt-3 text-[0.95rem] text-muted">{stage.body}</p>
+        <Mock />
+      </LiquidGlass>
     </motion.div>
-  );
-}
-
-/** Sits in a gap between the cards, pointing the way round. */
-function Turn({
-  icon,
-  className,
-}: {
-  icon: string;
-  className: string;
-}) {
-  return (
-    <span
-      aria-hidden
-      className={`absolute z-10 hidden size-8 items-center justify-center rounded-full border border-line bg-canvas-alt text-mark-1 md:flex ${className}`}
-    >
-      <Icon name={icon} size={18} />
-    </span>
   );
 }
 
@@ -171,24 +179,33 @@ export function HowItWorks() {
         </p>
       </Reveal>
 
+      <GlassFilter />
+
       <div className="mt-14">
         <Reveal>
           <GroupLabel>生徒とAIのあいだ</GroupLabel>
         </Reveal>
 
-        <div className="relative">
-          <Turn icon="arrow_forward" className="left-1/2 top-1/4 -translate-x-1/2 -translate-y-1/2" />
-          <Turn icon="arrow_downward" className="left-3/4 top-1/2 -translate-x-1/2 -translate-y-1/2" />
-          <Turn icon="arrow_back" className="left-1/2 top-3/4 -translate-x-1/2 -translate-y-1/2" />
-
-          <ol className="grid gap-5 md:auto-rows-fr md:grid-cols-2 md:gap-9">
-            {BEFORE.map((stage, i) => (
-              <li key={stage.n} className={CELL[i]}>
-                <Step stage={stage} index={i} />
-              </li>
-            ))}
-          </ol>
-        </div>
+        <ol className="space-y-5 md:space-y-8">
+          <li>
+            <div className="grid gap-5 md:grid-cols-[4fr_8fr] md:gap-8">
+              <Step stage={BEFORE[0]} index={0} />
+              <Step stage={BEFORE[1]} index={1} />
+            </div>
+          </li>
+          <li>
+            <div className="grid gap-5 md:grid-cols-[7fr_5fr] md:gap-8">
+              {/* 03 sits right, 04 left — the clockwise turn — without
+                  moving either out of reading order in the markup. */}
+              <div className="md:col-start-2 md:row-start-1">
+                <Step stage={BEFORE[2]} index={2} />
+              </div>
+              <div className="md:col-start-1 md:row-start-1">
+                <Step stage={BEFORE[3]} index={3} />
+              </div>
+            </div>
+          </li>
+        </ol>
 
         {/*
           The boundary, not a footnote. Everything above touches what the

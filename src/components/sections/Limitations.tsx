@@ -87,8 +87,13 @@ function Panel({ item, index }: { item: Limitation; index: number }) {
         minHeight: `calc(var(--stack-release) - ${index} * var(--stack-header))`,
       }}
     >
-      <article className="flex flex-1 flex-col border-t border-line bg-canvas">
-        <div className="grid flex-1 gap-x-10 gap-y-6 md:grid-cols-[1fr_20rem]">
+      {/*
+        Folder tab: rounded across the top, square at the foot, and bordered
+        on three sides. Stacked, the run of them reads as tabs in a drawer
+        rather than as three rules across the page.
+      */}
+      <article className="flex flex-1 flex-col rounded-t-2xl border-x border-t border-line bg-canvas px-4 md:px-6">
+        <div className="grid flex-1 gap-x-10 gap-y-6 md:grid-cols-[1fr_18rem]">
           <div className="flex flex-col">
             {/*
               Fixed height, and the same value the sticky offsets step by —
@@ -108,7 +113,7 @@ function Panel({ item, index }: { item: Limitation; index: number }) {
               >
                 {item.n}
               </span>
-              <h3 className="text-[clamp(1.25rem,3.2vw,2.25rem)] font-medium leading-tight tracking-[-0.025em] text-ink">
+              <h3 className="text-[clamp(1.15rem,2.6vw,1.95rem)] font-medium leading-tight tracking-[-0.025em] text-ink">
                 {item.title}
               </h3>
             </div>
@@ -163,8 +168,14 @@ export function Limitations() {
         </p>
       </Reveal>
 
-      {/* pb: scroll room for the last panel to reach its offset and hold. */}
-      <div className="stack mt-14 pb-[35vh]">
+      {/*
+        pb is the last panel's entire sticky range — it is the only one whose
+        bottom is the wrapper's bottom — so it is also exactly how long the
+        assembled stack dwells before releasing. 35vh made that dwell read as
+        dead space under 03; this is enough for the panel to stop and be
+        read, and no more.
+      */}
+      <div className="stack mt-14 pb-[16vh]">
         {ITEMS.map((item, i) => (
           <Panel key={item.n} item={item} index={i} />
         ))}

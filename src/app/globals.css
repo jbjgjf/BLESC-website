@@ -129,6 +129,16 @@
   --grid-orb-near: rgba(133, 192, 237, 0.16);
   --grid-orb-far: rgba(169, 155, 240, 0.07);
 
+  /*
+   * Liquid-glass panels. The component these came from hardcoded a white
+   * tint and a white inset edge, which is right on a photograph and wrong
+   * on a near-black page — the tint has to lighten on dark and stay light
+   * but far stronger on the near-white build to read at all.
+   */
+  --glass-panel: rgba(255, 255, 255, 0.055);
+  --glass-edge: inset 1px 1px 0 0 rgba(255, 255, 255, 0.13),
+    inset -1px -1px 0 0 rgba(255, 255, 255, 0.045);
+
   /* the "expo-out" curve — default premium easing across the whole site */
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -194,6 +204,10 @@
   --grid-line: rgba(26, 35, 50, 0.07);
   --grid-orb-near: rgba(43, 110, 163, 0.13);
   --grid-orb-far: rgba(91, 75, 184, 0.06);
+
+  --glass-panel: rgba(255, 255, 255, 0.55);
+  --glass-edge: inset 1px 1px 0 0 rgba(255, 255, 255, 0.9),
+    inset -1px -1px 0 0 rgba(26, 35, 50, 0.06);
 
   /* Darkened for a white card; the dark-theme tints would wash out. */
   --risk-high: #dc2626;
