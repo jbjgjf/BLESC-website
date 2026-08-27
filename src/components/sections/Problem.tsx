@@ -1,3 +1,4 @@
+import { GridField } from "@/components/GridField";
 import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
 import { Icon, Lines, Section } from "@/components/ui";
 
@@ -111,7 +112,11 @@ function Escalation() {
  */
 export function Problem() {
   return (
-    <Section id="problem" className="pt-12 md:pt-16">
+    <Section
+      id="problem"
+      className="relative overflow-hidden pt-12 md:pt-16"
+      backdrop={<GridField />}
+    >
       <Reveal>
         {/*
           The page's emotional hook, so it gets hero-adjacent size and the

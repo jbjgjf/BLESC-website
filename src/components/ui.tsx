@@ -153,12 +153,19 @@ export function Section({
   children,
   alt = false,
   className = "",
+  backdrop,
 }: {
   id?: string;
   children: ReactNode;
   /** Alternating section background. */
   alt?: boolean;
   className?: string;
+  /**
+   * Painted behind the content, outside the Container so it can run the
+   * full width of the section rather than stopping at the 68rem measure.
+   * Pair it with `relative overflow-hidden` on className.
+   */
+  backdrop?: ReactNode;
 }) {
   return (
     <section
@@ -167,7 +174,8 @@ export function Section({
         alt ? "bg-canvas-alt" : "bg-canvas"
       } ${className}`}
     >
-      <Container>{children}</Container>
+      {backdrop}
+      <Container className="relative">{children}</Container>
     </section>
   );
 }

@@ -116,6 +116,19 @@
   --spot-wash: 0.13;
   --spot-ring: 1;
 
+  /*
+   * Graph-paper field behind 課題. The component this came from hardcoded a
+   * slate grid on white with a magenta-to-purple orb; both are replaced by
+   * the palette's own values so the field flips with the theme.
+   *
+   * The orb is --mark-1 falling off into --mark-2 — the same two blues the
+   * spotlight sweeps between. At these alphas the copy over it still holds
+   * 15.0:1 for ink and 9.2:1 for muted.
+   */
+  --grid-line: rgba(255, 255, 255, 0.055);
+  --grid-orb-near: rgba(133, 192, 237, 0.16);
+  --grid-orb-far: rgba(169, 155, 240, 0.07);
+
   /* the "expo-out" curve — default premium easing across the whole site */
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -172,6 +185,15 @@
   --spot-light: 52;
   --spot-wash: 0.07;
   --spot-ring: 0.75;
+
+  /*
+   * A white grid line is invisible on a near-white page, so light mode
+   * draws the field in ink instead — the same texture, inverted. Ink over
+   * the orb holds 12.7:1 and muted 5.6:1 here.
+   */
+  --grid-line: rgba(26, 35, 50, 0.07);
+  --grid-orb-near: rgba(43, 110, 163, 0.13);
+  --grid-orb-far: rgba(91, 75, 184, 0.06);
 
   /* Darkened for a white card; the dark-theme tints would wash out. */
   --risk-high: #dc2626;
@@ -403,6 +425,44 @@ body {
     --stack-header: 5.5rem;
     --stack-release: 32rem;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Grid field.
+
+   Two 1px gradients on a 40px pitch make the graph paper; a third radial
+   layer is the glow behind it. All three are one background shorthand, so
+   the whole thing is a single painted layer with no extra elements.
+
+   The mask is the part that matters. Without it the grid stops dead at the
+   section's edges and reads as a pasted rectangle; fading it out on an
+   ellipse concentrates it behind the copy and lets the section blend into
+   its neighbours.
+--------------------------------------------------------------------------- */
+.grid-field {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+    radial-gradient(
+      circle at 50% 45%,
+      var(--grid-orb-near) 0%,
+      var(--grid-orb-far) 40%,
+      transparent 70%
+    );
+  background-size:
+    40px 40px,
+    40px 40px,
+    100% 100%;
+  -webkit-mask-image: radial-gradient(
+    ellipse 78% 62% at 50% 44%,
+    #000 38%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 78% 62% at 50% 44%,
+    #000 38%,
+    transparent 100%
+  );
 }
 
 /* Japanese paragraph text needs more air than Latin to stay readable. */
