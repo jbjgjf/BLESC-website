@@ -1,191 +1,161 @@
-"use client";
-
-import {
-  motion,
-  useMotionValueEvent,
-  useReducedMotion,
-  useScroll,
-} from "motion/react";
-import { useRef, useState, useSyncExternalStore } from "react";
+import Image from "next/image";
 import { FIGURES, type FigureName } from "@/components/LimitationFigures";
 import { Reveal } from "@/components/Reveal";
 import { Section, SectionTitle } from "@/components/ui";
 
+/**
+ * The photographs are in. Set false to fall back to the drawn figures,
+ * which are still exported from LimitationFigures.
+ *
+ * 02 and 03 arrived as 3652x1120 panoramas and were centre-cropped to the
+ * 4:3 this slot expects — 02 keeps the doorframe and the figure down the
+ * corridor, 03 keeps the central aisle. All three were re-encoded, which
+ * took 5MB down to 460KB.
+ */
+const PHOTOS_READY = true;
+
 type Limitation = {
   n: string;
   figure: FigureName;
+  /** 4:3, matching the drawn figure it replaces. */
+  photo: string;
   title: string;
   body: string;
   /** Full class names — Tailwind scans source text, so no interpolation. */
   text: string;
-  bar: string;
+  dot: string;
 };
 
 const ITEMS: Limitation[] = [
   {
     n: "01",
     figure: "survey",
+    photo: "/photos/limitation-01.jpg",
     title: "アンケートでは本音が表れない。",
-    body: "「はい／いいえ」形式では、生徒は大人が望む無難な回答を選びます。",
+    body: "「はい／いいえ」形式では、生徒は大人が望む無難な回答を選びます。設問が用意された時点で、答えの範囲も決まってしまいます。",
     text: "text-mark-1",
-    bar: "bg-mark-1",
+    dot: "bg-mark-1",
   },
   {
     n: "02",
     figure: "withdrawal",
+    photo: "/photos/limitation-02.jpg",
     title: "深刻なケースほど見えなくなる。",
     body: "追い詰められた生徒ほど周囲を拒み、孤立します。SOSを待つ仕組みでは間に合いません。",
     text: "text-mark-2",
-    bar: "bg-mark-2",
+    dot: "bg-mark-2",
   },
   {
     n: "03",
     figure: "capacity",
+    photo: "/photos/limitation-03.jpg",
     title: "教員のリソースには限界がある。",
-    body: "40名を一人ひとり見守り、心の機微まで捉えることは現実的ではありません。",
+    body: "40名を一人ひとり見守り、心の機微まで捉えることは現実的ではありません。教員の熱意ではなく、構造の問題です。",
     text: "text-mark-3",
-    bar: "bg-mark-3",
+    dot: "bg-mark-3",
   },
 ];
 
 /**
- * Is there actually room to pin?
+ * A pile of panels rather than a cross-fade.
  *
- * Both halves matter. Below 768px the row stacks copy above figure and grows
- * past a viewport height; below 640px tall — a phone held sideways — even the
- * two-column form doesn't fit. A `position: sticky` box taller than the
- * viewport has no way to reveal its own bottom, so the overflow would simply
- * be unreachable. Where it doesn't fit, we don't pin.
+ * Each panel sticks one header-height lower than the one before, so as you
+ * scroll it slides up and halts just under the previous panel's header. The
+ * headers accumulate at the top and stay readable, which the cross-fade this
+ * replaces could not do — there, only one item existed at a time and the two
+ * you were not looking at left no trace.
  *
- * Server snapshot is `false`, so SSR emits the plain stacked list and the
- * client upgrades it. The section is far below the fold, so that correction
- * is never seen.
+ * Three things make it work. Each panel is opaque, so it occludes the body
+ * of the one behind while leaving its header showing. The photograph starts
+ * at the panel's top edge, so a covered panel keeps a sliver of its own
+ * image inside the header band. And the wrapper carries trailing padding,
+ * without which the last panel — whose bottom is the wrapper's bottom — has
+ * no room to stick and would simply scroll past.
+ *
+ * It is CSS position: sticky throughout: no scroll listener, no measurement,
+ * nothing to keep in sync, and it degrades to a plain stack of rows if
+ * sticky is unsupported.
  */
-const PIN_QUERY = "(min-width: 768px) and (min-height: 640px)";
-
-function useCanPin() {
-  return useSyncExternalStore(
-    (onChange) => {
-      const mq = window.matchMedia(PIN_QUERY);
-      mq.addEventListener("change", onChange);
-      return () => mq.removeEventListener("change", onChange);
-    },
-    () => window.matchMedia(PIN_QUERY).matches,
-    () => false,
-  );
-}
-
-function Row({ item }: { item: Limitation }) {
+function Panel({ item, index }: { item: Limitation; index: number }) {
   const Figure = FIGURES[item.figure];
 
   return (
-    <div className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
-      <div>
-        <div className="flex items-baseline gap-4">
-          <span
-            className={`text-[clamp(2.5rem,5vw,3.75rem)] font-semibold leading-none tabular-nums ${item.text}`}
-          >
-            {item.n}
-          </span>
-          <span aria-hidden className={`h-px flex-1 ${item.bar} opacity-40`} />
-        </div>
-
-        <h3 className="mt-7 text-[clamp(1.35rem,2.6vw,1.9rem)] font-medium leading-[1.4] tracking-[-0.02em] text-ink">
-          {item.title}
-        </h3>
-        <p className="measure-jp mt-5 max-w-md text-[0.98rem] text-muted">
-          {item.body}
-        </p>
-      </div>
-
-      <div>
-        <Figure className={`w-full ${item.text} opacity-90`} />
-      </div>
-    </div>
-  );
-}
-
-/**
- * Pinned cross-fade: the three limitations occupy the same patch of screen
- * and swap on scroll, so the viewport itself never moves through them.
- *
- * The track is one screen of scroll per item; the inner box sticks to the
- * top for the whole of it, and progress through the track picks the visible
- * item. Nothing is scroll-jacked — no wheel events are intercepted, the page
- * just has a tall element in it — so trackpad, keyboard and scrollbar all
- * behave normally and Lenis is untouched.
- *
- * Unlike the old alternating layout, every item lands in the same place.
- * That is the point of a cross-fade: sides that swapped underneath a fade
- * would read as the layout glitching rather than as one idea replacing
- * another.
- */
-function PinnedDeck() {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [index, setIndex] = useState(0);
-
-  const { scrollYProgress } = useScroll({
-    target: trackRef,
-    offset: ["start start", "end end"],
-  });
-
-  useMotionValueEvent(scrollYProgress, "change", (p) => {
-    const next = Math.min(
-      ITEMS.length - 1,
-      Math.max(0, Math.floor(p * ITEMS.length)),
-    );
-    setIndex((current) => (current === next ? current : next));
-  });
-
-  return (
     <div
-      ref={trackRef}
-      className="relative mt-12"
-      style={{ height: `${ITEMS.length * 100}vh` }}
+      className="sticky flex flex-col"
+      style={{
+        top: `calc(var(--stack-top) + ${index} * var(--stack-header))`,
+        minHeight: `calc(var(--stack-release) - ${index} * var(--stack-header))`,
+      }}
     >
-      <div className="sticky top-0 flex h-screen flex-col justify-center">
-        {/*
-          All three stay in the accessibility tree rather than being
-          aria-hidden while faded. They are all real content in a real
-          order, and a screen reader that reads the section straight
-          through gets exactly the right thing; the fade is a purely
-          visual affordance for a sighted reader. There is nothing
-          focusable inside, so an invisible item can never be tabbed to.
-        */}
-        <div className="grid">
-          {ITEMS.map((item, i) => (
-            <motion.div
-              key={item.n}
-              style={{ gridArea: "1 / 1" }}
-              animate={{ opacity: i === index ? 1 : 0 }}
-              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-              className={i === index ? undefined : "pointer-events-none"}
-            >
-              <Row item={item} />
-            </motion.div>
-          ))}
-        </div>
+      {/*
+        Folder tab: rounded across the top, square at the foot, and bordered
+        on three sides. Stacked, the run of them reads as tabs in a drawer
+        rather than as three rules across the page.
+      */}
+      <article className="flex flex-1 flex-col rounded-t-2xl border-x border-t border-line bg-canvas px-4 md:px-6">
+        <div className="grid flex-1 gap-x-10 gap-y-6 md:grid-cols-[1fr_18rem]">
+          <div className="flex flex-col">
+            {/*
+              Fixed height, and the same value the sticky offsets step by —
+              that is what makes each panel halt exactly under the previous
+              header rather than somewhere near it.
+            */}
+            <div className="flex h-[var(--stack-header)] shrink-0 items-center gap-4 md:gap-6">
+              <span aria-hidden className={`size-2 shrink-0 rounded-full ${item.dot}`} />
+              {/*
+                Plain numeral in the site's own face. The N°001 of the
+                reference is set in a monospace this site does not load, and
+                the degree sign plus wide tracking read as a rendering fault
+                in Inter rather than as a label.
+              */}
+              <span
+                className={`shrink-0 text-[1.05rem] font-semibold tabular-nums ${item.text}`}
+              >
+                {item.n}
+              </span>
+              <h3 className="text-[clamp(1.15rem,2.6vw,1.95rem)] font-medium leading-tight tracking-[-0.025em] text-ink">
+                {item.title}
+              </h3>
+            </div>
 
-        {/* How many there are, and how far in you are. */}
-        <div aria-hidden className="mt-14 flex items-center gap-2">
-          {ITEMS.map((item, i) => (
-            <span
-              key={item.n}
-              className={`h-0.5 w-10 rounded-full transition-colors duration-500 ${
-                i === index ? item.bar : "bg-line"
-              }`}
-            />
-          ))}
+            <p className="measure-jp max-w-md pt-2 text-[0.98rem] text-muted">
+              {item.body}
+            </p>
+          </div>
+
+          {/*
+            Starts at the panel's top edge on purpose: once the next panel
+            covers this one, the part still showing inside the header band is
+            the top of this photograph.
+          */}
+          {/*
+            Fills the panel's height from md up rather than holding a fixed
+            ratio. Aligning the release means the upper panels are padded
+            taller than their copy needs, and that slack would otherwise read
+            as an accidental hole under the text; here it becomes picture.
+          */}
+          <div className="row-start-1 pb-14 md:col-start-2 md:pb-20">
+            {PHOTOS_READY ? (
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-line md:aspect-auto md:h-full">
+                <Image
+                  src={item.photo}
+                  alt=""
+                  fill
+                  sizes="(min-width: 768px) 20rem, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <Figure className={`w-full ${item.text} opacity-90`} />
+            )}
+          </div>
         </div>
-      </div>
+      </article>
     </div>
   );
 }
 
 export function Limitations() {
-  const reduce = useReducedMotion();
-  const pinned = useCanPin() && !reduce;
-
   return (
     <Section>
       <Reveal>
@@ -198,29 +168,18 @@ export function Limitations() {
         </p>
       </Reveal>
 
-      {!pinned ? (
-        /*
-          Pinning is motion, and it needs room. With either missing the three
-          simply stack and read top to bottom — no tall track, no fading,
-          nothing to sit through.
-        */
-        <div className="mt-20 flex flex-col gap-24 md:gap-32">
-          {ITEMS.map((item) => (
-            <Reveal key={item.n}>
-              <Row item={item} />
-            </Reveal>
-          ))}
-        </div>
-      ) : (
-        /*
-          Its own component, so useScroll resolves the track ref on the same
-          commit that attaches it. Hoisted into the parent it would run once
-          against a null target — the media query starts false for SSR, so
-          the deck arrives a tick later — and then never re-measure, leaving
-          the fade permanently stuck on the first item.
-        */
-        <PinnedDeck />
-      )}
+      {/*
+        pb is the last panel's entire sticky range — it is the only one whose
+        bottom is the wrapper's bottom — so it is also exactly how long the
+        assembled stack dwells before releasing. 35vh made that dwell read as
+        dead space under 03; this is enough for the panel to stop and be
+        read, and no more.
+      */}
+      <div className="stack mt-14 pb-[16vh]">
+        {ITEMS.map((item, i) => (
+          <Panel key={item.n} item={item} index={i} />
+        ))}
+      </div>
     </Section>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { GradientFooter } from "@/components/GradientFooter";
+import { WordmarkReveal } from "@/components/WordmarkReveal";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
 import { ButtonLink, Container, Icon } from "@/components/ui";
@@ -48,7 +49,7 @@ export function Footer() {
       className="border-t border-line bg-canvas pt-16"
       stops={theme === "light" ? LIGHT_STOPS : DARK_STOPS}
     >
-      <Container>
+      <Container className="relative z-10">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* 導入について, folded in from the old standalone CTA section. */}
           <div className="lg:col-span-2">
@@ -122,16 +123,24 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 flex items-center justify-between border-t border-line pt-8">
+        <div className="mt-16 border-t border-line pt-8">
           <p className="text-[0.78rem] text-muted">© 2026 Blesc</p>
-          <a
-            href="/root"
-            className="text-[0.78rem] text-muted transition-colors duration-300 hover:text-ink"
-          >
-            決算公告
-          </a>
         </div>
       </Container>
+
+      {/*
+        Pulled up far enough that the capitals break above the rule over the
+        copyright, and pushed behind it — the footer's own Container carries
+        z-10 — so the line and the copyright read across the letters rather
+        than being covered by them.
+
+        Hidden below md: it is a wide wordmark, and at phone widths it either
+        shrinks to nothing or collides with the copyright it is meant to sit
+        behind.
+      */}
+      <div className="relative z-0 -mt-[6.25rem] hidden md:block lg:-mt-[7.25rem]">
+        <WordmarkReveal />
+      </div>
     </GradientFooter>
   );
 }

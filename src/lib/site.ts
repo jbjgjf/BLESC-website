@@ -22,6 +22,29 @@ export const NAV_LINKS = [
 export const sectionHref = (id: string, onHome: boolean) =>
   onHome ? `#${id}` : `/#${id}`;
 
+/**
+ * Brand mark. Two files, because a mark that reads against the near-black
+ * ground will not read against the near-white one.
+ *
+ * Both were derived from the supplied JPEG rather than used raw. The source
+ * files have opaque grounds — one white, one black — which would have shown
+ * as a rectangle behind the mark on either theme, and the black-ground PNG
+ * was clipped on the right, cutting the final "c". The white-ground JPEG is
+ * the only complete artwork, so both versions come from it: its ground keyed
+ * out, and the wordmark flipped to white for the dark build.
+ *
+ * To replace them, overwrite these two files keeping the names, or drop new
+ * ones beside them and change the paths here — any web format works, since
+ * these are plain <img> sources. Transparent backgrounds, please. Nothing
+ * else needs touching: all three places the mark appears render <Logo />.
+ */
+export const LOGO = {
+  /** Shown on the dark theme, so this artwork should be light. */
+  onDark: "/logo/logo-on-dark.png",
+  /** Shown on the light theme, so this artwork should be dark. */
+  onLight: "/logo/logo-on-light.png",
+} as const;
+
 export const CONTACT_EMAIL = "blesc.official@gmail.com";
 
 export const CONTACT_PATH = "/contact";

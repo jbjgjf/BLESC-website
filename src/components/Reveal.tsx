@@ -45,6 +45,13 @@ type StaggerProps = {
   /** Gap between children. Spec range is 0.08–0.12s. */
   stagger?: number;
   delayChildren?: number;
+  /**
+   * Render as an ordered list instead of a div. A numbered sequence of steps
+   * is a list, and wrapping <li> in a motion.div would put a div between
+   * <ol> and its items — which is invalid, and drops the list out of the
+   * accessibility tree.
+   */
+  as?: "div" | "ol";
 };
 
 /** Reveals its <RevealItem> descendants one after another. */
@@ -53,9 +60,12 @@ export function Stagger({
   className,
   stagger = 0.1,
   delayChildren = 0,
+  as = "div",
 }: StaggerProps) {
+  const Tag = as === "ol" ? motion.ol : motion.div;
+
   return (
-    <motion.div
+    <Tag
       className={className}
       initial="hidden"
       whileInView="show"
@@ -63,27 +73,59 @@ export function Stagger({
       variants={staggerVariants(stagger, delayChildren)}
     >
       {children}
-    </motion.div>
+    </Tag>
   );
 }
 
-/** A single participant in a <Stagger>. */
-export function RevealItem({
+/**
+ * Enters horizontally rather than from below.
+ *
+ * Kept separate from Reveal because the direction is the point here: two
+ * figures arriving from opposite edges read as a pair being compared, which
+ * a shared upward fade does not.
+ */
+export function SlideIn({
   children,
   className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+  from,
+  delay = 0,
+}: RevealProps & { from: "left" | "right" }) {
   const reduce = useReducedMotion();
+  const offset = from === "left" ? -64 : 64;
 
   return (
     <motion.div
       className={className}
-      variants={reduce ? reducedVariants : revealVariants}
+      initial={reduce ? { opacity: 0 } : { opacity: 0, x: offset }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={VIEWPORT}
+      transition={{ duration: reduce ? 0.3 : 0.85, ease: EXPO_OUT, delay }}
     >
       {children}
     </motion.div>
+  );
+}
+
+/** A single participant in a <Stagger>. Pass as="li" inside as="ol". */
+export function RevealItem({
+  children,
+  className,
+  as = "div",
+}: {
+  children: ReactNode;
+  className?: string;
+  as?: "div" | "li";
+}) {
+  const reduce = useReducedMotion();
+  const Tag = as === "li" ? motion.li : motion.div;
+
+  return (
+    <Tag
+      className={className}
+      variants={reduce ? reducedVariants : revealVariants}
+    >
+      {children}
+    </Tag>
   );
 }
 

@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "blesc-dev",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": [
+        "-c",
+        "export PATH=/Users/jasper/.nvm/versions/node/v20.20.2/bin:$PATH && exec npm run dev"
+      ],
+      "port": 3000
+    }
+  ]
+}

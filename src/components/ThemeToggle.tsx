@@ -30,7 +30,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
         onClick={toggle}
         aria-label="ライトモードとダークモードを切り替える"
         title={isLight ? "ダークモードに切り替え" : "ライトモードに切り替え"}
-        className="flex size-9 shrink-0 items-center justify-center rounded-full text-muted transition-[color,background-color,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-105 hover:bg-ink/[0.08] hover:text-ink"
+        className="flex size-9 shrink-0 items-center justify-center rounded-full text-muted transition-[color,background-color,scale] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-105 hover:bg-ink/[0.08] hover:text-ink"
       >
         <Icon name={isLight ? "dark_mode" : "light_mode"} size={20} />
       </button>

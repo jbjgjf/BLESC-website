@@ -1,5 +1,6 @@
 "use client";
 
+import { Logo } from "@/components/Logo";
 import { IntroFade, WordReveal } from "@/components/Reveal";
 import {
   ShaderBackground,
@@ -97,9 +98,7 @@ export function Hero() {
       <Container className="relative z-10">
         <div className="max-w-3xl">
           <IntroFade delay={0.05}>
-            <p className="text-2xl font-semibold tracking-[-0.02em] text-ink">
-              Blesc
-            </p>
+            <Logo alt="Blesc" className="h-7 w-auto md:h-8" />
           </IntroFade>
 
           <h1 className="mt-8 text-[clamp(2.25rem,6.4vw,4.25rem)] font-medium leading-[1.1] tracking-[-0.03em] text-ink">

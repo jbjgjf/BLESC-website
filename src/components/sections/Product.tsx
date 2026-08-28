@@ -1,142 +1,185 @@
+import { Logo } from "@/components/Logo";
+import { SpotlightCard } from "@/components/SpotlightCard";
 import { Reveal } from "@/components/Reveal";
 import { Icon, Lines, Section, SectionTitle } from "@/components/ui";
 
-/** The student side: an ordinary chat, deliberately unremarkable. */
-const CHAT = [
-  { from: "ai", text: "最近、学校はどんな感じ？" },
-  { from: "me", text: "うーん、ちょっと疲れてるかも" },
-  { from: "ai", text: "そっか。ちゃんと眠れてる？" },
-] as const;
+/**
+ * A sample entry, not a real one.
+ *
+ * Kept deliberately ordinary and undramatic: the product's whole claim is
+ * that the signal lives in unremarkable writing, so a mockup showing a
+ * student in visible crisis would misrepresent what the model reads.
+ */
+const ENTRY = {
+  date: "8月20日（木）",
+  prompt: "今日はどんな一日だった？",
+  body: "部活がきつくて、最近あんまり眠れてない。朝がしんどいけど、みんなも同じだと思うから、たぶん大丈夫。",
+  count: "48",
+  /**
+   * The deep-dive. Not a chat: the diary is still the interface, and the AI
+   * returns a single question about what was actually written rather than
+   * opening a conversation. "たぶん大丈夫" is the kind of line it exists to
+   * push gently on.
+   */
+  followUp: "「あんまり眠れてない」のは、いつごろから？",
+};
 
 /**
  * Sample rows for the teacher panel.
  *
  * Anonymised exactly the way the real report is — class and roll number,
- * never a name, never a quotation from the conversation. That is the product
- * decision made visible: the panel is the *whole* of what a teacher receives.
- * Keeping the mockup to that standard also means it can't be mistaken for a
- * screenshot of real students.
+ * never a name, never a line quoted from the entry itself. That is the
+ * product decision made visible: the panel is the *whole* of what a teacher
+ * receives. Holding the mockup to that standard also means it cannot be
+ * mistaken for a screenshot of real students.
  *
  * Full class names throughout — Tailwind scans source text, so an
  * interpolated `bg-risk-${level}` would never be generated.
  */
-/**
- * Observations, not a risk classification.
- *
- * The previous rows carried 高/中/低 per student. The product stopped
- * producing that on 2026-08-06: "wrote a direct statement about self-harm at
- * 22:14" is a fact, while "risk: high" is an inference about a minor's
- * internal state whose positive predictive value is poor at school-level
- * prevalence no matter how good the model gets. The third row shows the
- * ramp-up state on purpose, so the screen is honest about what it cannot say
- * yet. See BLESC docs/educator_display_policy.md.
- */
-const OBSERVATIONS = [
+const ROWS = [
   {
     klass: "3年2組",
     no: "#14",
-    observation: "自傷に関する直接的な表現",
-    meta: "8/3 22:14 · 決定的マッチ",
+    level: "高",
+    width: "88%",
+    bar: "bg-risk-high",
+    text: "text-risk-high",
   },
   {
     klass: "3年1組",
     no: "#08",
-    observation: "「消えたい」など離脱を示唆する表現",
-    meta: "8/2 19:40 · 決定的マッチ",
+    level: "中",
+    width: "63%",
+    bar: "bg-risk-mid",
+    text: "text-risk-mid",
+  },
+  {
+    klass: "3年2組",
+    no: "#27",
+    level: "中",
+    width: "54%",
+    bar: "bg-risk-mid",
+    text: "text-risk-mid",
   },
   {
     klass: "3年3組",
     no: "#03",
-    observation: "基準値の学習中（残り 6 日）",
-    meta: "比較は表示されません",
+    level: "低",
+    width: "21%",
+    bar: "bg-risk-low",
+    text: "text-risk-low",
   },
 ] as const;
 
-const FRAME =
-  "flex flex-1 flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-[var(--shadow-card)]";
+/** Chrome comes from SpotlightCard; this is only the layout. */
+const FRAME = "flex flex-1 flex-col overflow-hidden";
 
 function StudentScreen() {
   return (
-    <div className={FRAME}>
-      <div className="flex items-center gap-2.5 border-b border-line px-5 py-4">
-        <span className="size-2.5 rounded-full bg-accent" />
-        <span className="text-[0.85rem] font-medium tracking-[-0.01em] text-ink">
-          blesc
-        </span>
+    <SpotlightCard className={FRAME}>
+      {/* h-5 keeps this header the height the old lockup occupied. */}
+      <div className="flex items-center border-b border-line px-5 py-4">
+        <Logo className="h-5 w-auto" />
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
-        {CHAT.map((m, i) => (
-          <div
-            key={i}
-            className={`max-w-[85%] px-4 py-2.5 text-[0.85rem] leading-relaxed ${
-              m.from === "me"
-                ? "ml-auto rounded-2xl rounded-br-md bg-accent text-on-accent"
-                : "rounded-2xl rounded-bl-md bg-inset text-ink"
-            }`}
-          >
-            {m.text}
-          </div>
-        ))}
+      <div className="flex flex-1 flex-col gap-4 p-5">
+        <div>
+          <p className="text-[0.75rem] tabular-nums text-muted">{ENTRY.date}</p>
+          <p className="mt-1.5 text-[0.9rem] font-medium tracking-[-0.01em] text-ink">
+            {ENTRY.prompt}
+          </p>
+        </div>
 
-        <div className="flex w-fit items-center gap-1.5 rounded-2xl rounded-bl-md bg-inset px-4 py-3.5">
-          <span className="typing-dot size-1.5 rounded-full bg-muted" />
-          <span className="typing-dot size-1.5 rounded-full bg-muted" />
-          <span className="typing-dot size-1.5 rounded-full bg-muted" />
+        {/*
+          The writing surface. flex-1 so it takes whatever height is left,
+          which is what makes a diary read as a diary rather than as a form
+          field — the page is mostly the space to write in.
+        */}
+        <div className="flex flex-1 flex-col rounded-2xl bg-inset p-4">
+          <p className="text-[0.85rem] leading-[1.9] text-ink">{ENTRY.body}</p>
+          <span className="mt-auto pt-3 text-right text-[0.7rem] tabular-nums text-muted">
+            {ENTRY.count}字
+          </span>
+        </div>
+
+        {/*
+          Tinted rather than bordered so it reads as the system speaking back,
+          not as another field to fill in. The label uses mark-1, not accent:
+          #85c0ed is a fill colour and measures 1.87:1 as text on the light
+          ground, while mark-1 flips with the theme.
+        */}
+        <div className="rounded-2xl bg-accent/10 p-4">
+          <p className="flex items-center gap-1.5 text-[0.7rem] font-medium tracking-[0.06em] text-mark-1">
+            <Icon name="auto_awesome" size={14} className="shrink-0" />
+            AIからの問いかけ
+          </p>
+          <p className="mt-2 text-[0.85rem] leading-relaxed text-ink">
+            {ENTRY.followUp}
+          </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 border-t border-line px-5 py-4">
-        <span className="flex-1 rounded-full bg-inset px-4 py-2.5 text-[0.8rem] text-muted">
-          メッセージを入力...
+      <div className="flex items-center justify-between gap-3 border-t border-line px-5 py-4">
+        <span className="flex items-center gap-1.5 text-[0.75rem] text-muted">
+          <Icon name="lock" size={14} className="shrink-0" />
+          本文は先生に見えません
         </span>
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent">
-          <Icon name="arrow_upward" size={18} />
+        <span className="rounded-full bg-accent px-4 py-2 text-[0.78rem] font-medium text-on-accent">
+          提出する
         </span>
       </div>
-    </div>
+    </SpotlightCard>
   );
 }
 
 function TeacherScreen() {
   return (
-    <div className={FRAME}>
+    <SpotlightCard className={FRAME}>
       <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
         <span className="text-[0.85rem] font-medium tracking-[-0.01em] text-ink">
-          今月の観測レポート
+          今月のリスクレポート
         </span>
-        <span className="shrink-0 rounded-full bg-inset px-2.5 py-1 text-[0.7rem] font-medium text-muted">
-          3件の要確認
+        <span className="shrink-0 rounded-full bg-risk-high/15 px-2.5 py-1 text-[0.7rem] font-medium text-risk-high">
+          3件の要対応
         </span>
       </div>
 
       <div className="flex flex-1 flex-col justify-center divide-y divide-line">
-        {OBSERVATIONS.map((row) => (
-          <div key={`${row.klass}${row.no}`} className="px-5 py-4">
-            <div className="flex items-baseline gap-3">
-              <span className="w-[5.5rem] shrink-0 text-[0.8rem] tabular-nums text-muted">
-                {row.klass} <span className="text-ink">{row.no}</span>
-              </span>
-              {/*
-                No bar and no colour band. A meter reads as a measurement, and
-                red-amber-green would carry a severity judgement the product
-                does not make — so the observation itself is the content.
-              */}
-              <span className="text-[0.8rem] leading-relaxed text-ink">
-                {row.observation}
-              </span>
-            </div>
-            <div className="mt-1 pl-[5.5rem] text-[0.7rem] text-muted">
-              {row.meta}
-            </div>
+        {ROWS.map((row) => (
+          <div
+            key={`${row.klass}${row.no}`}
+            className="flex items-center gap-4 px-5 py-4"
+          >
+            <span className="w-[5.5rem] shrink-0 text-[0.8rem] tabular-nums text-muted">
+              {row.klass} <span className="text-ink">{row.no}</span>
+            </span>
+
+            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-inset">
+              <span
+                className={`block h-full rounded-full ${row.bar}`}
+                style={{ width: row.width }}
+              />
+            </span>
+
+            {/*
+              The level is printed, not merely coloured. Red-amber-green is
+              the worst possible pairing for colour blindness, so the label
+              is what actually carries the meaning — WCAG 1.4.1.
+            */}
+            <span
+              className={`w-4 shrink-0 text-right text-[0.8rem] font-medium ${row.text}`}
+            >
+              {row.level}
+            </span>
           </div>
         ))}
       </div>
 
-      <div className="border-t border-line px-5 py-3 text-[0.7rem] text-muted">
-        会話ログは共有されません／本ツールは診断を行いません
+      <div className="flex items-center gap-2 border-t border-line px-5 py-4 text-[0.78rem] text-muted">
+        <Icon name="lock" size={16} className="shrink-0" />
+        日記の本文は共有されません
       </div>
-    </div>
+    </SpotlightCard>
   );
 }
 
@@ -157,7 +200,7 @@ function Screen({
 
       {/*
         The frames are pictures of software, not software. Marked decorative
-        so a screen reader is not walked through a staged conversation and a
+        so a screen reader is not walked through a staged diary entry and a
         table of invented roll numbers as though they were real; the sentence
         underneath each one says what it shows.
       */}
@@ -173,10 +216,10 @@ function Screen({
 /**
  * The two screens the product actually is.
  *
- * Split out of テクノロジー, which was three paragraphs about an ontology
- * graph and no picture of the thing being sold. The privacy claim in
- * particular is much harder to doubt when both sides are shown at once: the
- * conversation on the left never appears on the right.
+ * Split out of テクノロジー, which argued for an ontology graph without ever
+ * showing the thing being sold. Both sides at once is also the clearest form
+ * of the privacy claim: what the student writes on the left never appears on
+ * the right.
  */
 export function Product() {
   return (
@@ -187,27 +230,27 @@ export function Product() {
 
       <Reveal className="max-w-3xl">
         <p className="text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.5] tracking-[-0.02em] text-ink">
-          生徒が語り、教員は要点だけを受け取る。
+          毎日5分の日記から、心理的リスクを捉える。
         </p>
       </Reveal>
 
-      <Reveal className="mt-8 max-w-2xl">
+      <Reveal className="mt-6 max-w-2xl">
         <Lines className="measure-jp text-muted">
-          {`生徒側は、構えずに話せるチャット。
-教員側は、対応が必要な生徒だけが浮かび上がる要点レポート。
-会話ログそのものが教員に共有されることはありません。`}
+          {`生徒が書くのは、1日5分の短い日記だけ。
+独自のAIがその内容を深掘りし、言葉の奥にあるサインまで捉えます。
+教員に届くのは要点のみで、日記の本文が共有されることはありません。`}
         </Lines>
       </Reveal>
 
-      <Reveal className="mt-16">
+      <Reveal className="mt-14">
         <div className="grid items-stretch gap-10 md:grid-cols-2 md:gap-8">
-          <Screen label="生徒の画面" caption="構えずに話せる、月に一度の対話。">
+          <Screen label="生徒の画面" caption="毎日5分。書いた内容に、AIが問いを返します。">
             <StudentScreen />
           </Screen>
 
           <Screen
             label="教員の画面"
-            caption="届くのは要点のみ。会話の中身は非公開。"
+            caption="届くのは要点のみ。日記の本文は非公開。"
           >
             <TeacherScreen />
           </Screen>

@@ -3,7 +3,8 @@
 import { useMotionValueEvent, useScroll } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { GlassSurface } from "@/components/GlassSurface";
+import { Logo } from "@/components/Logo";
+import { ButtonLink } from "@/components/ui";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CTA, NAV_LINKS, sectionHref } from "@/lib/site";
 
@@ -85,11 +86,13 @@ export function Nav() {
         aria-label="メインナビゲーション"
         className="mx-auto flex h-20 w-full max-w-[68rem] items-center justify-between px-6 md:px-10"
       >
+        {/* Images are decorative; the link carries the name. */}
         <a
           href={onHome ? "#top" : "/"}
-          className="text-xl font-semibold tracking-[-0.02em] text-ink"
+          aria-label="Blesc"
+          className="flex items-center"
         >
-          Blesc
+          <Logo className="h-6 w-auto md:h-7" />
         </a>
 
         <div className="flex items-center gap-4 md:gap-6">
@@ -122,22 +125,10 @@ export function Nav() {
 
           <ThemeToggle compact />
 
-          <a
-            href={CTA.consult.href}
-            className="glass-btn-primary inline-block rounded-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02]"
-          >
-            <GlassSurface
-              className="flex items-center text-[0.85rem] font-medium text-on-accent"
-              style={{
-                background: "var(--glass-tint)",
-                borderRadius: 9999,
-                padding: "0.625rem 1.25rem",
-                transition: "background 300ms cubic-bezier(0.16,1,0.3,1)",
-              }}
-            >
-              {CTA.consult.label}
-            </GlassSurface>
-          </a>
+          {/* Was a hand-rolled copy of ButtonLink's glass markup. */}
+          <ButtonLink href={CTA.consult.href} size="sm">
+            {CTA.consult.label}
+          </ButtonLink>
         </div>
       </nav>
     </header>

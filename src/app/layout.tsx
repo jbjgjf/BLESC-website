@@ -6,6 +6,7 @@ import { Nav } from "@/components/Nav";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import { ScrollProgress } from "@/components/ScrollProgress";
+import { SpotlightPointer } from "@/components/SpotlightPointer";
 import { SmoothScroll } from "@/components/SmoothScroll";
 
 /**
@@ -30,7 +31,7 @@ const notoSansJp = Noto_Sans_JP({
 export const metadata: Metadata = {
   title: "Blesc — 生徒のSOSを可視化する",
   description:
-    "Blescは、月に一度のホームルームでの自然な対話から、生徒の心理的リスクの早期サインをAIが検知する学校向けプラットフォームです。会話ログそのものが教員に公開されることはありません。",
+    "Blescは、生徒が毎日5分で綴る日記を独自のAIが深掘りし、心理的リスクの早期サインを検知する学校向けプラットフォームです。日記の本文そのものが教員に公開されることはありません。",
   openGraph: {
     title: "Blesc — 生徒のSOSを可視化する",
     description:
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0b0d",
+  themeColor: "#fafaf8",
   width: "device-width",
   initialScale: 1,
 };
@@ -56,7 +57,7 @@ export default function RootLayout({
     // before React hydrates, so the server's attribute intentionally differs.
     <html
       lang="ja"
-      data-theme="dark"
+      data-theme="light"
       suppressHydrationWarning
       className={`${inter.variable} ${notoSansJp.variable}`}
     >
@@ -77,16 +78,13 @@ export default function RootLayout({
         <noscript>
           <style>{`
             main [style], header [style] { opacity: 1 !important; filter: none !important; transform: none !important; }
-            /* The carousel needs script to show a stage, so promote
-               its always-present fallback list to the visible copy instead. */
-            .stage-fallback { position: static !important; width: auto !important; height: auto !important; margin: 0 !important; clip: auto !important; clip-path: none !important; white-space: normal !important; }
-            .stage-fallback li { margin-bottom: 2rem; }
           `}</style>
         </noscript>
       </head>
       <body className="antialiased">
         <ThemeProvider>
           <SmoothScroll />
+          <SpotlightPointer />
           <ScrollProgress />
           <Nav />
           <main>{children}</main>

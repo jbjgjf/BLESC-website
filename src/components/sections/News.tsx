@@ -3,17 +3,21 @@ import { Flower } from "@/components/Flower";
 import { SectionTitle, Icon, Section } from "@/components/ui";
 
 /**
- * PLACEHOLDER — every entry here is invented, including the dates and the
- * partner mentions. Nothing on this list has happened. Replace the array
- * before the page is public; a press list that looks factual is the kind of
- * placeholder that survives launch by accident.
+ * Real entries. The invented placeholder list that used to sit here — the
+ * Kyoto University study, the Hatapro tie-up, the pilot schools, the
+ * conference — has been removed rather than kept alongside, because a press
+ * list that mixes the two is worse than one that is short.
  *
- * `href` is intentionally absent: there are no article pages yet, and a
+ * `date` is optional and both entries are currently without one: the events
+ * happened, but inventing a date for something the company actually did is
+ * the same failure as inventing the entry. Fill them in and they render.
+ *
+ * `href` is intentionally absent too: there are no article pages yet, and a
  * headline that looks clickable but goes nowhere is worse than one that
  * plainly doesn't. Add the field and the entry becomes a link.
  */
 type NewsItem = {
-  date: string;
+  date?: string;
   category: string;
   title: string;
   href?: string;
@@ -21,24 +25,12 @@ type NewsItem = {
 
 const ITEMS: NewsItem[] = [
   {
-    date: "2026.07.15",
-    category: "プレスリリース",
-    title: "京都大学 臨床心理学研究室との共同研究を開始しました。",
+    category: "登壇",
+    title: "「SusHi Tech Tokyo」に登壇し、Blescの取り組みについて発表しました。",
   },
   {
-    date: "2026.06.02",
-    category: "お知らせ",
-    title: "株式会社Hataproと、プラットフォーム基盤の開発で連携します。",
-  },
-  {
-    date: "2026.04.22",
-    category: "導入事例",
-    title: "公立中学校3校でのパイロット導入が完了しました。",
-  },
-  {
-    date: "2026.03.08",
-    category: "メディア",
-    title: "教育分野のカンファレンスでBlescの取り組みを発表しました。",
+    category: "受賞",
+    title: "「IVS」YOUTH部門において、優秀賞を受賞しました。",
   },
 ];
 
@@ -47,7 +39,7 @@ const MARKS = ["text-mark-1", "text-mark-2", "text-mark-3"] as const;
 
 export function News() {
   return (
-    <Section id="news" alt>
+    <Section id="news">
       <Reveal>
         <SectionTitle accent="bg-mark-3">ニュース</SectionTitle>
       </Reveal>
@@ -59,16 +51,18 @@ export function News() {
         </p>
       </Reveal>
 
-      <Stagger className="mt-14" stagger={0.09}>
+      <Stagger className="mt-10" stagger={0.09}>
         {ITEMS.map((item, i) => {
           const mark = MARKS[i % MARKS.length];
 
           const body = (
-            <div className="flex flex-col gap-2 border-t border-line py-7 md:flex-row md:items-baseline md:gap-8 md:py-8">
+            <div className="flex flex-col gap-2 border-t border-line py-6 md:flex-row md:items-baseline md:gap-8 md:py-7">
               <div className="flex shrink-0 items-center gap-4">
-                <time className="text-[0.85rem] tabular-nums text-muted">
-                  {item.date}
-                </time>
+                {item.date && (
+                  <time className="text-[0.85rem] tabular-nums text-muted">
+                    {item.date}
+                  </time>
+                )}
                 <span
                   className={`text-[0.75rem] font-medium tracking-[0.08em] ${mark}`}
                 >

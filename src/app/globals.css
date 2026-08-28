@@ -95,6 +95,50 @@
   --risk-mid: #fbbf24;
   --risk-low: #4ade80;
 
+  /*
+   * Spotlight. The pointer position is published to :root by
+   * SpotlightPointer; it starts far off-screen so nothing is lit before the
+   * first move.
+   *
+   * The hue arc is taken from the palette rather than invented: --mark-1 is
+   * hsl(206 74% 73%) and --mark-2 is hsl(250 74% 77%), so sweeping 200 → 255
+   * across the viewport travels between the site's own two blues and cannot
+   * wander off-brand. The component this came from swept 200 degrees from a
+   * blue base, which runs through purple, red and orange.
+   */
+  --pointer-x: -9999;
+  --pointer-y: -9999;
+  --pointer-xp: 0.5;
+  --spot-base: 200;
+  --spot-spread: 55;
+  --spot-sat: 74;
+  --spot-light: 73;
+  --spot-wash: 0.13;
+  --spot-ring: 1;
+
+  /*
+   * Graph-paper field behind 課題. The component this came from hardcoded a
+   * slate grid on white with a magenta-to-purple orb; both are replaced by
+   * the palette's own values so the field flips with the theme.
+   *
+   * The orb is --mark-1 falling off into --mark-2 — the same two blues the
+   * spotlight sweeps between. At these alphas the copy over it still holds
+   * 15.0:1 for ink and 9.2:1 for muted.
+   */
+  --grid-line: rgba(255, 255, 255, 0.055);
+  --grid-orb-near: rgba(133, 192, 237, 0.16);
+  --grid-orb-far: rgba(169, 155, 240, 0.07);
+
+  /*
+   * Liquid-glass panels. The component these came from hardcoded a white
+   * tint and a white inset edge, which is right on a photograph and wrong
+   * on a near-black page — the tint has to lighten on dark and stay light
+   * but far stronger on the near-white build to read at all.
+   */
+  --glass-panel: rgba(255, 255, 255, 0.055);
+  --glass-edge: inset 1px 1px 0 0 rgba(255, 255, 255, 0.13),
+    inset -1px -1px 0 0 rgba(255, 255, 255, 0.045);
+
   /* the "expo-out" curve — default premium easing across the whole site */
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -142,6 +186,28 @@
    */
   --color-glare: #1a2332;
   --glare-opacity: 0.1;
+
+  /*
+   * A 73%-lightness glow is invisible on a near-white card, so light mode
+   * darkens the spotlight and pulls both opacities down — the same cue,
+   * inverted, exactly as the tilt sheen does.
+   */
+  --spot-light: 52;
+  --spot-wash: 0.07;
+  --spot-ring: 0.75;
+
+  /*
+   * A white grid line is invisible on a near-white page, so light mode
+   * draws the field in ink instead — the same texture, inverted. Ink over
+   * the orb holds 12.7:1 and muted 5.6:1 here.
+   */
+  --grid-line: rgba(26, 35, 50, 0.07);
+  --grid-orb-near: rgba(43, 110, 163, 0.13);
+  --grid-orb-far: rgba(91, 75, 184, 0.06);
+
+  --glass-panel: rgba(255, 255, 255, 0.55);
+  --glass-edge: inset 1px 1px 0 0 rgba(255, 255, 255, 0.9),
+    inset -1px -1px 0 0 rgba(26, 35, 50, 0.06);
 
   /* Darkened for a white card; the dark-theme tints would wash out. */
   --risk-high: #dc2626;
@@ -246,6 +312,171 @@ body {
 }
 :root[data-theme="light"] .glass-btn-secondary:hover {
   --glass-tint: rgba(255, 255, 255, 0.92);
+}
+
+/* ---------------------------------------------------------------------------
+   Brand mark, one file per theme. Both ship in the markup and CSS picks;
+   the pre-paint script has already set data-theme, so the right one is
+   correct on the first frame rather than corrected after hydration.
+
+   Layered so a Tailwind utility can still override `display` if the mark
+   ever needs to be hidden at a breakpoint — unlayered, these would silently
+   beat every `hidden`/`md:block` in the codebase.
+--------------------------------------------------------------------------- */
+@layer components {
+  .logo-on-light {
+    display: none;
+  }
+  :root[data-theme="light"] .logo-on-dark {
+    display: none;
+  }
+  :root[data-theme="light"] .logo-on-light {
+    display: block;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Spotlight cards.
+
+   Gated on a fine pointer: the effect follows a cursor, and the
+   `background-attachment: fixed` it depends on is unreliable on mobile
+   Safari. Gated on reduced motion too, since the glow tracks the pointer
+   continuously. Outside those conditions the cards keep their ordinary
+   border and surface and nothing else changes.
+
+   Coordinates are viewport-space, which is why the backgrounds are fixed:
+   that lets one set of :root variables drive every card without any card
+   having to know where it sits on the page.
+--------------------------------------------------------------------------- */
+.spotlight {
+  position: relative;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .spotlight {
+    --spot-hue: calc(var(--spot-base) + var(--pointer-xp) * var(--spot-spread));
+    --spot-tint: hsl(
+      var(--spot-hue) calc(var(--spot-sat) * 1%) calc(var(--spot-light) * 1%)
+    );
+
+    /* Interior wash. Sits over the card's own background-color. */
+    background-image: radial-gradient(
+      34rem 34rem at calc(var(--pointer-x) * 1px) calc(var(--pointer-y) * 1px),
+      hsl(
+          var(--spot-hue) calc(var(--spot-sat) * 1%)
+            calc(var(--spot-light) * 1%) / var(--spot-wash)
+        )
+        0%,
+      transparent 100%
+    );
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  /*
+   * The lit edge. A 1px ring drawn with the padding-box/border-box mask
+   * trick, which survives `overflow: hidden` on the host — the pseudo-element
+   * inset the original used would be clipped away by it.
+   */
+  .spotlight::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(
+      28rem 28rem at calc(var(--pointer-x) * 1px) calc(var(--pointer-y) * 1px),
+      hsl(
+          var(--spot-hue) calc(var(--spot-sat) * 1%)
+            calc(var(--spot-light) * 1%) / var(--spot-ring)
+        )
+        0%,
+      transparent 100%
+    );
+    background-attachment: fixed;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Stacked panels (構造的な限界).
+
+   Each panel sticks a header's height further down than the one before it,
+   so they pile up with every previous header still showing. The offsets
+   live here rather than inline because they change at the md breakpoint,
+   and an inline style cannot carry a media query.
+
+   --stack-top clears the fixed 5rem nav.
+--------------------------------------------------------------------------- */
+.stack {
+  --stack-top: 5.5rem;
+  --stack-header: 4.5rem;
+  /*
+   * Every panel is padded so that, once stuck, its bottom edge lands on the
+   * same line — panel 0 sits highest so it is the tallest. That is what
+   * makes all of them come unstuck at the same scroll position and leave
+   * together. Without it they release in sequence, shortest range first, and
+   * the pile unpeels from the bottom instead of moving as one.
+   *
+   * The value has to clear the tallest panel's own content, or that panel
+   * grows past its share and releases early. Mobile stacks the photograph
+   * under the copy, so it needs considerably more.
+   */
+  --stack-release: 46rem;
+}
+@media (min-width: 768px) {
+  .stack {
+    --stack-top: 6rem;
+    --stack-header: 5.5rem;
+    --stack-release: 32rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Grid field.
+
+   Two 1px gradients on a 40px pitch make the graph paper; a third radial
+   layer is the glow behind it. All three are one background shorthand, so
+   the whole thing is a single painted layer with no extra elements.
+
+   The mask is the part that matters. Without it the grid stops dead at the
+   section's edges and reads as a pasted rectangle; fading it out on an
+   ellipse concentrates it behind the copy and lets the section blend into
+   its neighbours.
+--------------------------------------------------------------------------- */
+.grid-field {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+    radial-gradient(
+      circle at 50% 45%,
+      var(--grid-orb-near) 0%,
+      var(--grid-orb-far) 40%,
+      transparent 70%
+    );
+  background-size:
+    40px 40px,
+    40px 40px,
+    100% 100%;
+  -webkit-mask-image: radial-gradient(
+    ellipse 78% 62% at 50% 44%,
+    #000 38%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 78% 62% at 50% 44%,
+    #000 38%,
+    transparent 100%
+  );
 }
 
 /* Japanese paragraph text needs more air than Latin to stay readable. */
