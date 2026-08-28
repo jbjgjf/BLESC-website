@@ -140,24 +140,37 @@ export function IntroFade({
   translate = true,
   duration = 0.9,
   blur = 8,
-}: RevealProps & { translate?: boolean; duration?: number; blur?: number }) {
+  as = "div",
+}: RevealProps & {
+  translate?: boolean;
+  duration?: number;
+  blur?: number;
+  /**
+   * Render as a span instead of a div. Needed wherever an IntroFade sits
+   * inside a heading: <h1> takes phrasing content only, so a div in there is
+   * invalid markup — which matters here because the hero's Japanese tagline
+   * is part of the h1 rather than a paragraph after it.
+   */
+  as?: "div" | "span";
+}) {
   const reduce = useReducedMotion();
+  const Tag = as === "span" ? motion.span : motion.div;
 
   if (reduce) {
     return (
-      <motion.div
+      <Tag
         className={className}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, delay }}
       >
         {children}
-      </motion.div>
+      </Tag>
     );
   }
 
   return (
-    <motion.div
+    <Tag
       className={className}
       initial={{
         opacity: 0,
@@ -168,7 +181,7 @@ export function IntroFade({
       transition={{ duration, ease: EXPO_OUT, delay }}
     >
       {children}
-    </motion.div>
+    </Tag>
   );
 }
 
