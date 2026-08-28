@@ -1,33 +1,52 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Fragment } from "react";
 import { GlassSurface } from "@/components/GlassSurface";
+import { ICON_PATHS, ICON_VIEW_BOX, type IconName } from "@/lib/icons";
 
 /* -------------------------------------------------------------------------- */
 /* Icon                                                                       */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Material Symbols, outlined style. Every icon on the site comes from here —
- * no emoji, no second icon set. Icons are decorative; the adjacent text
- * always carries the meaning, so they are hidden from assistive tech.
+ * Inline SVG, from the twelve paths in lib/icons — no webfont. Every icon on
+ * the site comes from here — no emoji, no second icon set.
+ *
+ * Icons are decorative; the adjacent text always carries the meaning, so they
+ * are hidden from assistive tech.
+ *
+ * `fill="currentColor"` is what keeps every existing `text-*` class working:
+ * the old implementation coloured a glyph via the text colour, and an SVG
+ * filled with currentColor inherits exactly the same value, so `text-mark-1`
+ * and friends needed no change at the call sites.
  */
 export function Icon({
   name,
   className = "",
   size = 24,
 }: {
-  name: string;
+  name: IconName;
   className?: string;
   size?: number;
 }) {
   return (
-    <span
+    <svg
       aria-hidden
-      className={`material-symbols-outlined ${className}`}
-      style={{ fontSize: size, width: size, height: size }}
+      focusable="false"
+      viewBox={ICON_VIEW_BOX}
+      fill="currentColor"
+      className={className}
+      /*
+       * Size only — deliberately no `display` here. Tailwind's preflight
+       * already sets `svg { display: block }`, and an inline display would
+       * outrank every class, which would silently break the one call site
+       * that hides its icon responsively (`hidden md:block` in News). That is
+       * the same specificity trap the old icon font's own CSS set, just from
+       * the other direction.
+       */
+      style={{ width: size, height: size }}
     >
-      {name}
-    </span>
+      <path d={ICON_PATHS[name]} />
+    </svg>
   );
 }
 
@@ -69,7 +88,7 @@ export function HoverSwap({
   icon = "arrow_forward",
 }: {
   children: ReactNode;
-  icon?: string;
+  icon?: IconName;
 }) {
   const ease =
     "transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]";

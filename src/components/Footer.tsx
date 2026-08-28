@@ -9,7 +9,7 @@ import {
   CONTACT_EMAIL,
   CONTACT_PATH,
   CTA,
-  NAV_LINKS,
+  FOOTER_LINKS,
   sectionHref,
 } from "@/lib/site";
 
@@ -82,7 +82,7 @@ export function Footer() {
             </h3>
             <nav aria-label="フッターナビゲーション" className="mt-5">
               <ul className="flex flex-col gap-3">
-                {NAV_LINKS.map(({ id, label }) => (
+                {FOOTER_LINKS.map(({ id, label }) => (
                   <li key={id}>
                     <a
                       href={sectionHref(id, onHome)}

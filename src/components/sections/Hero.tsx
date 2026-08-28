@@ -101,6 +101,14 @@ export function Hero() {
             <Logo alt="Blesc" className="h-7 w-auto md:h-8" />
           </IntroFade>
 
+          {/*
+            The Japanese line is inside the h1, not in a <p> after it.
+            Visually identical — it keeps its own size, weight and colour —
+            but the page's single most weighted heading now states what Blesc
+            does in the language its visitors search in, instead of an
+            English couplet no one queries for. Rendered as a span so the
+            heading still contains only phrasing content.
+          */}
           <h1 className="mt-8 text-[clamp(2.25rem,6.4vw,4.25rem)] font-medium leading-[1.1] tracking-[-0.03em] text-ink">
             {HEADLINE_LINES.map((line, i) => (
               <span key={line} className="block">
@@ -113,13 +121,15 @@ export function Hero() {
                 />
               </span>
             ))}
-          </h1>
 
-          <IntroFade delay={AFTER_HEADLINE}>
-            <p className="mt-8 text-lg text-muted md:text-xl">
+            <IntroFade
+              as="span"
+              delay={AFTER_HEADLINE}
+              className="mt-8 block text-lg font-normal leading-normal tracking-normal text-muted md:text-xl"
+            >
               生徒のSOSを可視化する。
-            </p>
-          </IntroFade>
+            </IntroFade>
+          </h1>
 
           <IntroFade delay={AFTER_HEADLINE + 0.08}>
             <div className="mt-12 flex flex-col gap-4 sm:flex-row">
