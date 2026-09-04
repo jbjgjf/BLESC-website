@@ -114,10 +114,10 @@ export const metadata: Metadata = {
    */
   formatDetection: { telephone: false, date: false, address: false },
   /*
-   * icon is omitted: app/favicon.ico is picked up by convention and naming
-   * it here as well emits the link twice.
+   * No `icons` block: app/favicon.ico and app/apple-icon.png are both picked
+   * up by file convention, and naming either here as well emits the link
+   * twice.
    */
-  icons: { apple: "/logo/logo-on-light.png" },
   /*
    * Paste the token from Search Console → 設定 → 所有権の確認 → HTML タグ.
    * Left unset rather than blank: an empty string emits an empty meta tag.
