@@ -1,6 +1,5 @@
 "use client";
 
-import { Logo } from "@/components/Logo";
 import { IntroFade, WordReveal } from "@/components/Reveal";
 import {
   ShaderBackground,
@@ -97,10 +96,6 @@ export function Hero() {
 
       <Container className="relative z-10">
         <div className="max-w-3xl">
-          <IntroFade delay={0.05}>
-            <Logo alt="Blesc" className="h-7 w-auto md:h-8" />
-          </IntroFade>
-
           {/*
             The Japanese line is inside the h1, not in a <p> after it.
             Visually identical — it keeps its own size, weight and colour —
@@ -109,7 +104,7 @@ export function Hero() {
             English couplet no one queries for. Rendered as a span so the
             heading still contains only phrasing content.
           */}
-          <h1 className="mt-8 text-[clamp(2.25rem,6.4vw,4.25rem)] font-medium leading-[1.1] tracking-[-0.03em] text-ink">
+          <h1 className="text-[clamp(2.25rem,6.4vw,4.25rem)] font-medium leading-[1.1] tracking-[-0.03em] text-ink">
             {HEADLINE_LINES.map((line, i) => (
               <span key={line} className="block">
                 <WordReveal
