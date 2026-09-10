@@ -121,45 +121,53 @@ export function SignalMock() {
   );
 }
 
-/** 05 — the whole of what a teacher receives. */
+/**
+ * 05 — the whole of what a teacher receives.
+ *
+ * The band this used to show (高/中/低, with a bar whose width encoded a
+ * score) is the same claim `educator_display_policy.md` removed from the
+ * product on 2026-08-06, and the same one the LP was already corrected for
+ * once — see ④ in `lp_claim_alignment.md`. It came back here because this
+ * mock lives outside プロダクト and was missed. It now shows what the educator
+ * surface actually renders: the matched observation, when, and its basis.
+ *
+ * Currently unrendered — 仕組み stops at 04 — but kept in step with the
+ * policy rather than left as a compliant-looking place to paste a band back
+ * into.
+ */
 const ROWS = [
-  { id: "3年2組 #14", level: "高", width: "88%", bar: "bg-risk-high", text: "text-risk-high" },
-  { id: "3年1組 #08", level: "中", width: "62%", bar: "bg-risk-mid", text: "text-risk-mid" },
-  { id: "3年3組 #03", level: "低", width: "24%", bar: "bg-risk-low", text: "text-risk-low" },
+  { id: "3年2組 #14", observation: "苦痛の表現（危険の明示なし）", at: "8/20 21:47" },
+  { id: "3年1組 #08", observation: "離脱を示唆する曖昧な表現", at: "8/19 22:03" },
+  { id: "3年3組 #03", observation: "別の画面での開示を引き継ぎ", at: "8/18 20:15" },
 ];
 
 export function ReportMock() {
   return (
     <div className="flex h-full flex-col gap-3 p-4">
       <div className="flex items-center justify-between">
-        <span className="text-[0.7rem] font-medium text-ink">今月のリスクレポート</span>
-        <span className="rounded-full bg-risk-high/15 px-2 py-0.5 text-[0.6rem] font-medium text-risk-high">
-          3件の要対応
+        <span className="text-[0.7rem] font-medium text-ink">要確認の観測</span>
+        <span className="rounded-full bg-inset px-2 py-0.5 text-[0.6rem] font-medium text-muted">
+          新しい順
         </span>
       </div>
 
       <div className="flex flex-1 flex-col justify-center gap-2.5">
-        {ROWS.map((row, i) => (
-          <div key={row.id} className="flex items-center gap-3">
-            <span className="w-[4.5rem] shrink-0 text-[0.62rem] tabular-nums text-muted">
-              {row.id}
-            </span>
-            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-inset">
-              <motion.span
-                className={`block h-full rounded-full ${row.bar}`}
-                {...grow(row.width, i)}
-              />
-            </span>
-            <span className={`w-3 shrink-0 text-right text-[0.65rem] font-medium ${row.text}`}>
-              {row.level}
-            </span>
+        {ROWS.map((row) => (
+          <div key={row.id}>
+            <p className="flex items-baseline gap-2 text-[0.62rem] tabular-nums text-muted">
+              <span className="text-ink">{row.id}</span>
+              <span>{row.at}</span>
+            </p>
+            <p className="mt-0.5 text-[0.65rem] leading-snug text-ink">
+              観測: {row.observation}
+            </p>
           </div>
         ))}
       </div>
 
-      <p className="flex items-center gap-1.5 text-[0.6rem] text-muted">
-        <Icon name="lock" size={11} className="shrink-0" />
-        日記の本文は共有されません
+      <p className="flex items-start gap-1.5 text-[0.6rem] leading-snug text-muted">
+        <Icon name="lock" size={11} className="mt-px shrink-0" />
+        診断は行いません。日記の本文も共有されません。
       </p>
     </div>
   );

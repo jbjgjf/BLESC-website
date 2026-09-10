@@ -48,7 +48,7 @@
   --surface-raised: #14171b;
   /*
    * Wells sunk INTO a raised plane — chat bubbles, the message field, the
-   * risk-bar tracks. --color-bg-alt was doing this job and measured 1.03:1
+   * signal-bar tracks. --color-bg-alt was doing this job and measured 1.03:1
    * against the card it sat on, i.e. invisible; it only ever worked because
    * the light build happens to land at 1.14:1. This is the dark equivalent
    * of that separation, taken slightly further because a dark ground needs
@@ -76,17 +76,6 @@
   /* TiltCard sheen: a light wash lifts a dark card. */
   --color-glare: #ffffff;
   --glare-opacity: 0.15;
-
-  /*
-   * Risk levels for the teacher-report mockup. The first non-blue colours on
-   * the site, and the only ones justified: severity is the whole point of
-   * that table. 高/中/低 is printed beside every bar, so colour is never the
-   * sole signal — which keeps it usable for red-green colour blindness and
-   * satisfies WCAG 1.4.1.
-   */
-  --risk-high: #f87171;
-  --risk-mid: #fbbf24;
-  --risk-low: #4ade80;
 
   /*
    * Spotlight. The pointer position is published to :root by
@@ -201,11 +190,6 @@
   --glass-panel: rgba(255, 255, 255, 0.55);
   --glass-edge: inset 1px 1px 0 0 rgba(255, 255, 255, 0.9),
     inset -1px -1px 0 0 rgba(26, 35, 50, 0.06);
-
-  /* Darkened for a white card; the dark-theme tints would wash out. */
-  --risk-high: #dc2626;
-  --risk-mid: #b45309;
-  --risk-low: #15803d;
 }
 
 @theme inline {
@@ -222,10 +206,6 @@
   --color-mark-1: var(--mark-1);
   --color-mark-2: var(--mark-2);
   --color-mark-3: var(--mark-3);
-  --color-risk-high: var(--risk-high);
-  --color-risk-mid: var(--risk-mid);
-  --color-risk-low: var(--risk-low);
-
   --font-sans: var(--font-inter), var(--font-noto-jp), ui-sans-serif, system-ui,
     "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
 }
