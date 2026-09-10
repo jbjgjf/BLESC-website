@@ -33,43 +33,53 @@ const ENTRY = {
  * receives. Holding the mockup to that standard also means it cannot be
  * mistaken for a screenshot of real students.
  *
- * Full class names throughout — Tailwind scans source text, so an
- * interpolated `bg-risk-${level}` would never be generated.
+ * What each row shows is an *observation* — which category of expression the
+ * deterministic safety layer matched, when, and on which surface — never a
+ * classification of the student. `educator_display_policy.md` (2026-08-06)
+ * removed the 高/中/低 band on arithmetic rather than on a validation gap: at
+ * 5% prevalence with 80/90 sensitivity/specificity the positive predictive
+ * value is ~30%, so seven in ten students labelled 高 would not be cases, and
+ * a better model does not move that. `state_band` and `latest_score` are still
+ * computed and stored; they are not rendered, not counted in a tile, and not
+ * used to order this list — ordering by band would put the classification back
+ * into the interface through the sort. These rows are newest-first, and the
+ * header says so.
+ *
+ * The observation wording is the product's own, from
+ * `sentra/frontend/src/lib/i18n/ja.ts` (`safety.reason`), so the mock and the
+ * screen cannot drift apart.
  */
 const ROWS = [
   {
     klass: "3年2組",
     no: "#14",
-    level: "高",
-    width: "88%",
-    bar: "bg-risk-high",
-    text: "text-risk-high",
+    observation: "苦痛の表現（危険の明示なし）",
+    at: "8月20日 21:47",
+    surface: "ジャーナル",
   },
   {
     klass: "3年1組",
     no: "#08",
-    level: "中",
-    width: "63%",
-    bar: "bg-risk-mid",
-    text: "text-risk-mid",
-  },
-  {
-    klass: "3年2組",
-    no: "#27",
-    level: "中",
-    width: "54%",
-    bar: "bg-risk-mid",
-    text: "text-risk-mid",
+    observation: "「消えたい」など離脱を示唆する曖昧な表現",
+    at: "8月19日 22:03",
+    surface: "チャット",
   },
   {
     klass: "3年3組",
     no: "#03",
-    level: "低",
-    width: "21%",
-    bar: "bg-risk-low",
-    text: "text-risk-low",
+    observation: "別の画面での開示を引き継ぎ",
+    at: "8月18日 20:15",
+    surface: "音声",
   },
 ] as const;
+
+/**
+ * Printed under every row. Rule 3 of the display policy: an educator has to be
+ * able to tell a lexicon match from a model judgement, so the provenance is
+ * stated rather than implied. Rule 2 is why there is no row without one — an
+ * observation with no reasons is not displayed at all.
+ */
+const BASIS = "根拠: 記述との一致 / 推論なし";
 
 /** Chrome comes from SpotlightCard; this is only the layout. */
 const FRAME = "flex flex-1 flex-col overflow-hidden";
@@ -137,47 +147,47 @@ function TeacherScreen() {
     <SpotlightCard className={FRAME}>
       <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
         <span className="text-[0.85rem] font-medium tracking-[-0.01em] text-ink">
-          今月のリスクレポート
+          要確認の観測
         </span>
-        <span className="shrink-0 rounded-full bg-risk-high/15 px-2.5 py-1 text-[0.7rem] font-medium text-risk-high">
-          3件の要対応
+        {/*
+          The sort is stated, and it is time. Anything that ranked these rows
+          by severity would be the removed band re-entering through the order
+          — display policy, rule 1.
+        */}
+        <span className="shrink-0 rounded-full bg-inset px-2.5 py-1 text-[0.7rem] font-medium text-muted">
+          新しい順
         </span>
       </div>
 
       <div className="flex flex-1 flex-col justify-center divide-y divide-line">
         {ROWS.map((row) => (
-          <div
-            key={`${row.klass}${row.no}`}
-            className="flex items-center gap-4 px-5 py-4"
-          >
-            <span className="w-[5.5rem] shrink-0 text-[0.8rem] tabular-nums text-muted">
-              {row.klass} <span className="text-ink">{row.no}</span>
-            </span>
-
-            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-inset">
-              <span
-                className={`block h-full rounded-full ${row.bar}`}
-                style={{ width: row.width }}
-              />
-            </span>
+          <div key={`${row.klass}${row.no}`} className="px-5 py-3.5">
+            <p className="flex items-baseline gap-2 text-[0.75rem] tabular-nums text-muted">
+              <span className="text-ink">
+                {row.klass} {row.no}
+              </span>
+              <span>
+                {row.at} · {row.surface}
+              </span>
+            </p>
 
             {/*
-              The level is printed, not merely coloured. Red-amber-green is
-              the worst possible pairing for colour blindness, so the label
-              is what actually carries the meaning — WCAG 1.4.1.
+              The observation is the row. It says which category of expression
+              was matched — not how the student is doing, and not a line
+              quoted from what they wrote.
             */}
-            <span
-              className={`w-4 shrink-0 text-right text-[0.8rem] font-medium ${row.text}`}
-            >
-              {row.level}
-            </span>
+            <p className="mt-1.5 text-[0.8rem] leading-snug text-ink">
+              観測: {row.observation}
+            </p>
+
+            <p className="mt-1 text-[0.7rem] text-muted">└ {BASIS}</p>
           </div>
         ))}
       </div>
 
-      <div className="flex items-center gap-2 border-t border-line px-5 py-4 text-[0.78rem] text-muted">
-        <Icon name="lock" size={16} className="shrink-0" />
-        日記の本文は共有されません
+      <div className="flex items-start gap-2 border-t border-line px-5 py-4 text-[0.78rem] leading-snug text-muted">
+        <Icon name="lock" size={16} className="mt-0.5 shrink-0" />
+        <span>本ツールは診断を行いません。日記の本文も共有されません。</span>
       </div>
     </SpotlightCard>
   );
@@ -230,15 +240,16 @@ export function Product() {
 
       <Reveal className="max-w-3xl">
         <p className="text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.5] tracking-[-0.02em] text-ink">
-          毎日5分の日記から、心理的リスクを捉える。
+          毎日5分の日記から、言葉の変化を捉える。
         </p>
       </Reveal>
 
       <Reveal className="mt-6 max-w-2xl">
         <Lines className="measure-jp text-muted">
           {`生徒が書くのは、1日5分の短い日記だけ。
-独自のAIがその内容を深掘りし、言葉の奥にあるサインまで捉えます。
-教員に届くのは要点のみで、日記の本文が共有されることはありません。`}
+独自のAIがその内容を深掘りし、言葉の奥にあるサインまで捉えて可視化します。
+教員に届くのは観測された記述とその時刻・根拠だけで、
+日記の本文も、心理的リスクの判定も共有されません。`}
         </Lines>
       </Reveal>
 
@@ -250,7 +261,7 @@ export function Product() {
 
           <Screen
             label="教員の画面"
-            caption="届くのは要点のみ。日記の本文は非公開。"
+            caption="届くのは観測とその根拠のみ。判定は行いません。"
           >
             <TeacherScreen />
           </Screen>
