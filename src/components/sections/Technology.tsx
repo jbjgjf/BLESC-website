@@ -17,9 +17,9 @@ export function Technology() {
 
       <Reveal className="mt-8 max-w-2xl">
         <Lines className="measure-jp text-muted">
-          {`「睡眠不足 → 認知機能の低下 → 抑うつ傾向」といった心理の因果連鎖を、
-医学的研究にもとづいて構造化したオントロジー知識グラフをAIに実装しています。
-これは、臨床心理士の思考プロセスを機械可読な形で再現する仕組みです。`}
+          {`「睡眠不足 → 認知機能の低下 → 抑うつ傾向」といった心理のつながりを、
+WHOやNICEなど公開されている医学的ガイドラインをもとに構造化した
+オントロジー知識グラフをAIに実装しています。`}
         </Lines>
       </Reveal>
 
@@ -32,11 +32,26 @@ export function Technology() {
         <OntologyGraph />
       </div>
 
+      {/*
+        What this section may claim is bounded by `docs/claims.md`, and the
+        bound is written rather than remembered: a named institution goes on
+        this page only once its permission is on file. 京都大学 and
+        株式会社Hatapro were both named here as settled collaborations while
+        `sentra/docs/lp_claim_alignment.md` still recorded the collaborator
+        line as 未記入 — an unagreed use of a university's name in B2B copy
+        aimed at schools and boards of education. They come back the day the
+        permission does.
+
+        What replaces them is the part that is checkable today: three curated
+        subgraphs, 40 nodes and 50 edges, every one carrying a source id, and
+        the ones that carry none saying so.
+      */}
       <Reveal className="mt-12 max-w-2xl">
         <Lines className="measure-jp text-muted">
-          {`このモデルは京都大学の臨床心理学研究との協働によって開発しています。
-プラットフォーム基盤は、学校環境の要件に耐えうるスケーラブルな設計を、
-株式会社Hataproとの連携で構築しています。`}
+          {`グラフは社内でキュレーションしています。ノードと関係のひとつずつに出典を紐づけ、
+出典を示せないものは専門家の判断であることを明記しています。
+現在は睡眠・社会的ひきこもり・学業上の負荷の3領域を整備しており、
+臨床の専門家によるレビューを準備しています。`}
         </Lines>
       </Reveal>
     </Section>

@@ -39,9 +39,16 @@ export const TAGLINE_EN = "Hearing the unspoken. Preventing the unseen.";
  * ~120 JP characters. Long enough to carry the product category, the
  * mechanism and the privacy guarantee; short enough that Google is unlikely
  * to truncate it in a Japanese SERP.
+ *
+ * This string is not only page copy. `siteJsonLd()` puts it on the
+ * Organization, WebSite *and* SoftwareApplication nodes, so whatever it says
+ * ships to search engines and LLMs as machine-readable structured data. It
+ * previously said Blesc 検知s 抑うつ — a medical condition named as the object
+ * of a detection verb, which `sentra/docs/product_policy.md` forbids outright.
+ * The verbs here are 捉える / 可視化する, which are what the implementation does.
  */
 export const DESCRIPTION =
-  "Blescは、生徒が毎日5分で綴る日記を独自のAIが深掘りし、いじめ・不登校・抑うつなど心理的リスクの早期サインを検知する学校向けメンタルヘルスプラットフォームです。日記の本文そのものが教員に公開されることはありません。";
+  "Blescは、生徒が毎日5分で綴る日記を独自のAIが深掘りし、言葉づかいや書きぶりの変化を捉えて可視化する学校向けメンタルヘルスプラットフォームです。心理的リスクの判定は行いません。日記の本文そのものが教員に公開されることもありません。";
 
 /** Shorter variant for social cards, where the card itself truncates hard. */
 export const DESCRIPTION_SHORT =
@@ -51,6 +58,10 @@ export const DESCRIPTION_SHORT =
  * Terms are a weak direct signal at best, but they cost nothing and some
  * non-Google crawlers still read them. Kept to the phrases the page actually
  * earns — every one of these is substantiated by copy on the site.
+ *
+ * 「心理的リスク 検知」 was dropped: the page no longer claims it, so the term
+ * was no longer earned. The search intent is carried almost entirely by
+ * 「いじめ 早期発見」「不登校 予防」「児童生徒 見守り」, which stay.
  */
 export const KEYWORDS = [
   "Blesc",
@@ -60,7 +71,6 @@ export const KEYWORDS = [
   "SOS 可視化",
   "いじめ 早期発見",
   "不登校 予防",
-  "心理的リスク 検知",
   "AI 日記",
   "学校向け AI",
   "教育DX",
@@ -158,12 +168,22 @@ export function siteJsonLd() {
           "@type": "EducationalAudience",
           educationalRole: ["teacher", "administrator"],
         },
+        /*
+         * Implemented features only. This array is emitted as structured
+         * data, so an aspiration listed here is an aspiration published as
+         * fact. 「心理的リスク解析」 and 「リスクの可視化」 were both removed:
+         * the product computes `state_band` / `latest_score` but renders
+         * neither, and no analysis produces a risk judgement — see
+         * `sentra/docs/educator_display_policy.md`. Writing dynamics is
+         * listed because `writing_dynamics.py` genuinely implements it.
+         */
         featureList: [
           "毎日5分の日記による全生徒のセルフレポート",
           "独自AIによる一問一答の深掘り",
-          "臨床オントロジー知識グラフにもとづく心理的リスク解析",
+          "入力のためらいや書き直しといった書きぶりの計測",
+          "公開されている医学的ガイドラインをもとに構造化したオントロジー知識グラフによる記述の整理",
           "日記本文を教員に開示しないプライバシー設計",
-          "教員向けダッシュボードでのリスクの可視化",
+          "教員向けダッシュボードでの観測・時刻・根拠の提示",
         ],
         offers: {
           "@type": "Offer",
@@ -206,11 +226,11 @@ export function breadcrumbJsonLd(trail: { name: string; path: string }[]) {
 export const FAQ: { q: string; a: string }[] = [
   {
     q: "Blescとは何ですか？",
-    a: "Blescは、生徒が毎日5分で綴る日記を独自のAIが深掘りし、心理的リスクの早期サインを検知する学校向けのメンタルヘルスプラットフォームです。",
+    a: "Blescは、生徒が毎日5分で綴る日記を独自のAIが深掘りし、言葉づかいや書きぶりの変化を捉えて可視化する学校向けのメンタルヘルスプラットフォームです。心理的リスクの判定や、心身の状態の診断は行いません。",
   },
   {
     q: "生徒が書いた日記の内容は、先生に読まれますか？",
-    a: "日記の本文そのものが教員に公開されることはありません。教員が受け取るのは、解析されたリスクのサインだけです。",
+    a: "日記の本文そのものが教員に公開されることはありません。教員が受け取るのは、観測された記述と、その時刻、そしてその根拠です。根拠を示せない観測は、そもそも表示されません。",
   },
   {
     q: "生徒の負担はどのくらいですか？",
@@ -218,15 +238,15 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "汎用のAIチャットとは何が違うのですか？",
-    a: "「睡眠不足 → 認知機能の低下 → 抑うつ傾向」といった心理の因果連鎖を医学的研究にもとづいて構造化したオントロジー知識グラフをAIに実装しており、臨床心理士の思考プロセスを機械可読な形で再現しています。言葉を予測するだけの汎用AIではありません。",
+    a: "「睡眠不足 → 認知機能の低下 → 抑うつ傾向」といった心理のつながりを、WHOやNICEなど公開されている医学的ガイドラインをもとに構造化したオントロジー知識グラフをAIに実装しています。言葉を予測するだけの汎用AIではありません。現在は睡眠・社会的ひきこもり・学業上の負荷の3領域を整備しており、出典を示せない関係はその旨を明示しています。",
   },
   {
-    q: "一日の落ち込みと、続いている不調は区別できますか？",
-    a: "言葉のニュアンス、書くことをためらった間、日々の書きぶりの変化といった微細なシグナルを積み重ねて検知します。毎日書かれるからこそ、一日の落ち込みと、続いている不調とを区別できます。",
+    q: "一日の落ち込みと、続いている変化は見分けられますか？",
+    a: "言葉のニュアンス、書くことをためらった間、日々の書きぶりの変化といった微細なシグナルを積み重ねて捉えます。毎日書かれるからこそ、一日の落ち込みなのか、続いている変化なのかを見分ける手がかりになります。判断そのものは、記録を受け取った教員が行います。",
   },
   {
     q: "技術的な裏づけはありますか？",
-    a: "心理モデルは京都大学の臨床心理学研究との協働によって開発しています。プラットフォーム基盤は、学校環境の要件に耐えうるスケーラブルな設計を株式会社Hataproとの連携で構築しています。",
+    a: "オントロジー知識グラフは、WHOの思春期メンタルヘルス指針、NICEガイドライン、文部科学省の生徒指導提要といった公開文献をもとに、社内でキュレーションしています。各ノードと関係には出典を紐づけ、出典を示せないものは専門家の判断であることを明記しています。臨床の専門家によるレビューは準備中で、完了しだいこの欄を更新します。",
   },
   {
     q: "導入について相談するにはどうすればよいですか？",
