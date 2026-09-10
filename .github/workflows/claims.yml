@@ -1,0 +1,29 @@
+# Compares the LP's user-visible copy against docs/claims.md.
+#
+# #12 #13 #14 were each a decision recorded in jbjgjf/BLESC's docs, applied to
+# the old LP, and lost when the LP was rebuilt in this repository. Nothing
+# compared the two, so the same regressions could arrive with any rewrite of
+# the copy — and one of them sat marked "done" in the decision record while it
+# was live on the page. This job is the thing that compares them.
+name: claims
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No dependencies: the checker is a text scan over src/**, using only
+      # node: builtins, so it runs without an install and stays fast enough
+      # that nobody is tempted to skip it.
+      - name: Check LP claims against docs/claims.md
+        run: node scripts/check-claims.mjs
