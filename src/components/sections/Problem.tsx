@@ -16,7 +16,7 @@ export function Problem() {
   return (
     <Section
       id="problem"
-      className="relative overflow-hidden pt-12 md:pt-16"
+      className="relative overflow-x-clip pt-12 md:pt-16"
       backdrop={<GridField />}
     >
       <div className="mx-auto max-w-3xl text-center">

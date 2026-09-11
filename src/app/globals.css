@@ -94,6 +94,13 @@
   --risk-high: #f87171;
   --risk-mid: #fbbf24;
   --risk-low: #4ade80;
+  /*
+   * The same red as TEXT on a chip filled with 15% of itself. --risk-high
+   * over that tint measures 3.81:1 on the light build — under AA for the
+   * small 要対応 label — so the text variant is taken darker there. On this
+   * ground the fill colour already holds 5.23:1, so it is unchanged.
+   */
+  --risk-high-text: #f87171;
 
   /*
    * Spotlight. The pointer position is published to :root by
@@ -213,6 +220,8 @@
   --risk-high: #dc2626;
   --risk-mid: #b45309;
   --risk-low: #15803d;
+  /* 5.10:1 on the 15% tint, against #dc2626's 3.81:1. */
+  --risk-high-text: #b91c1c;
 }
 
 @theme inline {
@@ -230,6 +239,7 @@
   --color-mark-2: var(--mark-2);
   --color-mark-3: var(--mark-3);
   --color-risk-high: var(--risk-high);
+  --color-risk-high-text: var(--risk-high-text);
   --color-risk-mid: var(--risk-mid);
   --color-risk-low: var(--risk-low);
 

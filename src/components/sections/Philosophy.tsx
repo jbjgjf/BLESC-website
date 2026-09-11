@@ -155,7 +155,7 @@ function LitBlock({ block }: { block: Block }) {
  */
 export function Philosophy() {
   return (
-    <section className="relative overflow-hidden bg-canvas-alt py-16 md:py-24">
+    <section className="relative overflow-x-clip bg-canvas-alt py-16 md:py-24">
       {/*
         The copy here sits in a 2xl column inside a much wider container, so
         the margins are the emptiest space on the page. Shown from lg up only —

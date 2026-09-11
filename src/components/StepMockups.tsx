@@ -46,7 +46,12 @@ export function RosterMock() {
   );
 }
 
-/** 02 — the writing surface, mid-sentence. */
+/**
+ * 02 — the writing surface, mid-sentence. The count is derived from what is
+ * actually typed, so the two can never drift apart.
+ */
+const TYPED = "部活がきつくて、最近あんまり眠れてない。";
+
 export function DiaryMock() {
   return (
     <div className="flex h-full flex-col gap-2 p-4">
@@ -54,7 +59,7 @@ export function DiaryMock() {
       <p className="text-[0.75rem] font-medium text-ink">今日はどんな一日だった？</p>
       <div className="flex flex-1 flex-col rounded-lg bg-inset/70 p-3">
         <p className="text-[0.7rem] leading-[1.8] text-ink">
-          部活がきつくて、最近あんまり眠れてない。
+          {TYPED}
           <motion.span
             aria-hidden
             className="ml-0.5 inline-block h-[0.85em] w-px translate-y-[0.1em] bg-mark-1"
@@ -63,7 +68,7 @@ export function DiaryMock() {
           />
         </p>
         <span className="mt-auto pt-2 text-right text-[0.6rem] tabular-nums text-muted">
-          48字
+          {[...TYPED].length}字
         </span>
       </div>
     </div>
@@ -133,7 +138,7 @@ export function ReportMock() {
     <div className="flex h-full flex-col gap-3 p-4">
       <div className="flex items-center justify-between">
         <span className="text-[0.7rem] font-medium text-ink">今月のリスクレポート</span>
-        <span className="rounded-full bg-risk-high/15 px-2 py-0.5 text-[0.6rem] font-medium text-risk-high">
+        <span className="rounded-full bg-risk-high/15 px-2 py-0.5 text-[0.6rem] font-medium text-risk-high-text">
           3件の要対応
         </span>
       </div>

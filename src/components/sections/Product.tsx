@@ -14,7 +14,6 @@ const ENTRY = {
   date: "8月20日（木）",
   prompt: "今日はどんな一日だった？",
   body: "部活がきつくて、最近あんまり眠れてない。朝がしんどいけど、みんなも同じだと思うから、たぶん大丈夫。",
-  count: "48",
   /**
    * The deep-dive. Not a chat: the diary is still the interface, and the AI
    * returns a single question about what was actually written rather than
@@ -98,7 +97,7 @@ function StudentScreen() {
         <div className="flex flex-1 flex-col rounded-2xl bg-inset p-4">
           <p className="text-[0.85rem] leading-[1.9] text-ink">{ENTRY.body}</p>
           <span className="mt-auto pt-3 text-right text-[0.7rem] tabular-nums text-muted">
-            {ENTRY.count}字
+            {[...ENTRY.body].length}字
           </span>
         </div>
 
@@ -139,7 +138,7 @@ function TeacherScreen() {
         <span className="text-[0.85rem] font-medium tracking-[-0.01em] text-ink">
           今月のリスクレポート
         </span>
-        <span className="shrink-0 rounded-full bg-risk-high/15 px-2.5 py-1 text-[0.7rem] font-medium text-risk-high">
+        <span className="shrink-0 rounded-full bg-risk-high/15 px-2.5 py-1 text-[0.7rem] font-medium text-risk-high-text">
           3件の要対応
         </span>
       </div>
