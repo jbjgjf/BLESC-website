@@ -271,10 +271,18 @@ body {
   color: var(--on-accent);
 }
 
+/*
+ * mark-1, not primary: #85c0ed is a fill colour and measures 1.87:1 as a
+ * ring on the light ground, under the 3:1 a focus indicator needs, while
+ * mark-1 flips with the theme (5.20:1 light, 10.09:1 dark).
+ *
+ * No border-radius. This rule is unlayered, so whatever it sets beats every
+ * utility — a radius here squared off each rounded-full control the moment
+ * it took keyboard focus. The outline follows the element's own radius.
+ */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--mark-1);
   outline-offset: 3px;
-  border-radius: 2px;
 }
 
 /* ---------------------------------------------------------------------------

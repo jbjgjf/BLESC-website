@@ -1,8 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { CircularGallery, type GalleryItem } from "@/components/CircularGallery";
+import { MemberModal } from "@/components/MemberModal";
 import { Reveal } from "@/components/Reveal";
 import { SectionTitle, Icon, Section } from "@/components/ui";
 import { initialsCard } from "@/lib/initialsCard";
@@ -32,15 +32,14 @@ type Member = {
  *
  * Roles are deliberately not all "Chief X Officer" any more: only the CEO
  * keeps that form, and everyone else is named for what they actually do.
- * 王 謙蘊 and 松本 龍 are the two that needed a title choosing rather than
- * quoting — Engineering Lead from a brief about AI, product development and
- * running the technical team, and Project Lead from a biography that calls
- * the role 共同創業者兼プロジェクトリード.
+ * 王 謙蘊's is the one title chosen rather than quoted — Engineering Lead,
+ * from a brief about AI, product development and running the technical
+ * team. 松本 龍's Head of Finance is the company's own answer.
  *
- * NOTE: two biographies still name the old titles internally — 内藤 悠人's
- * says Chief Research Officer and 王 謙蘊's says CTO. Those are the
- * company's own words so they are left exactly as given; they need a line
- * changed by their authors, not by us.
+ * NOTE: three biographies still name other titles internally — 内藤 悠人's
+ * says Chief Research Officer, 王 謙蘊's says CTO, and 松本 龍's says
+ * プロジェクトリード. Those are the company's own words so they are left
+ * exactly as given; they need a line changed by their authors, not by us.
  */
 const MEMBERS: Member[] = [
   {
@@ -54,7 +53,7 @@ const MEMBERS: Member[] = [
   {
     name: "松本 龍",
     initials: "RY",
-    role: "Project Lead",
+    role: "Head of Finance",
     photo: "/team/ryu.png",
     description:
       "データサイエンスを用いた社会課題解決に関心を持ち、現在は主に計量経済学やファイナンス、市場流動性に関する研究に従事しています。Blescでは共同創業者兼プロジェクトリードとして、臨床オントロジーや非言語的な行動バイアスの分析技術を用いたプロダクトの開発、および事業戦略・ファイナンス面の立案を牽引しています。",
@@ -114,86 +113,61 @@ const TEAM_INTRO =
   "BLESCは、中国、日本、オーストラリア、インドなど多様なバックグラウンドを持つ帰国子女で構成されており、全員がバイリンガルとして国内外の視点を活かしながら社会課題の解決に取り組んでいます。";
 
 /**
- * Name, role, and a disclosure holding that person's introduction.
+ * Name, role, and the button that opens that person's introduction.
  *
- * Opening on hover but closing on the button's own mouseleave would be
- * unusable here — these biographies run to several sentences, and the panel
- * opens *below* the button, so reaching the text means leaving the trigger.
- * Open is therefore on the button and close is on the whole block, which
- * means moving down into the copy keeps it open.
+ * The introduction used to open as a panel over the gallery on hover. It is
+ * a dialog now, and that changes the trigger: something that takes over the
+ * screen cannot open because a pointer crossed a 28px button on its way
+ * somewhere else. So this is click, or Enter and Space, only.
  *
- * Hover is not the only way in: click works for touch, focus works for the
- * keyboard, and aria-expanded carries the state either way.
- *
- * The panel sits outside the aria-live region deliberately. Inside it, an
- * atomic region would re-read the entire biography every time the carousel
- * moved to another person.
- *
- * It opens upward, over the gallery. Below the name it pushed the roster
- * controls down the page every time it opened, and the copy landed where
- * the eye had already left; over the photographs it covers something the
- * reader is done with and arrives where they are still looking.
+ * The dialog itself is owned by Team rather than here, and this card is
+ * deliberately not keyed by the active index. Keyed, it remounted every time
+ * the carousel moved — and the carousel keeps easing for a moment after an
+ * arrow press, so the button a dialog was opened from could be replaced
+ * underneath it, leaving focus nowhere to return to on close.
  */
-function MemberCard({ person }: { person: Member }) {
-  const [open, setOpen] = useState(false);
-  const bio = person.description;
-
+function MemberCard({
+  person,
+  onOpen,
+}: {
+  person: Member;
+  onOpen: () => void;
+}) {
   return (
-    <div className="relative" onMouseLeave={() => setOpen(false)}>
-      <div aria-live="polite" aria-atomic="true" className="min-h-[3.5rem]">
-        <div className="flex items-center justify-center gap-2.5">
-          <p className="text-xl font-medium tracking-[-0.01em] text-ink">
-            {person.name}
-          </p>
+    <div aria-live="polite" aria-atomic="true" className="min-h-[3.5rem]">
+      <div className="flex items-center justify-center gap-2.5">
+        <p className="text-xl font-medium tracking-[-0.01em] text-ink">
+          {person.name}
+        </p>
 
-          {bio && (
-            <button
-              type="button"
-              aria-expanded={open}
-              onClick={() => setOpen((v) => !v)}
-              onMouseEnter={() => setOpen(true)}
-              onFocus={() => setOpen(true)}
-              className="flex size-7 shrink-0 items-center justify-center rounded-full border border-line text-mark-1 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-mark-1 hover:bg-mark-1/10"
-            >
-              <Icon
-                name="expand_more"
-                size={16}
-                className={`transition-[rotate] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                  open ? "rotate-180" : ""
-                }`}
-              />
-              <span className="sr-only">
-                {`${person.name}の紹介を${open ? "閉じる" : "表示する"}`}
-              </span>
-            </button>
-          )}
-        </div>
-
-        {person.role && (
-          <p className="mt-2 text-[0.9rem] text-mark-1">{person.role}</p>
+        {person.description && (
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            onClick={onOpen}
+            className="group flex size-7 shrink-0 items-center justify-center rounded-full border border-line text-mark-1 transition-[background-color,border-color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-mark-1 hover:bg-mark-1/10"
+          >
+            {/* Out-and-up rather than down: it opens something, not a fold. */}
+            <Icon
+              name="arrow_outward"
+              size={16}
+              className="transition-[translate] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-px group-hover:translate-x-px"
+            />
+            <span className="sr-only">{`${person.name}の紹介を見る`}</span>
+          </button>
         )}
       </div>
 
-      <AnimatePresence initial={false}>
-        {open && bio && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.98 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute bottom-full left-1/2 z-20 mb-4 w-[min(34rem,calc(100vw-3rem))] -translate-x-1/2 rounded-2xl border border-line bg-surface p-5 text-left shadow-[var(--shadow-card)] md:p-6"
-          >
-            {/* Left-aligned: several sentences of Japanese centred is hard work. */}
-            <p className="measure-jp text-[0.95rem] text-muted">{bio}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {person.role && (
+        <p className="mt-2 text-[0.9rem] text-mark-1">{person.role}</p>
+      )}
     </div>
   );
 }
 
 export function Team() {
   const [active, setActive] = useState(0);
+  const [shown, setShown] = useState<number | null>(null);
   const stepRef = useRef<((delta: number) => void) | null>(null);
 
   // Stable identity: a new array each render would tear down the WebGL scene.
@@ -212,6 +186,11 @@ export function Team() {
     },
     [],
   );
+
+  // Stable too: the dialog's open effect depends on it, and a fresh function
+  // each render would re-run that effect and steal focus back to the close
+  // button every time anything on this section re-rendered.
+  const close = useCallback(() => setShown(null), []);
 
   const person = MEMBERS[active];
 
@@ -241,7 +220,7 @@ export function Team() {
         actually exists as text.
       */}
       <div className="mx-auto mt-8 max-w-2xl text-center">
-        <MemberCard key={active} person={person} />
+        <MemberCard person={person} onOpen={() => setShown(active)} />
 
         {/*
           Dragging a canvas is not a keyboard-operable control, so these are
@@ -269,6 +248,11 @@ export function Team() {
           </button>
         </div>
       </div>
+
+      <MemberModal
+        member={shown === null ? null : MEMBERS[shown]}
+        onClose={close}
+      />
 
       {/*
         Only the centred person is in the visible DOM, and the other nine sit
