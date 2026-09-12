@@ -31,3 +31,24 @@ export function staggerVariants(stagger = 0.1, delayChildren = 0): Variants {
     show: { transition: { staggerChildren: stagger, delayChildren } },
   };
 }
+
+/**
+ * A rule drawing itself in: scaleX 0 → 1 on the expo curve, held back so the
+ * words arrive before the mark under them does. `origin-left` or
+ * `origin-center` on the element decides which way it grows.
+ */
+export function drawVariants(delay = 0.35): Variants {
+  return {
+    hidden: { scaleX: 0 },
+    show: {
+      scaleX: 1,
+      transition: { duration: 0.9, ease: EXPO_OUT, delay },
+    },
+  };
+}
+
+/** Reduced motion gets the drawn state, not the undrawn one. */
+export const drawStatic: Variants = {
+  hidden: { scaleX: 1 },
+  show: { scaleX: 1 },
+};

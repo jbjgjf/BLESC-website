@@ -28,9 +28,15 @@ export default function Home() {
       <Product />
       <Technology />
       <Team />
-      {/* The closing argument, so it sits last before the news. */}
-      <Philosophy />
       <News />
+      {/*
+        The closing statement sits last so it runs straight into the footer's
+        invitation: 声にならないSOSに、気づける社会へ。 and then 導入について、
+        お話ししませんか。 with nothing between them. The news used to sit
+        here, and two rows of announcements between the statement and the
+        CTA broke that line of thought.
+      */}
+      <Philosophy />
     </>
   );
 }

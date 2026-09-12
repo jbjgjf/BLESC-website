@@ -3,37 +3,12 @@
 import { AppMock } from "@/components/hero/AppMock";
 import { DeviceScroll } from "@/components/hero/DeviceScroll";
 import { IntroFade, WordReveal } from "@/components/Reveal";
-import {
-  ShaderBackground,
-  type ShaderColor,
-} from "@/components/ShaderBackground";
+import { ShaderBackground } from "@/components/ShaderBackground";
 import { useTheme } from "@/components/ThemeProvider";
 import { WebGLFallback } from "@/components/webgl/WebGLErrorBoundary";
 import { ButtonLink, Container } from "@/components/ui";
 import { CTA } from "@/lib/site";
-
-/*
- * Palettes, ground colour first. The shipped preset ran a cyan ramp
- * (#031C26 → #1B6CA8 → #5AD2F4 → #EAF9FF); these are the same shape walked
- * through the site's own tokens so the hero introduces no new hue.
- *
- * Light works here because `shade()` averages the palette rather than adding
- * light to a base — the previous aurora clamped to white on a pale ground,
- * which is why it was dark-only.
- */
-const DARK_PALETTE: ShaderColor[] = [
-  [0.0392, 0.0431, 0.051], // #0a0b0d  --color-bg
-  [0.0706, 0.2353, 0.3686], // #123c5e  deep blue
-  [0.5216, 0.7529, 0.9294], // #85c0ed  --color-primary
-  [1, 1, 1], // #ffffff  --color-text
-];
-
-const LIGHT_PALETTE: ShaderColor[] = [
-  [1, 1, 1], // #ffffff  --color-bg
-  [0.8235, 0.898, 0.9725], // #d2e5f8  high sky
-  [0.5647, 0.749, 0.9294], // #90bfed  deeper sky
-  [1, 1, 1], // #ffffff  the light source
-];
+import { DARK_PALETTE, LIGHT_PALETTE } from "@/lib/sky";
 
 const HEADLINE_LINES = [
   "Hearing the unspoken.",

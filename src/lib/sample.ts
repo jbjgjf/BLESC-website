@@ -14,9 +14,8 @@
  * metrics that read as a measurement of anything. Every string below already
  * shipped in the repo — this file moved them, it did not write them.
  *
- * ENTRY and ROWS are transcribed verbatim from src/components/sections/
- * Product.tsx, which still holds its own copies; that section is owned
- * elsewhere and should import from here instead (see the report).
+ * Every product picture on the page — 仕組み, プロダクト — imports from here
+ * and nowhere else.
  */
 
 /* -------------------------------------------------------------------------- */
@@ -61,6 +60,9 @@ export const STUDENT_BAR = {
   action: "提出する",
 } as const;
 
+/** The promise printed along the foot of the teacher's report. */
+export const TEACHER_BAR = { note: "日記の本文は共有されません" } as const;
+
 /* -------------------------------------------------------------------------- */
 /* The class                                                                  */
 /* -------------------------------------------------------------------------- */
@@ -88,7 +90,11 @@ export const CLASS = { label: "3年2組", size: "全40名", count: 40 } as const
  * mistaken for a screenshot of real students.
  *
  * Full class names throughout — Tailwind scans source text, so an
- * interpolated `bg-risk-${level}` would never be generated.
+ * interpolated `bg-risk-${level}` would never be generated. `tone` is the
+ * same level as a <Bar> tone; `text` is the colour the printed level takes on
+ * the window surface, and the high row uses the darkened text variant because
+ * the fill red measures 4.83:1 there in the light build — over AA, but with
+ * no margin at the kit's 0.75rem.
  */
 export const ROWS = [
   {
@@ -96,14 +102,16 @@ export const ROWS = [
     no: "#14",
     level: "高",
     width: "88%",
+    tone: "risk-high",
     bar: "bg-risk-high",
-    text: "text-risk-high",
+    text: "text-risk-high-text",
   },
   {
     klass: "3年1組",
     no: "#08",
     level: "中",
     width: "63%",
+    tone: "risk-mid",
     bar: "bg-risk-mid",
     text: "text-risk-mid",
   },
@@ -112,6 +120,7 @@ export const ROWS = [
     no: "#27",
     level: "中",
     width: "54%",
+    tone: "risk-mid",
     bar: "bg-risk-mid",
     text: "text-risk-mid",
   },
@@ -120,6 +129,7 @@ export const ROWS = [
     no: "#03",
     level: "低",
     width: "21%",
+    tone: "risk-low",
     bar: "bg-risk-low",
     text: "text-risk-low",
   },
@@ -129,6 +139,15 @@ export type Row = (typeof ROWS)[number];
 
 /** The heading the report is filed under, as the teacher's screen prints it. */
 export const REPORT_TITLE = "今月のリスクレポート";
+
+/**
+ * The count in the report's title bar, derived from the rows rather than
+ * typed beside them. A hand-written 3件 and a list of four rows can drift
+ * apart, and a number on this site that disagrees with the figure under it
+ * is exactly the invented statistic the sample data exists to rule out.
+ * 要対応 is any row above 低.
+ */
+export const REPORT_BADGE = `${ROWS.filter((row) => row.level !== "低").length}件の要対応`;
 
 /* -------------------------------------------------------------------------- */
 /* The trend                                                                  */

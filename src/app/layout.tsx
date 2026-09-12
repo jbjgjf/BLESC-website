@@ -77,7 +77,7 @@ export default function RootLayout({
         */}
         <noscript>
           <style>{`
-            main [style], header [style] { opacity: 1 !important; filter: none !important; transform: none !important; }
+            main [style], header [style], footer [style] { opacity: 1 !important; filter: none !important; transform: none !important; }
           `}</style>
         </noscript>
       </head>
