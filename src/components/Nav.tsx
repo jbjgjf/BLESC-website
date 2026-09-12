@@ -3,7 +3,6 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { GlassSurface } from "@/components/GlassSurface";
 import { Logo } from "@/components/Logo";
 import { ButtonLink } from "@/components/ui";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -38,12 +37,44 @@ const SETTLED = 24;
  * and this reports that on the very first client render instead of a frame
  * later. The server snapshot is false, which is the top of the page — where a
  * cold load starts.
+ *
+ * The subscription samples the position each frame instead of listening for
+ * `scroll`. Wheel and touch scrolling do fire that event, but Lenis moves the
+ * page itself for anchor jumps and scrollIntoView, and those did not reach a
+ * window listener — measured: the page sat at 1359px with the bar still in its
+ * resting state until a scroll event was dispatched by hand. Clicking a nav
+ * link from the top is exactly that path. One number read per frame, and React
+ * is only notified when the answer actually flips.
  */
 function useScrolled() {
   return useSyncExternalStore(
     (onChange) => {
-      window.addEventListener("scroll", onChange, { passive: true });
-      return () => window.removeEventListener("scroll", onChange);
+      let frame = 0;
+      let last = window.scrollY > SETTLED;
+
+      const check = () => {
+        const now = window.scrollY > SETTLED;
+        if (now !== last) {
+          last = now;
+          onChange();
+        }
+      };
+
+      const sample = () => {
+        check();
+        frame = requestAnimationFrame(sample);
+      };
+
+      // Both, deliberately. The event covers the case where frames are not
+      // being produced at all — a background tab throttles rAF to nothing —
+      // and the frame loop covers the scrolls that never raise the event.
+      window.addEventListener("scroll", check, { passive: true });
+      frame = requestAnimationFrame(sample);
+
+      return () => {
+        window.removeEventListener("scroll", check);
+        cancelAnimationFrame(frame);
+      };
     },
     () => window.scrollY > SETTLED,
     () => false,
@@ -107,14 +138,15 @@ export function Nav() {
         aria-label="メインナビゲーション"
         className={`relative mx-auto flex w-full items-center justify-between transition-[max-width,height,padding,border-radius] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           pill
-            ? "h-14 max-w-[52rem] rounded-3xl px-4 md:px-5"
+            ? "h-14 max-w-[50rem] rounded-3xl px-3 md:px-4"
             : "h-20 max-w-[68rem] rounded-none px-6 md:px-10"
         }`}
       >
         {/*
-          The pill's ground, behind the content rather than around it. An
-          empty lens layer means the links never remount as the state flips,
-          and the fade is the only thing that moves.
+          The box's ground, behind the content rather than around it, so the
+          links never remount as the state flips and the fade is the only
+          thing that moves. `.glass-nav` carries the backdrop blur — see
+          globals.css for why this is not the lens package.
         */}
         <AnimatePresence>
           {pill && (
@@ -126,17 +158,7 @@ export function Nav() {
               exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
               transition={{ duration: 0.26, ease: [0.23, 1, 0.32, 1] }}
             >
-              <GlassSurface
-                className="glass-nav h-full w-full"
-                style={{
-                  background: "var(--glass-tint)",
-                  borderRadius: 24,
-                  border: "1px solid var(--color-border)",
-                  boxShadow: "var(--shadow-card)",
-                }}
-              >
-                {null}
-              </GlassSurface>
+              <div className="glass-nav h-full w-full rounded-3xl" />
             </motion.div>
           )}
         </AnimatePresence>

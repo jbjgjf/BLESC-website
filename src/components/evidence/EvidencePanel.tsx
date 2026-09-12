@@ -35,16 +35,30 @@ const JAPAN_RANK = 37;
  * They are much larger than they were because the sentences that used to sit
  * under them are gone — the label above and the figure itself now carry the
  * whole statement, so the number is the block rather than its illustration.
+ *
+ * The ceiling is set by the tightest cell rather than by the widest. The
+ * figure, its unit and the plus are one flex row: at 9.5vw the digits alone
+ * measured 299px inside a 334px cell just above the md breakpoint, so 人 and
+ * + were pushed out through the panel edge. The row comes to roughly 4.4x the
+ * figure size and the narrowest cell it has to sit in is about 305px, which
+ * puts the limit near 8.6vw.
  */
 const FIGURE =
-  "text-[clamp(3.75rem,9.5vw,7rem)] font-medium leading-[0.9] tracking-[-0.045em] tabular-nums";
+  "text-[clamp(3.5rem,8.6vw,6.5rem)] font-medium leading-[0.9] tracking-[-0.045em] tabular-nums";
 const UNIT =
   "text-[clamp(1.5rem,3.2vw,2.25rem)] font-normal leading-none tracking-[-0.02em]";
 
 export function EvidencePanel() {
   return (
     <div className="overflow-hidden rounded-[1.25rem] border border-line bg-surface shadow-[var(--shadow-card)]">
-      <div className="grid md:grid-cols-2">
+      {/*
+        Not two equal halves. "37位 / 38" is four glyphs and "350,000人+" is
+        ten, so at one figure size the long one ran past its cell and clipped
+        the 人 against the panel edge. The split is weighted to the number
+        that needs the room, which also stops the short figure floating in a
+        half-empty box.
+      */}
+      <div className="grid md:grid-cols-[5fr_7fr]">
         <div className="p-8 md:p-12">
           <p className="text-[0.95rem] text-muted">日本の子どもの精神的幸福度</p>
 
