@@ -135,8 +135,15 @@ export function Technology() {
           The padding stays at p-5 at every width. Going to p-8 on desktop
           would take the frame below the width at which its labels hold 11px,
           which would put a scrollbar inside a panel that fits.
+
+          min-w-0 is what lets the graph's own overflow-x-auto do its job on a
+          phone. A grid item's minimum width is its content's, and the figure
+          inside sets a 30rem floor on the drawing — so without this the
+          column grew to 546px at 375px, the whole page gained a horizontal
+          scroll, and the phone zoomed out to fit it. With it, the panel stays
+          the width of the page and the drawing scrolls inside the panel.
         */}
-        <div className="rounded-[1.25rem] border border-line bg-inset p-5 shadow-[var(--shadow-card)]">
+        <div className="min-w-0 rounded-[1.25rem] border border-line bg-inset p-5 shadow-[var(--shadow-card)]">
           <OntologyGraph />
         </div>
       </div>
