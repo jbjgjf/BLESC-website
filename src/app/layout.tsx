@@ -46,7 +46,14 @@ export const metadata: Metadata = {
    */
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — ${TAGLINE}｜学校向けAIメンタルヘルスプラットフォーム`,
+    /*
+     * ~26 full-width characters. The previous title ran to 35 against a
+     * desktop limit near 30, so Google cut it at 「…メンタルヘルス …」 and
+     * lost プラットフォーム entirely. Shortened by dropping the em dash and
+     * the longer category noun rather than メンタルヘルス, which is the term
+     * worth ranking for.
+     */
+    default: `${SITE_NAME}｜${TAGLINE}学校向けメンタルヘルスAI`,
     /*
      * Sub-pages set only their own name and inherit the brand suffix, so no
      * page can ship a title that omits it and none has to repeat it.
