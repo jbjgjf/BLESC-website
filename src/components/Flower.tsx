@@ -48,37 +48,10 @@ export function Flower({
   );
 }
 
-type Scatter = {
-  /** Percentage offsets within the parent, so they scale with the box. */
-  top: string;
-  left?: string;
-  right?: string;
-  size: number;
-  rotate: number;
-  opacity: number;
-  className: string;
-};
-
-/**
- * A few flowers placed in a section's margins.
- *
- * Absolutely positioned and pointer-events-none, so nothing here can shift
- * layout or intercept a click. Kept sparse on purpose — this is a page about
- * student distress, and a dense scatter would read as decoration for its own
- * sake.
+/*
+ * FlowerScatter — flowers absolutely positioned in a section's margins — used
+ * to live here and is gone. On a single white ground the scatter read as
+ * decoration for its own sake, and on a page about student distress that is
+ * the wrong register. The flower itself stays: it is still placed
+ * deliberately, one at a time, where a section wants it.
  */
-export function FlowerScatter({ items }: { items: Scatter[] }) {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0">
-      {items.map((f, i) => (
-        <span
-          key={i}
-          className={`absolute ${f.className}`}
-          style={{ top: f.top, left: f.left, right: f.right }}
-        >
-          <Flower size={f.size} rotate={f.rotate} opacity={f.opacity} />
-        </span>
-      ))}
-    </div>
-  );
-}

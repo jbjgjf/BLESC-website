@@ -30,7 +30,7 @@ const DARK_STOPS = [
 ];
 
 const LIGHT_STOPS = [
-  { offset: 0, color: "#DCE9F5" },
+  { offset: 0, color: "#EDF1F8" },
   { offset: 0.1827, color: "#A8CDEA" },
   { offset: 0.2837, color: "#85C0ED" },
   { offset: 0.4135, color: "#6FB0E2" },
@@ -39,6 +39,9 @@ const LIGHT_STOPS = [
   { offset: 0.8029, color: "#A9D3F1" },
   { offset: 1, color: "#85C0ED00" },
 ];
+
+/** Shared by the two link columns so they cannot drift apart. */
+const COLUMN_HEADING = "text-[0.9rem] font-medium text-ink";
 
 export function Footer() {
   const { theme } = useTheme();
@@ -77,9 +80,13 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.15em] text-mark-1">
-              サイトマップ
-            </h3>
+            {/*
+              Plain sans at reading weight. These were uppercase micro-labels
+              at 0.15em tracking in the accent colour, which does nothing for
+              Japanese — there is no case to raise — and read as two coloured
+              tabs in the quietest part of the page.
+            */}
+            <h3 className={COLUMN_HEADING}>サイトマップ</h3>
             <nav aria-label="フッターナビゲーション" className="mt-5">
               <ul className="flex flex-col gap-3">
                 {NAV_LINKS.map(({ id, label }) => (
@@ -97,9 +104,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.15em] text-mark-1">
-              お問い合わせ
-            </h3>
+            <h3 className={COLUMN_HEADING}>お問い合わせ</h3>
             <ul className="mt-5 flex flex-col gap-3">
               <li>
                 <a

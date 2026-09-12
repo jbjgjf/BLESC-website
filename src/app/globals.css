@@ -123,28 +123,6 @@
   --spot-wash: 0.13;
   --spot-ring: 1;
 
-  /*
-   * Graph-paper field behind 課題. The component this came from hardcoded a
-   * slate grid on white with a magenta-to-purple orb; both are replaced by
-   * the palette's own values so the field flips with the theme.
-   *
-   * The orb is --mark-1 falling off into --mark-2 — the same two blues the
-   * spotlight sweeps between. At these alphas the copy over it still holds
-   * 15.0:1 for ink and 9.2:1 for muted.
-   */
-  --grid-line: rgba(255, 255, 255, 0.055);
-  --grid-orb-near: rgba(133, 192, 237, 0.16);
-  --grid-orb-far: rgba(169, 155, 240, 0.07);
-
-  /*
-   * Liquid-glass panels. The component these came from hardcoded a white
-   * tint and a white inset edge, which is right on a photograph and wrong
-   * on a near-black page — the tint has to lighten on dark and stay light
-   * but far stronger on the near-white build to read at all.
-   */
-  --glass-panel: rgba(255, 255, 255, 0.055);
-  --glass-edge: inset 1px 1px 0 0 rgba(255, 255, 255, 0.13),
-    inset -1px -1px 0 0 rgba(255, 255, 255, 0.045);
 
   /* the "expo-out" curve — default premium easing across the whole site */
   --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -157,28 +135,33 @@
    extra variables.
 --------------------------------------------------------------------------- */
 :root[data-theme="light"] {
-  --color-text: #1a2332;
-  /* Darkened from #5c6b7a (5.23:1) for the same clarity push as dark mode. */
-  --color-text-muted: #4d5b6a;
+  --color-text: #0b0d12;
+  /* 6.25:1 on white, 5.83:1 on the second surface. */
+  --color-text-muted: #576172;
 
   /* Same three hues, taken dark enough to work as text on a light ground. */
   --mark-1: #2b6ea3;
   --mark-2: #5b4bb8;
   --mark-3: #1e7f6b;
 
-  --color-bg: #fafaf8;
-  --color-bg-alt: #f2f0ec;
-  --color-border: #e4e1da;
+  /*
+   * Cooled from the warm off-white it started as. A white ground with a
+   * blue-grey second surface is what lets a single saturated sky read as
+   * the only colour on the page; a cream ground fought it.
+   */
+  --color-bg: #ffffff;
+  --color-bg-alt: #f5f7fa;
+  --color-border: #e6e9f0;
   /* 3.56:1 on the light ground — still clears WCAG 1.4.11. */
   --color-border-strong: #8a8477;
   --surface-raised: #ffffff;
-  --surface-inset: #f2f0ec;
+  --surface-inset: #f5f7fa;
 
-  --on-accent: #1a2332;
+  --on-accent: #0b0d12;
 
-  --scrim-strong: rgba(250, 250, 248, 0.94);
-  --scrim-mid: rgba(250, 250, 248, 0.92);
-  --scrim-soft: rgba(250, 250, 248, 0.45);
+  --scrim-strong: rgba(255, 255, 255, 0.72);
+  --scrim-mid: rgba(255, 255, 255, 0.45);
+  --scrim-soft: rgba(255, 255, 255, 0);
   /* A white inset highlight is invisible on white; lead with the drop. */
   --shadow-card: inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
     0 12px 32px -18px rgba(26, 35, 50, 0.18);
@@ -203,18 +186,6 @@
   --spot-wash: 0.07;
   --spot-ring: 0.75;
 
-  /*
-   * A white grid line is invisible on a near-white page, so light mode
-   * draws the field in ink instead — the same texture, inverted. Ink over
-   * the orb holds 12.7:1 and muted 5.6:1 here.
-   */
-  --grid-line: rgba(26, 35, 50, 0.07);
-  --grid-orb-near: rgba(43, 110, 163, 0.13);
-  --grid-orb-far: rgba(91, 75, 184, 0.06);
-
-  --glass-panel: rgba(255, 255, 255, 0.55);
-  --glass-edge: inset 1px 1px 0 0 rgba(255, 255, 255, 0.9),
-    inset -1px -1px 0 0 rgba(26, 35, 50, 0.06);
 
   /* Darkened for a white card; the dark-theme tints would wash out. */
   --risk-high: #dc2626;
@@ -245,6 +216,8 @@
 
   --font-sans: var(--font-inter), var(--font-noto-jp), ui-sans-serif, system-ui,
     "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  --font-serif: var(--font-instrument-serif), var(--font-noto-serif-jp),
+    ui-serif, "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif;
 }
 
 html {
@@ -296,6 +269,31 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
+   Display type.
+
+   One serif utility for the two places that carry the page's voice — the
+   hero and the closing statement — and one sans utility for section heads.
+   `palt` tightens Japanese proportional metrics, which matters at display
+   size: full-width punctuation otherwise leaves holes in a headline.
+--------------------------------------------------------------------------- */
+@utility type-hero {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2.75rem, 1.1rem + 6.4vw, 5.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-feature-settings: "palt" 1;
+}
+
+@utility type-head {
+  font-size: clamp(2rem, 1.2rem + 2.6vw, 3.5rem);
+  font-weight: 500;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  font-feature-settings: "palt" 1;
+}
+
+/* ---------------------------------------------------------------------------
    Liquid-glass controls.
 
    The tint alpha is what guarantees label contrast, not decoration. A glass
@@ -330,6 +328,22 @@ body {
 }
 :root[data-theme="light"] .glass-btn-secondary:hover {
   --glass-tint: rgba(255, 255, 255, 0.92);
+}
+
+/*
+ * The floating nav pill.
+ *
+ * The same lens the buttons use, with its own tint: once the hero is behind
+ * you this bar sits over body copy rather than over the sky, so it has to
+ * obscure considerably more than a button does for its labels to stay
+ * readable. At these alphas ink holds 13.9:1 light and 15.6:1 dark over the
+ * worst case (white ground under the light tint, canvas under the dark one).
+ */
+.glass-nav {
+  --glass-tint: rgba(10, 11, 13, 0.62);
+}
+:root[data-theme="light"] .glass-nav {
+  --glass-tint: rgba(255, 255, 255, 0.78);
 }
 
 /* ---------------------------------------------------------------------------
@@ -423,78 +437,6 @@ body {
     mask-composite: exclude;
     pointer-events: none;
   }
-}
-
-/* ---------------------------------------------------------------------------
-   Stacked panels (構造的な限界).
-
-   Each panel sticks a header's height further down than the one before it,
-   so they pile up with every previous header still showing. The offsets
-   live here rather than inline because they change at the md breakpoint,
-   and an inline style cannot carry a media query.
-
-   --stack-top clears the fixed 5rem nav.
---------------------------------------------------------------------------- */
-.stack {
-  --stack-top: 5.5rem;
-  --stack-header: 4.5rem;
-  /*
-   * Every panel is padded so that, once stuck, its bottom edge lands on the
-   * same line — panel 0 sits highest so it is the tallest. That is what
-   * makes all of them come unstuck at the same scroll position and leave
-   * together. Without it they release in sequence, shortest range first, and
-   * the pile unpeels from the bottom instead of moving as one.
-   *
-   * The value has to clear the tallest panel's own content, or that panel
-   * grows past its share and releases early. Mobile stacks the photograph
-   * under the copy, so it needs considerably more.
-   */
-  --stack-release: 46rem;
-}
-@media (min-width: 768px) {
-  .stack {
-    --stack-top: 6rem;
-    --stack-header: 5.5rem;
-    --stack-release: 32rem;
-  }
-}
-
-/* ---------------------------------------------------------------------------
-   Grid field.
-
-   Two 1px gradients on a 40px pitch make the graph paper; a third radial
-   layer is the glow behind it. All three are one background shorthand, so
-   the whole thing is a single painted layer with no extra elements.
-
-   The mask is the part that matters. Without it the grid stops dead at the
-   section's edges and reads as a pasted rectangle; fading it out on an
-   ellipse concentrates it behind the copy and lets the section blend into
-   its neighbours.
---------------------------------------------------------------------------- */
-.grid-field {
-  background-image:
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
-    radial-gradient(
-      circle at 50% 45%,
-      var(--grid-orb-near) 0%,
-      var(--grid-orb-far) 40%,
-      transparent 70%
-    );
-  background-size:
-    40px 40px,
-    40px 40px,
-    100% 100%;
-  -webkit-mask-image: radial-gradient(
-    ellipse 78% 62% at 50% 44%,
-    #000 38%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    ellipse 78% 62% at 50% 44%,
-    #000 38%,
-    transparent 100%
-  );
 }
 
 /* Japanese paragraph text needs more air than Latin to stay readable. */

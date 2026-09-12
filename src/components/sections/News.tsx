@@ -1,104 +1,98 @@
-import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
-import { Flower } from "@/components/Flower";
-import { SectionTitle, Icon, Section } from "@/components/ui";
+import { RevealItem, Reveal, Stagger } from "@/components/Reveal";
+import { SectionTitle, Section } from "@/components/ui";
 
 /**
- * Real entries. The invented placeholder list that used to sit here — the
- * Kyoto University study, the Hatapro tie-up, the pilot schools, the
- * conference — has been removed rather than kept alongside, because a press
- * list that mixes the two is worse than one that is short.
+ * Real entries only. The invented placeholder list that used to sit here —
+ * the Kyoto University study, the Hatapro tie-up, the pilot schools, the
+ * conference — was removed rather than kept alongside, because a press list
+ * that mixes the two is worse than one that is short.
+ *
+ * `name` is split out of the sentence so the proper noun can be set at
+ * display size: read `name` and `body` together and they are the entry
+ * exactly as the company wrote it, minus the 「」 that the large type now
+ * does the work of.
  *
  * `date` is optional and both entries are currently without one: the events
  * happened, but inventing a date for something the company actually did is
  * the same failure as inventing the entry. Fill them in and they render.
  *
- * `href` is intentionally absent too: there are no article pages yet, and a
- * headline that looks clickable but goes nowhere is worse than one that
- * plainly doesn't. Add the field and the entry becomes a link.
+ * There is no `href` field at all. There are no article pages, and a
+ * headline styled to look clickable that goes nowhere is worse than one that
+ * plainly doesn't — so nothing here carries a link affordance, a hover state
+ * or an arrow.
  */
 type NewsItem = {
   date?: string;
   category: string;
-  title: string;
-  href?: string;
+  name: string;
+  body: string;
 };
 
 const ITEMS: NewsItem[] = [
   {
     category: "登壇",
-    title: "「SusHi Tech Tokyo」に登壇し、Blescの取り組みについて発表しました。",
+    name: "SusHi Tech Tokyo",
+    body: "に登壇し、Blescの取り組みについて発表しました。",
   },
   {
     category: "受賞",
-    title: "「IVS」YOUTH部門において、優秀賞を受賞しました。",
+    name: "IVS",
+    body: "YOUTH部門において、優秀賞を受賞しました。",
   },
 ];
-
-/** Category tints, cycled so the list carries colour rather than grey rows. */
-const MARKS = ["text-mark-1", "text-mark-2", "text-mark-3"] as const;
 
 export function News() {
   return (
     <Section id="news">
       <Reveal>
-        <SectionTitle accent="bg-mark-3">ニュース</SectionTitle>
+        <SectionTitle>ニュース</SectionTitle>
       </Reveal>
 
-      <Reveal className="max-w-3xl">
-        <p className="flex items-center gap-3 text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.4] tracking-[-0.02em] text-ink">
-          Blescの最新の動き。
-          <Flower size={34} rotate={14} opacity={0.9} className="shrink-0 text-mark-3" />
-        </p>
-      </Reveal>
-
-      <Stagger className="mt-10" stagger={0.09}>
-        {ITEMS.map((item, i) => {
-          const mark = MARKS[i % MARKS.length];
-
-          const body = (
-            <div className="flex flex-col gap-2 border-t border-line py-6 md:flex-row md:items-baseline md:gap-8 md:py-7">
-              <div className="flex shrink-0 items-center gap-4">
-                {item.date && (
-                  <time className="text-[0.85rem] tabular-nums text-muted">
-                    {item.date}
-                  </time>
-                )}
-                <span
-                  className={`text-[0.75rem] font-medium tracking-[0.08em] ${mark}`}
-                >
-                  {item.category}
-                </span>
-              </div>
-
-              <p className="text-[1rem] leading-relaxed text-ink md:text-[1.05rem]">
-                {item.title}
-              </p>
-
-              {item.href && (
-                <Icon
-                  name="arrow_outward"
-                  size={18}
-                  className="ml-auto hidden shrink-0 text-muted md:block"
-                />
+      {/*
+        A hairline between the entries and nothing above the first: two items
+        boxed as cards read as a grid of chrome, where two names with air
+        around them read as news.
+      */}
+      <Stagger stagger={0.06}>
+        {ITEMS.map((item, i) => (
+          <RevealItem
+            key={item.name}
+            /*
+             * The rule goes between the entries, never above the first — the
+             * air under the heading is the boundary there. Written as a
+             * literal class per branch because Tailwind scans source text and
+             * would never generate an interpolated one.
+             */
+            className={
+              i === 0
+                ? "pb-8 md:pb-10"
+                : "border-t border-line py-8 md:py-10"
+            }
+          >
+            <div className="flex items-center gap-4">
+              <span className="inline-flex items-center rounded-full border border-line px-3 py-1 text-[0.8rem] text-muted">
+                {item.category}
+              </span>
+              {item.date && (
+                <time className="text-[0.85rem] tabular-nums text-muted">
+                  {item.date}
+                </time>
               )}
             </div>
-          );
 
-          return (
-            <RevealItem key={item.title}>
-              {item.href ? (
-                <a
-                  href={item.href}
-                  className="group block transition-opacity duration-300 hover:opacity-80"
-                >
-                  {body}
-                </a>
-              ) : (
-                body
-              )}
-            </RevealItem>
-          );
-        })}
+            {/*
+              The proper noun is the entry. It is set in the sans at section
+              scale and the sentence continues beneath it at reading size, so
+              the particle that follows the name still reads as one sentence.
+            */}
+            <p className="mt-4 text-[clamp(1.75rem,4.4vw,2.75rem)] font-medium leading-[1.15] tracking-[-0.03em] text-ink">
+              {item.name}
+            </p>
+            <p className="measure-jp mt-2 max-w-2xl text-[1.0625rem] text-muted">
+              {item.body}
+            </p>
+          </RevealItem>
+        ))}
       </Stagger>
     </Section>
   );

@@ -1,7 +1,7 @@
 import { Logo } from "@/components/Logo";
-import { SpotlightCard } from "@/components/SpotlightCard";
+import { Panel } from "@/components/product/Panel";
 import { Reveal } from "@/components/Reveal";
-import { Icon, Lines, Section, SectionTitle } from "@/components/ui";
+import { Icon, Section, SectionTitle } from "@/components/ui";
 
 /**
  * A sample entry, not a real one.
@@ -70,35 +70,44 @@ const ROWS = [
   },
 ] as const;
 
-/** Chrome comes from SpotlightCard; this is only the layout. */
-const FRAME = "flex flex-1 flex-col overflow-hidden";
-
+/**
+ * The student's side, at the width of the page.
+ *
+ * It used to be one of two portrait frames in a 2-up grid, where the diary —
+ * the surface the whole product is built on — was about 200px tall. At full
+ * measure it can be shaped like the application it is: the writing on the
+ * left, what the AI sends back beside it, and the two promises the student is
+ * actually given (their text is private, they press submit) along the foot.
+ */
 function StudentScreen() {
   return (
-    <SpotlightCard className={FRAME}>
-      {/* h-5 keeps this header the height the old lockup occupied. */}
-      <div className="flex items-center border-b border-line px-5 py-4">
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between gap-3 border-b border-line px-6 py-4 md:px-8">
         <Logo className="h-5 w-auto" />
+        <span className="text-[0.8rem] tabular-nums text-muted">
+          {ENTRY.date}
+        </span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-4 p-5">
-        <div>
-          <p className="text-[0.75rem] tabular-nums text-muted">{ENTRY.date}</p>
-          <p className="mt-1.5 text-[0.9rem] font-medium tracking-[-0.01em] text-ink">
+      <div className="grid flex-1 gap-5 p-6 md:grid-cols-[1.7fr_1fr] md:gap-7 md:p-8">
+        <div className="flex min-h-0 flex-col">
+          <p className="text-[0.95rem] font-medium tracking-[-0.01em] text-ink">
             {ENTRY.prompt}
           </p>
-        </div>
 
-        {/*
-          The writing surface. flex-1 so it takes whatever height is left,
-          which is what makes a diary read as a diary rather than as a form
-          field — the page is mostly the space to write in.
-        */}
-        <div className="flex flex-1 flex-col rounded-2xl bg-inset p-4">
-          <p className="text-[0.85rem] leading-[1.9] text-ink">{ENTRY.body}</p>
-          <span className="mt-auto pt-3 text-right text-[0.7rem] tabular-nums text-muted">
-            {[...ENTRY.body].length}字
-          </span>
+          {/*
+            flex-1 so the writing surface takes whatever height is left,
+            which is what makes a diary read as a diary rather than as a form
+            field — the page is mostly the space to write in.
+          */}
+          <div className="mt-3 flex flex-1 flex-col rounded-2xl bg-inset p-5">
+            <p className="text-[0.95rem] leading-[2] text-ink">{ENTRY.body}</p>
+            {/* Counted from the text above, never typed out: the two cannot
+                drift apart. */}
+            <span className="mt-auto pt-4 text-right text-[0.78rem] tabular-nums text-muted">
+              {[...ENTRY.body].length}字
+            </span>
+          </div>
         </div>
 
         {/*
@@ -107,38 +116,44 @@ function StudentScreen() {
           #85c0ed is a fill colour and measures 1.87:1 as text on the light
           ground, while mark-1 flips with the theme.
         */}
-        <div className="rounded-2xl bg-accent/10 p-4">
-          <p className="flex items-center gap-1.5 text-[0.7rem] font-medium tracking-[0.06em] text-mark-1">
+        <div className="flex flex-col justify-center rounded-2xl bg-accent/10 p-5">
+          <p className="flex items-center gap-1.5 text-[0.75rem] font-medium tracking-[0.06em] text-mark-1">
             <Icon name="auto_awesome" size={14} className="shrink-0" />
             AIからの問いかけ
           </p>
-          <p className="mt-2 text-[0.85rem] leading-relaxed text-ink">
+          <p className="mt-3 text-[0.95rem] leading-relaxed text-ink">
             {ENTRY.followUp}
           </p>
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-line px-5 py-4">
-        <span className="flex items-center gap-1.5 text-[0.75rem] text-muted">
+      <div className="flex items-center justify-between gap-3 border-t border-line px-6 py-4 md:px-8">
+        <span className="flex items-center gap-1.5 text-[0.8rem] text-muted">
           <Icon name="lock" size={14} className="shrink-0" />
           本文は先生に見えません
         </span>
-        <span className="rounded-full bg-accent px-4 py-2 text-[0.78rem] font-medium text-on-accent">
+        <span className="rounded-full bg-accent px-5 py-2.5 text-[0.82rem] font-medium text-on-accent">
           提出する
         </span>
       </div>
-    </SpotlightCard>
+    </div>
   );
 }
 
+/** The teacher's side: the report, and nothing underneath it. */
 function TeacherScreen() {
   return (
-    <SpotlightCard className={FRAME}>
-      <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
-        <span className="text-[0.85rem] font-medium tracking-[-0.01em] text-ink">
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between gap-3 border-b border-line px-6 py-4 md:px-8">
+        <span className="text-[0.95rem] font-medium tracking-[-0.01em] text-ink">
           今月のリスクレポート
         </span>
-        <span className="shrink-0 rounded-full bg-risk-high/15 px-2.5 py-1 text-[0.7rem] font-medium text-risk-high-text">
+        {/*
+          text-risk-high-text, not text-risk-high: the fill colour over its
+          own 15% tint measures 3.81:1 in light mode, under AA for a label
+          this small.
+        */}
+        <span className="shrink-0 rounded-full bg-risk-high/15 px-2.5 py-1 text-[0.75rem] font-medium text-risk-high-text">
           3件の要対応
         </span>
       </div>
@@ -147,13 +162,13 @@ function TeacherScreen() {
         {ROWS.map((row) => (
           <div
             key={`${row.klass}${row.no}`}
-            className="flex items-center gap-4 px-5 py-4"
+            className="flex items-center gap-5 px-6 py-4 md:px-8"
           >
-            <span className="w-[5.5rem] shrink-0 text-[0.8rem] tabular-nums text-muted">
+            <span className="w-[6rem] shrink-0 text-[0.85rem] tabular-nums text-muted">
               {row.klass} <span className="text-ink">{row.no}</span>
             </span>
 
-            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-inset">
+            <span className="h-2 flex-1 overflow-hidden rounded-full bg-inset">
               <span
                 className={`block h-full rounded-full ${row.bar}`}
                 style={{ width: row.width }}
@@ -166,7 +181,7 @@ function TeacherScreen() {
               is what actually carries the meaning — WCAG 1.4.1.
             */}
             <span
-              className={`w-4 shrink-0 text-right text-[0.8rem] font-medium ${row.text}`}
+              className={`w-4 shrink-0 text-right text-[0.85rem] font-medium ${row.text}`}
             >
               {row.level}
             </span>
@@ -174,40 +189,42 @@ function TeacherScreen() {
         ))}
       </div>
 
-      <div className="flex items-center gap-2 border-t border-line px-5 py-4 text-[0.78rem] text-muted">
+      <div className="flex items-center gap-2 border-t border-line px-6 py-4 text-[0.8rem] text-muted md:px-8">
         <Icon name="lock" size={16} className="shrink-0" />
         日記の本文は共有されません
       </div>
-    </SpotlightCard>
+    </div>
   );
 }
 
+/**
+ * A screen and the sentence that says what it shows.
+ *
+ * The uppercase, letter-spaced, accent-coloured label that used to sit above
+ * each frame is now a plain heading, and the caption has moved up beside it:
+ * the panel is the thing worth looking at, so nothing should sit underneath
+ * it competing for the same glance. The caption is also where the panel's
+ * facts live as real text, since the panel itself is aria-hidden.
+ */
 function Screen({
-  label,
+  title,
   caption,
   children,
 }: {
-  label: string;
+  title: string;
   caption: string;
   children: React.ReactNode;
 }) {
   return (
-    <figure className="flex flex-col">
-      <figcaption className="mb-5 text-[0.78rem] font-medium uppercase tracking-[0.15em] text-mark-1">
-        {label}
+    <figure>
+      <figcaption className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+        <h3 className="text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
+          {title}
+        </h3>
+        <p className="text-[1.0625rem] text-muted">{caption}</p>
       </figcaption>
 
-      {/*
-        The frames are pictures of software, not software. Marked decorative
-        so a screen reader is not walked through a staged diary entry and a
-        table of invented roll numbers as though they were real; the sentence
-        underneath each one says what it shows.
-      */}
-      <div aria-hidden className="flex flex-1 flex-col">
-        {children}
-      </div>
-
-      <p className="measure-jp mt-5 text-[0.9rem] text-muted">{caption}</p>
+      <Panel className="mt-6 md:h-[23rem]">{children}</Panel>
     </figure>
   );
 }
@@ -215,46 +232,45 @@ function Screen({
 /**
  * The two screens the product actually is.
  *
- * Split out of テクノロジー, which argued for an ontology graph without ever
- * showing the thing being sold. Both sides at once is also the clearest form
- * of the privacy claim: what the student writes on the left never appears on
- * the right.
+ * They were side by side at half measure with three lines of summary above
+ * them; the summary repeated 仕組み almost sentence for sentence, so it is
+ * gone and the screens have the full width each. What is left above them is
+ * the one claim the pair exists to prove — that the diary does not travel —
+ * and it holds because the student's text is on one panel and demonstrably
+ * absent from the other.
  */
 export function Product() {
   return (
     <Section id="product">
       <Reveal>
-        <SectionTitle accent="bg-mark-3">プロダクト</SectionTitle>
+        <SectionTitle>プロダクト</SectionTitle>
       </Reveal>
 
-      <Reveal className="max-w-3xl">
+      <Reveal className="max-w-4xl">
         <p className="text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.5] tracking-[-0.02em] text-ink">
-          毎日5分の日記から、心理的リスクを捉える。
+          教員に届くのは要点のみで、日記の本文が共有されることはありません。
         </p>
       </Reveal>
 
-      <Reveal className="mt-6 max-w-2xl">
-        <Lines className="measure-jp text-muted">
-          {`生徒が書くのは、1日5分の短い日記だけ。
-独自のAIがその内容を深掘りし、言葉の奥にあるサインまで捉えます。
-教員に届くのは要点のみで、日記の本文が共有されることはありません。`}
-        </Lines>
-      </Reveal>
-
-      <Reveal className="mt-14">
-        <div className="grid items-stretch gap-10 md:grid-cols-2 md:gap-8">
-          <Screen label="生徒の画面" caption="毎日5分。書いた内容に、AIが問いを返します。">
+      <div className="mt-12 space-y-12 md:mt-16 md:space-y-16">
+        <Reveal>
+          <Screen
+            title="生徒の画面"
+            caption="毎日5分。書いた内容に、AIが問いを返します。"
+          >
             <StudentScreen />
           </Screen>
+        </Reveal>
 
+        <Reveal>
           <Screen
-            label="教員の画面"
+            title="教員の画面"
             caption="届くのは要点のみ。日記の本文は非公開。"
           >
             <TeacherScreen />
           </Screen>
-        </div>
-      </Reveal>
+        </Reveal>
+      </div>
     </Section>
   );
 }

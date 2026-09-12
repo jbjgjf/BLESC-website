@@ -1,10 +1,5 @@
-"use client";
-
-import { motion, useInView, useReducedMotion } from "motion/react";
-import { useRef } from "react";
-import { GlassFilter, LiquidGlass } from "@/components/LiquidGlass";
+import { Panel } from "@/components/product/Panel";
 import { Reveal } from "@/components/Reveal";
-import { SPOTLIGHT } from "@/components/SpotlightCard";
 import {
   DiaryMock,
   ProbeMock,
@@ -13,133 +8,118 @@ import {
 } from "@/components/StepMockups";
 import { Section, SectionTitle } from "@/components/ui";
 
-type Stage = {
+type Step = {
   n: string;
-  label: string;
+  /** Three or four characters: the step, not a summary of it. */
+  title: string;
+  /** One line. If it needs two, the panel is not doing its job. */
   body: string;
-  /** The screen this stage looks like. */
+  /** The screen this step looks like. */
   mock: () => React.ReactElement;
 };
 
 /**
- * One flow, read top to bottom.
+ * Four steps, each one a line of copy against a large picture of the screen
+ * it happens on.
  *
- * This was five tabs. Clicking through five panels to learn what the product
- * does made the reader do work the page should do for them, and any one
- * numbered box looks like every other numbered box. All five are on the page
- * at once now, and the thing that gives them structure is the boundary they
- * cross: everything above the gate touches what the student actually wrote,
- * and only the summary passes below it. That is the product's whole claim,
- * so it is the divider rather than a footnote on step 04.
+ * This was a 4/8 + 7/5 grid of four bordered cards, each holding a heading,
+ * a paragraph and a thumbnail. Four boxes of the same construction read as a
+ * specification rather than as a sequence, and the screens — the only part
+ * that actually shows what the product does — were the smallest thing in
+ * them. Inverted here: the panel is most of the block, the prose is one
+ * line, and the sides swap so the eye has to travel down the page to follow
+ * the flow.
  */
-const BEFORE: Stage[] = [
+const STEPS: Step[] = [
   {
     n: "01",
+    title: "全生徒が対象",
+    body: "毎日5分、ホームルームの時間に。希望者ではなく全生徒が対象で、新しい習慣も専用の準備も必要ありません。",
     mock: RosterMock,
-    label: "生徒",
-    body: "毎日5分、ホームルームの時間に実施します。対象は希望者ではなく全生徒で、新しい習慣も専用の準備も必要ありません。",
   },
   {
     n: "02",
+    title: "日記を書く",
+    body: "内容も長さも自由。誰かに読ませるための文章ではなく、自分のための記録として書けることが、本音が残る条件になります。",
     mock: DiaryMock,
-    label: "日記を書く",
-    body: "その日にあったことを、5分で短く綴るだけ。内容も長さも自由です。誰かに読ませるための文章ではなく、自分のための記録として書けることが、本音が残る条件になります。",
   },
   {
     n: "03",
+    title: "AIが深掘り",
+    body: "独自のAIが、対話ではなく短い問いをひとつ返し、「たぶん大丈夫」で終わる一行の奥にあるものを静かに引き出します。",
     mock: ProbeMock,
-    label: "AIが深掘り",
-    body: "独自のAIが、書かれた内容に短い問いを返します。「たぶん大丈夫」で終わる一行の奥にあるものを、対話ではなく一問一答のかたちで、静かに引き出します。",
   },
   {
     n: "04",
-    mock: SignalMock,
-    label: "リスク解析",
+    title: "リスク解析",
     body: "言葉のニュアンス、書くことをためらった間、日々の書きぶりの変化。こうした微細なシグナルを積み重ねて、心理的リスクを検知します。毎日書かれるからこそ、一日の落ち込みと、続いている不調とを区別できます。",
+    mock: SignalMock,
   },
 ];
 
 /**
- * Clockwise still — 01 across to 02, down to 03, back to 04 — but the two
- * rows no longer share a column template, so all four widths differ: 4/8
- * on the top row and 7/5 on the bottom. One grid cannot vary its columns
- * per row, so this is two grids, and 03 and 04 are placed explicitly rather
- * than reordered in the markup, which keeps the DOM in reading order.
+ * One step.
  *
- * The arrows that used to sit in the gaps are gone. They were positioned by
- * percentage against equal columns; against unequal ones they no longer
- * land on the boundary, and four cards this size do not need them to read
- * as a sequence.
+ * Twelve columns with an explicit col-start on each side rather than a
+ * reordered DOM: the copy stays before its own panel in source, so the
+ * reading order is 01, 02, 03, 04 whatever side each panel lands on. Both
+ * branches are written out in full because Tailwind only generates classes
+ * it can find literally in the source.
+ *
+ * Copy first when the block stacks. The generic alternating block puts the
+ * panel first on narrow screens, but these are numbered steps: a picture
+ * arriving above its own number would read as belonging to the step above
+ * it.
  */
-function Step({
-  stage,
-  index,
-  feature = false,
-}: {
-  stage: Stage;
-  index: number;
-  /** The destination, on the far side of the gate. */
-  feature?: boolean;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-  const shown = useInView(ref, { margin: "0px 0px -20% 0px", once: true });
-  const Mock = stage.mock;
+function StepBlock({ step, flipped }: { step: Step; flipped: boolean }) {
+  const Mock = step.mock;
 
   return (
-    <motion.div
-      ref={ref}
-      className={`${SPOTLIGHT} flex h-full flex-col rounded-3xl border p-5 shadow-[var(--shadow-card)] md:p-6 ${
-        feature ? "border-mark-1/40 bg-mark-1/[0.07]" : "border-line bg-surface"
-      }`}
-      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.97 }}
-      animate={
-        shown
-          ? { opacity: 1, y: 0, scale: 1 }
-          : reduce
-            ? { opacity: 0 }
-            : { opacity: 0, y: 24, scale: 0.97 }
-      }
-      transition={{
-        duration: 0.7,
-        ease: [0.16, 1, 0.3, 1],
-        delay: reduce ? 0 : index * 0.08,
-      }}
-    >
-      <div className="flex items-center gap-4">
-        <span
-          aria-hidden
-          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-accent text-[0.9rem] font-semibold tabular-nums text-on-accent md:size-12"
+    <li>
+      <Reveal className="grid gap-6 md:grid-cols-12 md:items-center md:gap-x-12">
+        <div
+          className={
+            flipped
+              ? "md:col-span-5 md:col-start-8 md:row-start-1"
+              : "md:col-span-5 md:col-start-1 md:row-start-1"
+          }
         >
-          {stage.n}
-        </span>
-        <h3 className="text-[clamp(1.15rem,2.2vw,1.45rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
-          <span className="sr-only">{`ステップ ${stage.n}、`}</span>
-          {stage.label}
-        </h3>
-      </div>
+          {/* The step number is decoration over a list that is already
+              ordered; the sr-only label is what announces position. */}
+          <p
+            aria-hidden
+            className="text-[0.8rem] font-medium tabular-nums text-muted"
+          >
+            {step.n}
+          </p>
+          <h3 className="mt-2.5 text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
+            <span className="sr-only">{`ステップ ${step.n}、`}</span>
+            {step.title}
+          </h3>
+          <p className="measure-jp mt-4 text-[1.0625rem] text-muted">
+            {step.body}
+          </p>
+        </div>
 
-      <p className="measure-jp mt-4 text-[0.92rem] text-muted">{stage.body}</p>
-
-      {/*
-        The screen sits at the foot of the card, on glass. mt-auto so the
-        panels line up along the bottom whatever length the copy runs to.
-      */}
-      <LiquidGlass
-        radius="0.9rem"
-        className="mt-6 h-[11rem] border border-line/60"
-      >
-        <Mock />
-      </LiquidGlass>
-    </motion.div>
+        <Panel
+          className={`h-[13rem] sm:h-[15rem] ${
+            flipped
+              ? "md:col-span-7 md:col-start-1 md:row-start-1"
+              : "md:col-span-7 md:col-start-6 md:row-start-1"
+          }`}
+        >
+          <Mock />
+        </Panel>
+      </Reveal>
+    </li>
   );
 }
 
 export function HowItWorks() {
   return (
-    <Section id="how" alt>
+    <Section id="how">
       <Reveal>
-        <SectionTitle accent="bg-mark-1">仕組み</SectionTitle>
+        <SectionTitle>仕組み</SectionTitle>
       </Reveal>
 
       <Reveal className="max-w-2xl">
@@ -148,31 +128,11 @@ export function HowItWorks() {
         </p>
       </Reveal>
 
-      <GlassFilter />
-
-      <div className="mt-14">
-        <ol className="space-y-5 md:space-y-8">
-          <li>
-            <div className="grid gap-5 md:grid-cols-[4fr_8fr] md:gap-8">
-              <Step stage={BEFORE[0]} index={0} />
-              <Step stage={BEFORE[1]} index={1} />
-            </div>
-          </li>
-          <li>
-            <div className="grid gap-5 md:grid-cols-[7fr_5fr] md:gap-8">
-              {/* 03 sits right, 04 left — the clockwise turn — without
-                  moving either out of reading order in the markup. */}
-              <div className="md:col-start-2 md:row-start-1">
-                <Step stage={BEFORE[2]} index={2} />
-              </div>
-              <div className="md:col-start-1 md:row-start-1">
-                <Step stage={BEFORE[3]} index={3} />
-              </div>
-            </div>
-          </li>
-        </ol>
-
-      </div>
+      <ol className="mt-12 space-y-12 md:mt-16 md:space-y-16">
+        {STEPS.map((step, i) => (
+          <StepBlock key={step.n} step={step} flipped={i % 2 === 1} />
+        ))}
+      </ol>
     </Section>
   );
 }

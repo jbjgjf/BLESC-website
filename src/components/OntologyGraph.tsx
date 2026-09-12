@@ -13,10 +13,11 @@ import { VIEWPORT } from "@/lib/motion";
  * An illustration of the shape of the model, not a dump of it.
  *
  * The real graph is far larger; this shows a dozen constructs and the way
- * they link, with the one chain the copy names — 睡眠不足 → 認知機能の低下 →
- * 抑うつ傾向 — picked out of the web around it. That is the point the
- * section argues: the chain is not a rule someone wrote, it is a path
- * through a structure.
+ * they link, with one chain — 睡眠不足 → 認知機能の低下 → 抑うつ傾向 — picked
+ * out of the web around it. That is the point the section argues: the chain
+ * is not a rule someone wrote, it is a path through a structure. The chain
+ * is named in the legend below rather than in the section's prose, which is
+ * down to two lines, so it stays readable as text either way.
  *
  * Coordinates are centres. Pills are drawn after the edges so they occlude
  * the lines that pass beneath them.
@@ -45,19 +46,36 @@ type Node = {
   lit?: boolean;
 };
 
+/**
+ * Laid out for a 560x440 frame rather than the 900x440 this used to occupy.
+ *
+ * The figure now sits in seven of twelve columns beside the section's copy
+ * instead of running the full measure, so it renders about 500–560px wide.
+ * The label size is fixed at 13 user units and the frame is what scales, so
+ * the frame had to lose width for the labels to keep their size: at 560
+ * units across they land between 11.1px (at the panel's scroll threshold)
+ * and 12.3px (at the widest desktop measure), where the old 900-unit frame
+ * would have rendered them at roughly 8px.
+ *
+ * Nothing was dropped to buy that width — all twelve constructs and all
+ * seventeen links are still here, re-placed so the frame is portrait rather
+ * than landscape. Every pill keeps at least 20 units of clearance from every
+ * other, and no edge passes under a pill that is not one of its endpoints,
+ * which is what would otherwise read as a link that isn't there.
+ */
 const NODES: Node[] = [
-  { id: "rhythm", domain: "physical", label: "生活リズムの乱れ", x: 100, y: 60, w: 128 },
-  { id: "sleep", domain: "physical", label: "睡眠不足", x: 140, y: 160, w: 76, lit: true },
-  { id: "fatigue", domain: "physical", label: "疲労の蓄積", x: 110, y: 270, w: 89 },
-  { id: "appetite", domain: "physical", label: "食欲の変化", x: 150, y: 375, w: 89 },
-  { id: "cognition", domain: "cognitive", label: "認知機能の低下", x: 350, y: 105, w: 115, lit: true },
-  { id: "focus", domain: "cognitive", label: "集中力の低下", x: 330, y: 235, w: 102 },
-  { id: "grades", domain: "cognitive", label: "学業不振", x: 330, y: 355, w: 76 },
-  { id: "rumination", domain: "cognitive", label: "反すう思考", x: 545, y: 55, w: 89 },
-  { id: "efficacy", domain: "affective", label: "自己効力感の低下", x: 540, y: 300, w: 128 },
-  { id: "depression", domain: "affective", label: "抑うつ傾向", x: 700, y: 175, w: 89, lit: true },
-  { id: "avoidance", domain: "affective", label: "対人回避", x: 610, y: 400, w: 76 },
-  { id: "isolation", domain: "affective", label: "孤立", x: 830, y: 320, w: 50 },
+  { id: "rhythm", domain: "physical", label: "生活リズムの乱れ", x: 75, y: 48, w: 128 },
+  { id: "sleep", domain: "physical", label: "睡眠不足", x: 108, y: 150, w: 76, lit: true },
+  { id: "fatigue", domain: "physical", label: "疲労の蓄積", x: 71, y: 258, w: 89 },
+  { id: "appetite", domain: "physical", label: "食欲の変化", x: 77, y: 368, w: 89 },
+  { id: "cognition", domain: "cognitive", label: "認知機能の低下", x: 280, y: 100, w: 115, lit: true },
+  { id: "focus", domain: "cognitive", label: "集中力の低下", x: 243, y: 208, w: 102 },
+  { id: "grades", domain: "cognitive", label: "学業不振", x: 181, y: 312, w: 76 },
+  { id: "rumination", domain: "cognitive", label: "反すう思考", x: 394, y: 36, w: 89 },
+  { id: "efficacy", domain: "affective", label: "自己効力感の低下", x: 315, y: 346, w: 128 },
+  { id: "depression", domain: "affective", label: "抑うつ傾向", x: 465, y: 166, w: 89, lit: true },
+  { id: "avoidance", domain: "affective", label: "対人回避", x: 439, y: 290, w: 76 },
+  { id: "isolation", domain: "affective", label: "孤立", x: 511, y: 404, w: 50 },
 ];
 
 /** `lit` marks the chain the section's copy walks through. */
@@ -81,15 +99,28 @@ const EDGES: [string, string, boolean?][] = [
   ["avoidance", "isolation"],
 ];
 
-const BY_ID = Object.fromEntries(NODES.map((n) => [n.id, n]));
+const BY_ID = Object.fromEntries(NODES.map((n) => [n.id, n])) as Record<
+  string,
+  Node
+>;
 const H = 34;
 
-/** The named chain, in the order it is walked. */
-const TRACE = [
-  { x: 140, y: 160 },
-  { x: 350, y: 105 },
-  { x: 700, y: 175 },
-];
+const edgeKey = (from: string, to: string) => `${from}-${to}`;
+
+/**
+ * The lit edges in the order they are walked, so each one can pick up the
+ * scroll value for its own leg. Derived from EDGES rather than listed again:
+ * the drawing order and the `lit` flags then cannot drift apart.
+ */
+const LIT_EDGES = EDGES.filter(([, , lit]) => lit).map(([from, to]) =>
+  edgeKey(from, to),
+);
+
+/**
+ * The named chain, in the order it is walked. Read off the nodes themselves
+ * so moving a pill moves the trace with it.
+ */
+const TRACE = ["sleep", "cognition", "depression"].map((id) => BY_ID[id]);
 
 export function OntologyGraph() {
   const reduce = useReducedMotion();
@@ -136,15 +167,18 @@ export function OntologyGraph() {
   return (
     <figure ref={ref}>
       {/*
-        Scrolls in its own container below ~640px rather than shrinking the
-        labels past legibility.
+        Scrolls in its own container rather than shrinking the labels past
+        legibility. The 30rem floor is the width at which 13-unit labels in a
+        560-unit frame still render at 11px; below that the panel scrolls
+        instead, which it does on phones and inside the narrowest desktop
+        measure of the two-column block.
       */}
-      <div className="-mx-6 overflow-x-auto px-6 md:mx-0 md:px-0">
+      <div className="overflow-x-auto">
         <motion.svg
-          viewBox="0 0 900 440"
+          viewBox="0 0 560 440"
           role="img"
           aria-label="心理的な構成概念どうしのつながりを示す知識グラフ。睡眠不足から認知機能の低下を経て抑うつ傾向にいたる経路が強調されています。"
-          className="h-auto w-full min-w-[40rem] font-sans"
+          className="h-auto w-full min-w-[30rem] font-sans"
           initial="hidden"
           whileInView="show"
           viewport={VIEWPORT}
@@ -160,13 +194,13 @@ export function OntologyGraph() {
             </filter>
           </defs>
           <g>
-            {EDGES.map(([from, to, lit], edgeIndex) => {
+            {EDGES.map(([from, to, lit]) => {
               const a = BY_ID[from];
               const b = BY_ID[to];
-              const legIndex = lit ? EDGES.filter((e) => e[2]).indexOf(EDGES[edgeIndex]) : -1;
+              const legIndex = lit ? LIT_EDGES.indexOf(edgeKey(from, to)) : -1;
               return (
                 <motion.line
-                  key={`${from}-${to}`}
+                  key={edgeKey(from, to)}
                   x1={a.x}
                   y1={a.y}
                   x2={b.x}
@@ -268,28 +302,40 @@ export function OntologyGraph() {
         </motion.svg>
       </div>
 
-      <figcaption className="measure-jp mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.8rem] text-muted">
-        <span className="flex items-center gap-2">
-          <span aria-hidden className="h-0.5 w-6 rounded-full bg-mark-1" />
-          本文で例に挙げた経路
-        </span>
-        <span className="flex items-center gap-2">
-          <span aria-hidden className="h-px w-6 rounded-full bg-line-strong" />
-          その他の因果リンク
-        </span>
-        <span className="flex items-center gap-2">
-          <span aria-hidden className="size-2.5 rounded-full bg-mark-3" />
-          生活・身体
-        </span>
-        <span className="flex items-center gap-2">
-          <span aria-hidden className="size-2.5 rounded-full bg-mark-1" />
-          認知・学業
-        </span>
-        <span className="flex items-center gap-2">
-          <span aria-hidden className="size-2.5 rounded-full bg-mark-2" />
-          情緒・対人
-        </span>
-        <span>実際のグラフはこれよりはるかに大規模です。</span>
+      <figcaption className="mt-5 text-[0.8rem] leading-relaxed text-muted">
+        {/*
+          The legend wraps to as many rows as the narrower column needs, and
+          the scale caveat sits on its own line below it — in the flex row it
+          used to share, it read as a sixth swatch label.
+        */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          {/*
+            The lit path is labelled with the chain itself rather than with a
+            pointer back to the prose. It is the one fact this figure carries
+            that has to exist as text, and the legend is where it now lives.
+          */}
+          <span className="flex items-center gap-2">
+            <span aria-hidden className="h-0.5 w-6 rounded-full bg-mark-1" />
+            睡眠不足 → 認知機能の低下 → 抑うつ傾向
+          </span>
+          <span className="flex items-center gap-2">
+            <span aria-hidden className="h-px w-6 rounded-full bg-line-strong" />
+            その他の因果リンク
+          </span>
+          <span className="flex items-center gap-2">
+            <span aria-hidden className="size-2.5 rounded-full bg-mark-3" />
+            生活・身体
+          </span>
+          <span className="flex items-center gap-2">
+            <span aria-hidden className="size-2.5 rounded-full bg-mark-1" />
+            認知・学業
+          </span>
+          <span className="flex items-center gap-2">
+            <span aria-hidden className="size-2.5 rounded-full bg-mark-2" />
+            情緒・対人
+          </span>
+        </div>
+        <p className="mt-2">実際のグラフはこれよりはるかに大規模です。</p>
       </figcaption>
     </figure>
   );

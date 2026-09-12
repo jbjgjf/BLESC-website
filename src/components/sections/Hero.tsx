@@ -1,6 +1,7 @@
 "use client";
 
-import { Logo } from "@/components/Logo";
+import { AppMock } from "@/components/hero/AppMock";
+import { DeviceScroll } from "@/components/hero/DeviceScroll";
 import { IntroFade, WordReveal } from "@/components/Reveal";
 import {
   ShaderBackground,
@@ -28,10 +29,10 @@ const DARK_PALETTE: ShaderColor[] = [
 ];
 
 const LIGHT_PALETTE: ShaderColor[] = [
-  [0.9804, 0.9804, 0.9725], // #fafaf8  --color-bg
-  [0.7216, 0.851, 0.9451], // #b8d9f1  pale blue
-  [0.498, 0.7216, 0.8902], // #7fb8e3  mid blue
-  [1, 1, 1], // #ffffff
+  [1, 1, 1], // #ffffff  --color-bg
+  [0.8235, 0.898, 0.9725], // #d2e5f8  high sky
+  [0.5647, 0.749, 0.9294], // #90bfed  deeper sky
+  [1, 1, 1], // #ffffff  the light source
 ];
 
 const HEADLINE_LINES = [
@@ -67,21 +68,19 @@ export function Hero() {
   const { theme } = useTheme();
 
   return (
-    <section
-      id="top"
-      className="relative flex min-h-[88svh] items-center overflow-hidden bg-canvas pt-28 pb-16 md:min-h-screen"
-    >
+    <section id="top" className="relative overflow-x-clip bg-canvas">
       {/*
         The static gradient sits underneath permanently: if WebGL is
         unavailable the canvas simply never draws and this shows through, so
         there is no error state to track and no flash.
       */}
-      <WebGLFallback className="pointer-events-none absolute inset-0" />
-      <div className="pointer-events-none absolute inset-0">
-        <ShaderBackground
-          colors={theme === "light" ? LIGHT_PALETTE : DARK_PALETTE}
-        />
-      </div>
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[128svh]">
+        <WebGLFallback className="absolute inset-0" />
+        <div className="absolute inset-0">
+          <ShaderBackground
+            colors={theme === "light" ? LIGHT_PALETTE : DARK_PALETTE}
+          />
+        </div>
 
       {/*
         Readability scrim. The shader can clamp to near-white where its three
@@ -90,18 +89,25 @@ export function Hero() {
         keeps the muted subheadline at 4.6:1 and the headline above 11:1 even
         against a hypothetical pure-white aurora.
       */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,var(--scrim-strong)_0%,var(--scrim-mid)_58%,var(--scrim-soft)_100%)]"
-      />
+      {/*
+        Vertical now that the copy is centred: the sky stays open across the
+        full width, and the wash only builds at the very top and bottom,
+        where the nav and the first section meet it.
+      */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[linear-gradient(180deg,var(--scrim-mid)_0%,var(--scrim-soft)_34%,var(--scrim-soft)_58%,var(--scrim-strong)_100%)]"
+        />
+      </div>
 
-      <Container className="relative z-10">
-        <div className="max-w-3xl">
-          <IntroFade delay={0.05}>
-            <Logo alt="Blesc" className="h-7 w-auto md:h-8" />
-          </IntroFade>
-
-          <h1 className="mt-8 text-[clamp(2.25rem,6.4vw,4.25rem)] font-medium leading-[1.1] tracking-[-0.03em] text-ink">
+      <Container className="relative z-10 flex min-h-[72svh] flex-col justify-center pt-28 pb-4 md:min-h-[76svh]">
+        <div className="mx-auto max-w-4xl text-center">
+          {/*
+            The serif is the whole point of the hero: it is the one place on
+            the page where the type, rather than a picture of the product,
+            carries the weight.
+          */}
+          <h1 className="type-hero text-ink">
             {HEADLINE_LINES.map((line, i) => (
               <span key={line} className="block">
                 <WordReveal
@@ -116,13 +122,13 @@ export function Hero() {
           </h1>
 
           <IntroFade delay={AFTER_HEADLINE}>
-            <p className="mt-8 text-lg text-muted md:text-xl">
+            <p className="mt-7 text-lg text-muted md:text-xl">
               生徒のSOSを可視化する。
             </p>
           </IntroFade>
 
           <IntroFade delay={AFTER_HEADLINE + 0.08}>
-            <div className="mt-12 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-11 flex flex-col gap-4 sm:flex-row sm:justify-center">
               <ButtonLink variant="secondary" href={CTA.document.href}>
                 {CTA.document.label}
               </ButtonLink>
@@ -133,6 +139,20 @@ export function Hero() {
           </IntroFade>
         </div>
       </Container>
+
+      {/*
+        The product, arriving as you scroll rather than sitting there from
+        the first frame. It is a picture of software, so the figure is
+        decorative and the caption is the only part a screen reader hears.
+      */}
+      <figure className="relative z-10 m-0">
+        <DeviceScroll>
+          <AppMock />
+        </DeviceScroll>
+        <figcaption className="sr-only">
+          Blescアプリの画面イメージ。
+        </figcaption>
+      </figure>
     </section>
   );
 }

@@ -1,51 +1,49 @@
-import { GridField } from "@/components/GridField";
+import { EvidencePanel } from "@/components/evidence/EvidencePanel";
 import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
-import { Lines, Section } from "@/components/ui";
+import { Section } from "@/components/ui";
 
 /*
- * Tighter top than the standard section rhythm. The hero centres its copy in
- * a full-viewport box, which already leaves ~246px of air below the CTAs;
- * the default 144px on top of that put this heading 390px clear of them.
- * Tailwind sorts pt-* after py-*, so this wins over Section's own py.
+ * The claim and its evidence, in one block.
  *
- * The escalation timeline that used to sit under the heading is gone. What
- * is left is the claim itself, centred and standing on the grid field —
- * which is the whole point of putting a field behind it.
+ * This used to be two sections: the sentence on its own over a graph-paper
+ * field, then a separate 数字 section holding two statistics. The statistics
+ * are the argument for the sentence, so they now sit in a single panel
+ * directly under it and the second section is gone.
+ *
+ * The grid field went with it. It was a blue-tinted orb behind graph paper,
+ * which is legible on the near-black build and fights a white ground — and
+ * on white the only colour the page wants is the hero sky and the product
+ * UI. The panel is the visual here; it does not need a backdrop as well.
+ *
+ * Tighter top than the standard section rhythm: the hero centres its copy in
+ * a full-viewport box and already leaves a lot of air below the CTAs, so the
+ * default 144px on top of that put this heading far clear of them. Tailwind
+ * sorts pt-* after py-*, so this wins over Section's own py.
  */
 export function Problem() {
   return (
-    <Section
-      id="problem"
-      className="relative overflow-x-clip pt-12 md:pt-16"
-      backdrop={<GridField />}
-    >
-      <div className="mx-auto max-w-3xl text-center">
-        <Reveal>
-          {/*
-            One line. The break that used to force 遅い。 onto its own row is
-            gone; at this scale the sentence fits the measure on a wide
-            screen and rewraps on its own below it.
-          */}
-          <h2 className="text-[clamp(1.9rem,5vw,3.4rem)] font-medium leading-[1.25] tracking-[-0.035em] text-ink">
-            危機が起きてからでは、遅い。
-          </h2>
-        </Reveal>
+    <Section id="problem" className="pt-12 md:pt-16">
+      <Stagger className="mx-auto max-w-3xl text-center" stagger={0.06}>
+        <RevealItem>
+          <h2 className="type-head text-ink">危機が起きてからでは、遅い。</h2>
+        </RevealItem>
 
-        <Stagger className="mt-10 space-y-7 md:mt-12" stagger={0.12}>
-          <RevealItem>
-            <Lines className="measure-jp text-[clamp(1rem,1.6vw,1.15rem)] text-ink">
-              {`生徒の不調に気づくのが「何かが起きた後」になってしまう。
-Blescは、そのタイミングを根本から変えます。`}
-            </Lines>
-          </RevealItem>
-          <RevealItem>
-            <Lines className="measure-jp text-muted">
-              {`毎日5分の日記に綴られた言葉から早期のサインをAIが捉え、
-支援が必要な生徒を、孤立する前に可視化します。`}
-            </Lines>
-          </RevealItem>
-        </Stagger>
-      </div>
+        {/*
+          One line, and it is the claim. What followed it — Blescは、その
+          タイミングを根本から変えます。 — was cut at the company's direction:
+          the panel below and 仕組み both make that case, and two adjacent
+          sentences opening Blescは… read as a repeat.
+        */}
+        <RevealItem className="mt-6">
+          <p className="measure-jp mx-auto max-w-xl text-[1.0625rem] text-muted">
+            生徒の不調に気づくのが「何かが起きた後」になってしまう。
+          </p>
+        </RevealItem>
+      </Stagger>
+
+      <Reveal className="mt-14 md:mt-16">
+        <EvidencePanel />
+      </Reveal>
     </Section>
   );
 }

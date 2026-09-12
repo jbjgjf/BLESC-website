@@ -108,9 +108,16 @@ const MEMBERS: Member[] = [
   },
 ];
 
-/** The company's own description of the team. */
+/**
+ * The company's own description of the team, condensed to one sentence.
+ *
+ * Every claim in the original survives — the backgrounds and the countries
+ * named, that the members are 帰国子女, that all of them are bilingual, and
+ * that the work is social-issue work seen from inside and outside Japan.
+ * What went was the two-clause construction carrying them.
+ */
 const TEAM_INTRO =
-  "BLESCは、中国、日本、オーストラリア、インドなど多様なバックグラウンドを持つ帰国子女で構成されており、全員がバイリンガルとして国内外の視点を活かしながら社会課題の解決に取り組んでいます。";
+  "BLESCは、中国、日本、オーストラリア、インドなど多様なバックグラウンドを持つバイリンガルの帰国子女が、国内外の視点から社会課題の解決に取り組むチームです。";
 
 /**
  * Name, role, and the button that opens that person's introduction.
@@ -195,19 +202,31 @@ export function Team() {
   const person = MEMBERS[active];
 
   return (
-    <Section id="team">
+    <Section id="team" className="overflow-x-clip">
       <Reveal>
-        <SectionTitle accent="bg-mark-2">チーム</SectionTitle>
+        <SectionTitle>チーム</SectionTitle>
       </Reveal>
 
       <Reveal className="max-w-2xl">
-        <p className="measure-jp text-muted">{TEAM_INTRO}</p>
+        <p className="measure-jp text-[1.0625rem] text-muted">{TEAM_INTRO}</p>
       </Reveal>
 
-      <div className="relative mt-14 h-[420px] w-full md:h-[540px]">
+      {/*
+        Full-bleed on purpose. The roster is a carousel of faces and the
+        container's 68rem measure was cropping the two either side of centre
+        in half — at the page edge you saw a sliver of someone rather than a
+        person. Item size is set by the canvas HEIGHT alone (the plane scales
+        by screen.height/1500), so widening the canvas costs nothing and
+        simply brings more of the roster into frame.
+
+        left-1/2 + w-screen + -translate-x-1/2 is the standard break-out; the
+        section clips the x axis so the scrollbar's width cannot turn it into
+        a horizontal scroll.
+      */}
+      <div className="relative left-1/2 mt-14 h-[420px] w-screen -translate-x-1/2 md:h-[560px]">
         <CircularGallery
           items={items}
-          bend={3}
+          bend={1.8}
           borderRadius={0.06}
           scrollEase={0.04}
           onActiveChange={setActive}
