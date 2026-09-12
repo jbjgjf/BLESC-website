@@ -4,7 +4,7 @@ import {
   DiaryMock,
   ProbeMock,
   RosterMock,
-  SignalMock,
+  TrendMock,
 } from "@/components/StepMockups";
 import { Section, SectionTitle } from "@/components/ui";
 
@@ -53,7 +53,7 @@ const STEPS: Step[] = [
     n: "04",
     title: "リスク解析",
     body: "言葉のニュアンス、書くことをためらった間、日々の書きぶりの変化。こうした微細なシグナルを積み重ねて、心理的リスクを検知します。書き重ねられるからこそ、一日の落ち込みと、続いている不調とを区別できます。",
-    mock: SignalMock,
+    mock: TrendMock,
   },
 ];
 
@@ -84,15 +84,26 @@ function StepBlock({ step, flipped }: { step: Step; flipped: boolean }) {
               : "md:col-span-5 md:col-start-1 md:row-start-1"
           }
         >
-          {/* The step number is decoration over a list that is already
-              ordered; the sr-only label is what announces position. */}
+          {/*
+            The step number is decoration over a list that is already
+            ordered; the sr-only label on the heading is what announces
+            position.
+
+            Set in the display serif at something close to the size of the
+            heading under it. At 0.8rem in the sans it was a caption, and four
+            captions down the page read as four specifications — which is
+            exactly how this section was failing. The serif is the page's own
+            voice (it is the hero face), the numerals are old-style, and at
+            this size they are what the eye lands on first, so the four blocks
+            read as 01 through 04 rather than as four of the same thing.
+          */}
           <p
             aria-hidden
-            className="text-[0.8rem] font-medium tabular-nums text-muted"
+            className="font-serif text-[clamp(1.875rem,3.4vw,2.5rem)] leading-none tabular-nums text-muted"
           >
             {step.n}
           </p>
-          <h3 className="mt-2.5 text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
+          <h3 className="mt-3 text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-snug tracking-[-0.02em] text-ink">
             <span className="sr-only">{`ステップ ${step.n}、`}</span>
             {step.title}
           </h3>
@@ -101,8 +112,15 @@ function StepBlock({ step, flipped }: { step: Step; flipped: boolean }) {
           </p>
         </div>
 
+        {/*
+          Up from 13/15rem. The diary now writes two lines rather than one and
+          the risk panel draws a fourteen-day chart under two labels, and at
+          the old phone height the last line of each was inside the frame by
+          less than it takes to clip a descender. Every mockup sizes itself
+          from this box, so the floor is set here once.
+        */}
         <Panel
-          className={`h-[13rem] sm:h-[15rem] ${
+          className={`h-[15rem] sm:h-[16rem] ${
             flipped
               ? "md:col-span-7 md:col-start-1 md:row-start-1"
               : "md:col-span-7 md:col-start-6 md:row-start-1"

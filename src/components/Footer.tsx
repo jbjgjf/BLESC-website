@@ -56,10 +56,17 @@ export function Footer() {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* 導入について, folded in from the old standalone CTA section. */}
           <div className="lg:col-span-2">
-            <h2 className="text-[clamp(1.5rem,3.4vw,2rem)] font-medium leading-[1.35] tracking-[-0.02em] text-ink">
+            {/*
+              Scaled up from a 2rem cap. This is the last thing the page asks
+              for and it was set smaller than every section head above it,
+              which read as a footnote rather than an invitation; it now sits
+              just under type-head, close enough to carry and not so close
+              that it competes with the sections.
+            */}
+            <h2 className="text-[clamp(1.625rem,3.6vw,2.375rem)] font-medium leading-[1.3] tracking-[-0.025em] text-ink [font-feature-settings:'palt'_1]">
               導入について、お話ししませんか。
             </h2>
-            <p className="measure-jp mt-4 max-w-sm text-[0.95rem] text-muted">
+            <p className="measure-jp mt-5 max-w-sm text-[0.95rem] text-muted">
               資料のご請求、導入のご相談を承っております。
               お問い合わせフォームよりご連絡ください。
             </p>

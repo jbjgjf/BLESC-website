@@ -1,4 +1,5 @@
 import { OntologyGraph } from "@/components/OntologyGraph";
+import { DOMAINS, TRACE } from "@/components/product/ontology";
 import { Reveal } from "@/components/Reveal";
 import { SectionTitle, Section } from "@/components/ui";
 
@@ -55,6 +56,55 @@ export function Technology() {
           <p className="measure-jp mt-5 text-[1rem] text-muted">
             心理の因果連鎖を医学的研究にもとづいて構造化したオントロジー知識グラフで、臨床心理士の思考プロセスを機械可読な形で再現しています。
           </p>
+
+          {/*
+            The chain, as text.
+
+            The claim this section makes is that a path through the structure
+            is what the model follows, and the only place that path existed as
+            words was a legend under the figure — so the copy column was two
+            paragraphs and a credit list, i.e. the thing it is arguing against
+            was the only thing on the page with a shape. Setting the chain
+            here gives the column something to land on, puts the example
+            before the picture that highlights it, and makes the path readable
+            to a screen reader as an ordered list of three constructs rather
+            than as one sentence inside an image label.
+
+            Same three nodes as the lit trace, imported from the graph's own
+            data: they cannot come to disagree. The dots repeat each
+            construct's domain colour, which is what keys the list to the
+            figure beside it; the construct names themselves stay ink, so
+            nothing here depends on a colour to be read.
+
+            The label above it is the one new string in this section: the
+            figure's own caption already says the real graph is far larger, so
+            "一例" is what this list honestly is.
+          */}
+          <p className="mt-8 text-[0.8rem] font-medium tracking-[0.02em] text-muted">
+            因果連鎖の一例
+          </p>
+          <ol className="mt-4">
+            {TRACE.map((node, i) => (
+              <li key={node.id} className="flex gap-3.5">
+                <span aria-hidden className="flex flex-col items-center pt-[0.5rem]">
+                  <span
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ background: DOMAINS[node.domain].color }}
+                  />
+                  {i < TRACE.length - 1 && (
+                    <span className="mt-1 w-px flex-1 bg-line-strong" />
+                  )}
+                </span>
+                <span
+                  className={`text-[0.95rem] font-medium text-ink ${
+                    i < TRACE.length - 1 ? "pb-4" : ""
+                  }`}
+                >
+                  {node.label}
+                </span>
+              </li>
+            ))}
+          </ol>
 
           <dl className="mt-8 space-y-5 border-t border-line pt-7">
             {CREDITS.map(({ role, body }) => (

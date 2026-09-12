@@ -1,5 +1,6 @@
 import { Logo } from "@/components/Logo";
 import { Panel } from "@/components/product/Panel";
+import { PrivacyBoundary } from "@/components/product/PrivacyBoundary";
 import { Reveal } from "@/components/Reveal";
 import { Icon, Section, SectionTitle } from "@/components/ui";
 
@@ -261,6 +262,24 @@ export function Product() {
             <StudentScreen />
           </Screen>
         </Reveal>
+
+        {/*
+          Between the two screens, because that is where the claim lives.
+          Reading order is: here is what the student writes — here is the
+          wall it does not cross — here is all that arrives.
+
+          NOT wrapped in <Reveal>: the beats inside are scroll-linked to this
+          element's own position, and an ancestor still animating a translate
+          would be measured mid-flight. Same reason the ontology graph opts
+          out.
+        */}
+        <PrivacyBoundary
+          body={ENTRY.body}
+          klass={ROWS[0].klass}
+          no={ROWS[0].no}
+          level={ROWS[0].level}
+          width={ROWS[0].width}
+        />
 
         <Reveal>
           <Screen

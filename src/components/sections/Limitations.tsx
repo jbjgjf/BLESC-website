@@ -1,4 +1,8 @@
-import Image from "next/image";
+import {
+  LimitationFigure,
+  type FigureKind,
+} from "@/components/evidence/LimitationFigure";
+import { PhotoFrame } from "@/components/evidence/PhotoFrame";
 import { Reveal } from "@/components/Reveal";
 import { Section, SectionTitle } from "@/components/ui";
 
@@ -7,6 +11,8 @@ type Limitation = {
   photo: string;
   title: string;
   body: string;
+  /** Which mechanism this row's figure draws. See LimitationFigure. */
+  figure: FigureKind;
 };
 
 /*
@@ -21,18 +27,21 @@ const ITEMS: Limitation[] = [
     photo: "/photos/limitation-01.jpg",
     title: "アンケートでは本音が表れない。",
     body: "「はい／いいえ」形式では、生徒は大人が望む無難な回答を選びます。",
+    figure: "binary",
   },
   {
     n: "02",
     photo: "/photos/limitation-02.jpg",
     title: "深刻なケースほど見えなくなる。",
     body: "追い詰められた生徒ほど周囲を拒み孤立するため、SOSを待つ仕組みでは間に合いません。",
+    figure: "isolating",
   },
   {
     n: "03",
     photo: "/photos/limitation-03.jpg",
     title: "教員のリソースには限界がある。",
     body: "40名一人ひとりの心の機微まで捉えるのは現実的ではありません。教員の熱意ではなく、構造の問題です。",
+    figure: "attention",
   },
 ];
 
@@ -49,6 +58,11 @@ const ITEMS: Limitation[] = [
  * The photograph comes first in the markup, so the mobile stack puts the
  * picture above its paragraph; md:order-* is what swaps the sides back on a
  * wide screen. Rows alternate from the second one down.
+ *
+ * Under each sentence is a small figure of the mechanism that sentence
+ * describes. Three flat rows of photo-plus-paragraph made the three reasons
+ * look like one reason restated, and the figures are what tells them apart at
+ * a glance — each is a different drawing because each row argues differently.
  */
 function Row({ item, index }: { item: Limitation; index: number }) {
   const flipped = index % 2 === 1;
@@ -57,22 +71,7 @@ function Row({ item, index }: { item: Limitation; index: number }) {
     <Reveal>
       <div className="grid items-center gap-8 md:grid-cols-12 md:gap-14">
         <div className={`md:col-span-7 ${flipped ? "md:order-2" : ""}`}>
-          {/*
-            3:2 rather than the 4:3 the files were cropped to. object-cover
-            takes the difference off the top and bottom, which leaves every
-            subject the crop was made for — the doorframe in 02 and the
-            central aisle in 03 both run vertically through the frame — and a
-            wider panel fits the page's other visuals.
-          */}
-          <div className="relative aspect-[3/2] overflow-hidden rounded-[1.25rem] border border-line shadow-[var(--shadow-card)]">
-            <Image
-              src={item.photo}
-              alt=""
-              fill
-              sizes="(min-width: 768px) 36rem, 100vw"
-              className="object-cover"
-            />
-          </div>
+          <PhotoFrame src={item.photo} sizes="(min-width: 768px) 36rem, 100vw" />
         </div>
 
         <div className={`md:col-span-5 ${flipped ? "md:order-1" : ""}`}>
@@ -90,6 +89,8 @@ function Row({ item, index }: { item: Limitation; index: number }) {
           </h3>
 
           <p className="measure-jp mt-4 text-[1.0625rem] text-muted">{item.body}</p>
+
+          <LimitationFigure kind={item.figure} />
         </div>
       </div>
     </Reveal>

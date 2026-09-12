@@ -1,6 +1,13 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import type { MotionValue } from "motion/react";
+import {
+  animate,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+} from "motion/react";
 import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
 import { Icon } from "@/components/ui";
 
@@ -17,23 +24,11 @@ import { Icon } from "@/components/ui";
  *
  * Each lives inside an aria-hidden <Panel>, so the claim a screen
  * illustrates is written out in the copy beside it.
- */
-
-/**
- * Bars and blocks that draw themselves in when the panel arrives.
  *
- * The reduced-motion path starts at the final width instead of animating to
- * it — a bar whose length *is* the datum cannot simply be faded in, because
- * a zero-width bar is a different reading, not a quieter one.
+ * None of them is scroll-linked, on purpose: every step block is wrapped in
+ * a <Reveal>, and an ancestor that is still animating a translate would be
+ * measured mid-flight by useScroll. They run once on entry instead.
  */
-const grow = (width: string, i: number, reduce: boolean) => ({
-  initial: { width: reduce ? width : 0 },
-  whileInView: { width },
-  viewport: VIEWPORT,
-  transition: reduce
-    ? { duration: 0 }
-    : { duration: 0.9, ease: EXPO_OUT, delay: 0.15 + i * 0.12 },
-});
 
 /** 01 — every student, not a self-selecting few. */
 export function RosterMock() {
@@ -71,50 +66,144 @@ export function RosterMock() {
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/* 02 — the diary, being written                                              */
+/* -------------------------------------------------------------------------- */
+
 /**
- * 02 — the writing surface, mid-sentence. The count is derived from what is
- * actually typed, so the two can never drift apart.
+ * The entry, authored as two short lines.
+ *
+ * It is split rather than left to wrap because the typing is drawn by
+ * sliding a cover off each line, and a cover can only uncover one line at a
+ * time — a wrapped second line would start revealing before the first
+ * finished. Two authored lines of 8 and 12 characters never wrap at any
+ * width this panel reaches, so the effect is exact on a phone and on a
+ * desktop, and short lines are how a diary looks anyway.
  */
-const TYPED = "部活がきつくて、最近あんまり眠れてない。";
+const TYPED_LINES = ["部活がきつくて、", "最近あんまり眠れてない。"] as const;
+
+/** Derived, never typed out: the count and the text cannot drift apart. */
+const TYPED_CHARS = TYPED_LINES.reduce((n, line) => n + [...line].length, 0);
+
+/** Where each line's share of the typing starts and ends, by character. */
+const LINE_SPANS = TYPED_LINES.map((line, i) => {
+  const before = TYPED_LINES.slice(0, i).reduce((n, l) => n + [...l].length, 0);
+  return {
+    text: line,
+    from: before / TYPED_CHARS,
+    to: (before + [...line].length) / TYPED_CHARS,
+  };
+});
+
+/**
+ * One line of the entry, uncovered by a block sliding off to the right.
+ *
+ * The cover is the well's own colour, so the text behind it is simply not
+ * there yet, and the caret is the cover's leading edge — which means the
+ * caret is always exactly at the last character typed without anything
+ * having to measure a glyph. One transform per line, no layout per frame,
+ * and the real text stays in the DOM the whole time.
+ */
+function TypedLine({
+  span,
+  progress,
+  reduce,
+}: {
+  span: (typeof LINE_SPANS)[number];
+  progress: MotionValue<number>;
+  reduce: boolean;
+}) {
+  const x = useTransform(progress, [span.from, span.to], ["0%", "100%"], {
+    clamp: true,
+  });
+  /*
+   * The caret belongs to whichever line is being written, so it switches on
+   * at that line's first character and off at its last. The final line's
+   * range ends at 1, so its caret is what stays behind at rest — which is
+   * the static caret this panel had before, in the same place.
+   */
+  const caret = useTransform(
+    progress,
+    [span.from - 0.0001, span.from, span.to, span.to + 0.0001],
+    [0, 1, 1, 0],
+  );
+
+  return (
+    <span className="relative block w-fit">
+      {span.text}
+      {reduce ? (
+        // End state: the line is written, and only the last line keeps a
+        // caret — the same thing the animation leaves behind.
+        span.to === 1 && (
+          <span className="absolute inset-y-[0.45em] -right-px w-px bg-mark-1" />
+        )
+      ) : (
+        <motion.span
+          className="absolute inset-y-0 left-0 w-full"
+          style={{ x }}
+          aria-hidden
+        >
+          <motion.span
+            className="absolute inset-y-[0.45em] left-0 w-px bg-mark-1"
+            style={{ opacity: caret }}
+          />
+          <span className="absolute inset-y-0 left-px w-full bg-inset" />
+        </motion.span>
+      )}
+    </span>
+  );
+}
 
 export function DiaryMock() {
   const reduce = useReducedMotion();
+  /**
+   * Characters typed, 0–1. A motion value rather than state: the counter and
+   * both covers read from it every frame without a single React render.
+   */
+  const progress = useMotionValue(0);
+  const count = useTransform(progress, (v) => Math.round(v * TYPED_CHARS));
 
   return (
-    <div className="flex h-full flex-col gap-3 p-6 md:p-8">
+    <motion.div
+      className="flex h-full flex-col gap-3 p-6 md:p-8"
+      viewport={{ once: true, amount: 0.4 }}
+      onViewportEnter={() => {
+        // Reduced motion gets the finished entry, not a faster one.
+        if (reduce) return progress.set(1);
+        animate(progress, 1, { duration: 1.7, ease: "linear", delay: 0.25 });
+      }}
+    >
       <p className="text-[0.78rem] tabular-nums text-muted">8月20日（木）</p>
       <p className="text-[0.95rem] font-medium tracking-[-0.01em] text-ink">
         今日はどんな一日だった？
       </p>
 
-      <div className="flex flex-1 flex-col rounded-xl bg-inset p-4 md:p-5">
+      {/* overflow-hidden so a cover that has slid clear of its line is
+          clipped by the well rather than painting inset colour across the
+          panel beside it. */}
+      {/*
+        p-4 at every width, not md:p-5: the entry is two lines plus a counter
+        and the desktop panel spends 16px more on its own padding, so the
+        wider well is exactly where the content stopped fitting.
+      */}
+      <div className="flex flex-1 flex-col overflow-hidden rounded-xl bg-inset p-4">
         <p className="text-[0.9rem] leading-[1.9] text-ink">
-          {TYPED}
-          {/*
-            The caret is the one looping animation in these panels, and it is
-            what says the entry is being written rather than already filed.
-            Under prefers-reduced-motion it stays put instead of blinking —
-            the cue survives, the repetition does not.
-          */}
-          {reduce ? (
-            <span className="ml-0.5 inline-block h-[0.9em] w-px translate-y-[0.1em] bg-mark-1" />
-          ) : (
-            <motion.span
-              className="ml-0.5 inline-block h-[0.9em] w-px translate-y-[0.1em] bg-mark-1"
-              animate={{ opacity: [1, 1, 0, 0] }}
-              transition={{
-                duration: 1.1,
-                repeat: Infinity,
-                times: [0, 0.5, 0.5, 1],
-              }}
+          {LINE_SPANS.map((span) => (
+            <TypedLine
+              key={span.text}
+              span={span}
+              progress={progress}
+              reduce={!!reduce}
             />
-          )}
+          ))}
         </p>
         <span className="mt-auto pt-3 text-right text-[0.72rem] tabular-nums text-muted">
-          {[...TYPED].length}字
+          {/* Counted up from the same value that draws the text, so the
+              number on screen is always the number of characters visible. */}
+          <motion.span>{count}</motion.span>字
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -151,86 +240,143 @@ export function ProbeMock() {
   );
 }
 
-/** 04 — the signals the model actually weighs. */
-const SIGNALS = [
-  { label: "言葉のニュアンス", width: "78%" },
-  { label: "書きためらいの間", width: "54%" },
-  { label: "日々の書きぶりの変化", width: "88%" },
+/* -------------------------------------------------------------------------- */
+/* 04 — one bad day against a run of them                                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * What replaced the three labelled bars.
+ *
+ * Those bars were 言葉のニュアンス / 書きためらいの間 / 日々の書きぶりの変化 —
+ * the same three phrases the step's own copy lists, at invented lengths that
+ * looked like model weights and weren't. The copy's second claim had no
+ * picture at all: 「書き重ねられるからこそ、一日の落ち込みと、続いている不調
+ * とを区別できます」. That claim is about time, and time is the one thing a
+ * single screen cannot assert — so this step now shows the axis the rest of
+ * the page doesn't have.
+ *
+ * A spike on its own stays in the neutral mark; four rising days together
+ * are what the report escalates. Nothing here is a measurement of anything
+ * real, and the figure carries no numbers for that reason — it is the shape
+ * of the distinction, and the distinction is what the copy beside it claims.
+ */
+const DAYS = [
+  { h: 26 },
+  { h: 20 },
+  { h: 33 },
+  // The isolated day. Tall, and deliberately not flagged.
+  { h: 80, note: "一日の落ち込み" },
+  { h: 24 },
+  { h: 30 },
+  { h: 22 },
+  { h: 35 },
+  { h: 27 },
+  { h: 41 },
+  { h: 57, run: true },
+  { h: 69, run: true },
+  { h: 81, run: true },
+  { h: 93, run: true },
 ];
 
-export function SignalMock() {
+const RUN_START = DAYS.findIndex((d) => d.run);
+const RUN_LENGTH = DAYS.filter((d) => d.run).length;
+const SPIKE = DAYS.findIndex((d) => d.note);
+
+export function TrendMock() {
   const reduce = useReducedMotion();
 
-  return (
-    <div className="flex h-full flex-col justify-center gap-6 p-6 md:gap-7 md:p-8">
-      {SIGNALS.map((sig, i) => (
-        <div key={sig.label} className="flex items-center gap-5">
-          <p className="w-[9.5rem] shrink-0 text-[0.8rem] text-muted">
-            {sig.label}
-          </p>
-          <span className="block h-2 flex-1 overflow-hidden rounded-full bg-inset">
-            <motion.span
-              className="block h-full rounded-full bg-mark-1"
-              {...grow(sig.width, i, !!reduce)}
-            />
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/** The whole of what a teacher receives, at step scale. */
-const ROWS = [
-  { id: "3年2組 #14", level: "高", width: "88%", bar: "bg-risk-high", text: "text-risk-high" },
-  { id: "3年1組 #08", level: "中", width: "62%", bar: "bg-risk-mid", text: "text-risk-mid" },
-  { id: "3年3組 #03", level: "低", width: "24%", bar: "bg-risk-low", text: "text-risk-low" },
-];
-
-export function ReportMock() {
-  const reduce = useReducedMotion();
+  const bar = reduce
+    ? { hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 0.3 } } }
+    : {
+        hidden: { opacity: 0, y: 8 },
+        show: {
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.5, ease: EXPO_OUT },
+        },
+      };
 
   return (
-    <div className="flex h-full flex-col gap-4 p-6 md:p-8">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-[0.9rem] font-medium text-ink">
-          今月のリスクレポート
-        </span>
-        {/*
-          text-risk-high-text, not text-risk-high: the fill colour over its
-          own 15% tint measures 3.81:1 in light mode, under AA for a label
-          this small.
-        */}
-        <span className="shrink-0 rounded-full bg-risk-high/15 px-2.5 py-1 text-[0.72rem] font-medium text-risk-high-text">
-          3件の要対応
-        </span>
-      </div>
+    <motion.div
+      className="flex h-full flex-col p-6 md:p-8"
+      initial="hidden"
+      whileInView="show"
+      viewport={VIEWPORT}
+      variants={{
+        show: { transition: { staggerChildren: reduce ? 0 : 0.035 } },
+      }}
+    >
+      <p className="text-[0.78rem] text-muted">心理的リスクの推移</p>
 
-      <div className="flex flex-1 flex-col justify-center gap-4">
-        {ROWS.map((row, i) => (
-          <div key={row.id} className="flex items-center gap-4">
-            <span className="w-[5.5rem] shrink-0 text-[0.78rem] tabular-nums text-muted">
-              {row.id}
-            </span>
-            <span className="h-2 flex-1 overflow-hidden rounded-full bg-inset">
-              <motion.span
-                className={`block h-full rounded-full ${row.bar}`}
-                {...grow(row.width, i, !!reduce)}
-              />
-            </span>
-            <span
-              className={`w-4 shrink-0 text-right text-[0.8rem] font-medium ${row.text}`}
-            >
-              {row.level}
-            </span>
-          </div>
+      {/*
+        One column per entry, bottom-aligned. Heights are styles, not
+        animations: the bars arrive with the page's own fade-and-rise rather
+        than growing, so no frame animates a height.
+      */}
+      <div className="mt-4 flex flex-1 items-end gap-[3px] md:gap-1">
+        {DAYS.map((day, i) => (
+          <motion.span
+            key={i}
+            variants={bar}
+            /* flex-1 with the same gap as the label grids below gives the
+               same fourteen tracks, and a flex item's percentage height
+               resolves against this row's own definite height — a grid row
+               sized by auto would collapse every bar to nothing. */
+            className={`block min-w-0 flex-1 rounded-t-[2px] ${
+              day.run ? "bg-risk-high" : "bg-mark-1"
+            }`}
+            style={{ height: `${day.h}%` }}
+          />
         ))}
       </div>
 
-      <p className="flex items-center gap-1.5 text-[0.72rem] text-muted">
-        <Icon name="lock" size={13} className="shrink-0" />
-        日記の本文は共有されません
-      </p>
-    </div>
+      {/* The two underlines, on the same 14-column track as the bars, so
+          each sits exactly under what it names. */}
+      <div className="mt-2 grid grid-cols-14 gap-[3px] md:gap-1">
+        <motion.span
+          variants={bar}
+          className="col-span-1 h-px bg-mark-1"
+          style={{ gridColumnStart: SPIKE + 1 }}
+        />
+        <motion.span
+          variants={bar}
+          className="h-px bg-risk-high"
+          style={{
+            gridColumnStart: RUN_START + 1,
+            gridColumnEnd: RUN_START + 1 + RUN_LENGTH,
+          }}
+        />
+      </div>
+
+      {/*
+        Labels are centred on their own span and allowed to overrun it — a
+        seven-character label is wider than one fourteenth of the panel, and
+        the panel has room on both sides of both marks at every width it is
+        drawn at.
+      */}
+      <div className="mt-1.5 grid h-4 grid-cols-14 gap-[3px] text-[0.72rem] md:gap-1">
+        <motion.span
+          variants={bar}
+          className="relative col-span-1"
+          style={{ gridColumnStart: SPIKE + 1 }}
+        >
+          <span className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-muted">
+            {DAYS[SPIKE].note}
+          </span>
+        </motion.span>
+        <motion.span
+          variants={bar}
+          className="relative"
+          style={{
+            gridColumnStart: RUN_START + 1,
+            gridColumnEnd: RUN_START + 1 + RUN_LENGTH,
+          }}
+        >
+          <span className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap font-medium text-risk-high-text">
+            続いている不調
+          </span>
+        </motion.span>
+      </div>
+    </motion.div>
   );
 }

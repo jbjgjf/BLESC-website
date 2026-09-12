@@ -1,8 +1,10 @@
 "use client";
 
+import { motion, useReducedMotion } from "motion/react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SPOTLIGHT } from "@/components/SpotlightCard";
+import { EXPO_OUT } from "@/lib/motion";
 import { HoverSwap, Icon } from "@/components/ui";
 import {
   CONTACT_EMAIL,
@@ -12,8 +14,27 @@ import {
   WEB3FORMS_ACCESS_KEY,
 } from "@/lib/site";
 
+/**
+ * The form is a panel now — the same `rounded-[1.25rem]` hairline-and-shadow
+ * plane every other visual on the site sits in — which is what gives the
+ * fields an edge to be sunk into.
+ */
+const PANEL =
+  "rounded-[1.25rem] border border-line bg-surface p-6 shadow-[var(--shadow-card)] md:p-8";
+
+/**
+ * bg-inset, not bg-canvas-alt. On the raised panel the page's second surface
+ * is the wrong well: in the dark build it measures 1.03:1 against the plane it
+ * sits on, i.e. an invisible field. --surface-inset is the token for a well
+ * sunk into a raised plane and reads in both themes (1.07:1 light, 1.21:1
+ * dark), with ink at 18.11:1 / 14.81:1 and the placeholder at 5.83:1 / 9.13:1.
+ *
+ * `focus:outline-none` stays: the unlayered `:focus-visible` rule in
+ * globals.css outranks it, so the real focus ring is the site's 2px mark-1
+ * outline rather than the browser's default.
+ */
 const FIELD_CLASS =
-  "w-full rounded-xl border border-line bg-canvas-alt px-4 py-3 text-[0.95rem] text-ink placeholder:text-muted focus:border-accent focus:outline-none";
+  "w-full rounded-xl border border-line bg-inset px-4 py-3 text-[0.95rem] text-ink transition-colors duration-300 placeholder:text-muted focus:border-accent focus:outline-none";
 
 const LABEL_CLASS = "block text-[0.85rem] font-medium text-ink";
 
@@ -38,6 +59,57 @@ const NOT_BLANK = ".*\\S.*";
  * delivered, and telling the visitor it failed invites a duplicate.
  */
 type Status = "idle" | "sending" | "sent" | "error" | "unconfirmed";
+
+/**
+ * The receipt.
+ *
+ * Drawn rather than set as an icon, and drawn on arrival rather than already
+ * finished: this is the one moment the page confirms that a person will read
+ * what was just sent, and a static glyph says it in the same breath as a
+ * disabled button. The ring goes round, then the check lands inside it.
+ *
+ * Decorative, so aria-hidden — the heading beneath it is what a screen reader
+ * hears, and it takes focus. Stroke lengths are the circle's circumference
+ * (2πr at r=21 ≈ 132) and a little over the check's own path length; both are
+ * rounded up, which is why the dash offset starts clear of the shape.
+ *
+ * Reduced motion gets `initial={false}`, so motion writes the finished state
+ * on the first frame instead of animating to it.
+ */
+function SentMark() {
+  const reduce = useReducedMotion();
+
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 48 48"
+      className="size-12 text-mark-1"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <motion.circle
+        cx="24"
+        cy="24"
+        r="21"
+        strokeOpacity={0.45}
+        strokeDasharray="132"
+        initial={reduce ? false : { strokeDashoffset: 132 }}
+        animate={{ strokeDashoffset: 0 }}
+        transition={{ duration: 0.9, ease: EXPO_OUT }}
+      />
+      <motion.path
+        d="M15 24.5 L21.5 31 L33 19"
+        strokeDasharray="32"
+        initial={reduce ? false : { strokeDashoffset: 32 }}
+        animate={{ strokeDashoffset: 0 }}
+        transition={{ duration: 0.45, ease: EXPO_OUT, delay: 0.3 }}
+      />
+    </svg>
+  );
+}
 
 function Field({
   id,
@@ -187,12 +259,16 @@ export function ContactForm() {
 
   if (status === "sent") {
     return (
-      <div className="mt-12 rounded-2xl border border-line bg-canvas-alt p-8 md:p-10">
-        <Icon name="check_circle" size={32} className="text-mark-1" />
+      /*
+        The same panel the form was, so the confirmation lands in the shape
+        the form left behind rather than as a differently-coloured box.
+      */
+      <div className={PANEL}>
+        <SentMark />
         <h2
           ref={doneRef}
           tabIndex={-1}
-          className="mt-4 text-[clamp(1.2rem,2.4vw,1.45rem)] font-medium tracking-[-0.01em] text-ink focus:outline-none"
+          className="mt-6 text-[clamp(1.25rem,2.4vw,1.5rem)] font-medium tracking-[-0.015em] text-ink focus:outline-none"
         >
           お問い合わせを受け付けました。
         </h2>
@@ -207,7 +283,7 @@ export function ContactForm() {
     <form
       onSubmit={submit}
       aria-busy={sending}
-      className="mt-12 flex flex-col gap-8"
+      className={`${PANEL} flex flex-col gap-8`}
     >
       <fieldset>
         <legend className={LABEL_CLASS}>ご用件</legend>
@@ -225,7 +301,7 @@ export function ContactForm() {
                 className={`${SPOTLIGHT} flex flex-1 cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 text-[0.95rem] transition-colors duration-300 ${
                   active
                     ? "border-accent bg-accent/10 text-ink"
-                    : "border-line bg-canvas-alt text-muted hover:text-ink"
+                    : "border-line bg-inset text-muted hover:text-ink"
                 }`}
               >
                 <input
@@ -335,7 +411,13 @@ export function ContactForm() {
         <button
           type="submit"
           disabled={sending}
-          className="group inline-flex items-center justify-center rounded-full bg-accent px-8 py-3.5 text-[0.95rem] font-medium text-on-accent transition-[scale,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02] disabled:scale-100 disabled:cursor-progress disabled:opacity-70"
+          /*
+            rounded-xl, not rounded-full: 12px is the radius every other
+            control on the site uses, and a pill here was the only one of its
+            kind. --on-accent on --color-primary holds 9.96:1 light and
+            10.09:1 dark.
+          */
+          className="group inline-flex items-center justify-center rounded-xl bg-accent px-8 py-3.5 text-[0.95rem] font-medium text-on-accent transition-[scale,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02] disabled:scale-100 disabled:cursor-progress disabled:opacity-70"
         >
           {sending ? (
             <span className="flex items-center gap-2">
