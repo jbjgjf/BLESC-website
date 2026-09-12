@@ -1,5 +1,6 @@
 "use client";
 
+import { FooterFlowers } from "@/components/FooterFlowers";
 import { GradientFooter } from "@/components/GradientFooter";
 import { WordmarkReveal } from "@/components/WordmarkReveal";
 import { usePathname } from "next/navigation";
@@ -53,17 +54,37 @@ export function Footer() {
   const { theme } = useTheme();
   const onHome = usePathname() === "/";
 
+  /*
+   * `relative` is the one thing the footer gets for the flower layer, so
+   * that layer has a box to be positioned against. Nothing else — no
+   * transform, filter or overflow — because the glow band inside
+   * GradientFooter is position: fixed and any of those on an ancestor would
+   * capture it and pin it to the footer instead of the viewport.
+   */
   return (
     <GradientFooter
-      className="border-t border-line bg-canvas pt-16"
+      className="relative border-t border-line bg-canvas pt-16"
       stops={theme === "light" ? LIGHT_STOPS : DARK_STOPS}
     >
       {/*
-        Three bands, each with one type treatment: the invitation, a quiet
-        utility line, then the copyright with the wordmark breaking through
-        it. What used to be here was a four-column grid — a CTA block, a
-        サイトマップ column and an お問い合わせ column, each with its own
-        heading — which made the quietest part of the page the busiest.
+        First in the tree on purpose: it is a z-0 layer and the Container
+        after it carries z-10, so the flowers paint above the footer's white
+        and below every line of type. Placed later they would still sit
+        under the Container, but the point of the ordering is that nothing
+        here depends on a negative z-index, which the footer's own background
+        would paint over.
+      */}
+      <FooterFlowers />
+
+      {/*
+        Three bands, each with one type treatment and each centred: the
+        invitation, a quiet utility line, then the copyright with the
+        wordmark breaking through it. What used to be here was a four-column
+        grid — a CTA block, a サイトマップ column and an お問い合わせ column,
+        each with its own heading — which made the quietest part of the page
+        the busiest. Centring is what makes the gutters either side of the
+        heading a place the flowers can float, rather than dead space to the
+        right of a left-aligned block.
       */}
       <Container className="relative z-10">
         {/*
@@ -74,8 +95,13 @@ export function Footer() {
           read back, and then お問い合わせフォームよりご連絡ください, which is
           where both buttons already go. With the heading no longer sharing a
           half-width grid cell it also sets on one line at desktop.
+
+          max-w-3xl is the measure the flower clusters are laid out against:
+          768px centred leaves 128px of gutter at 1024 and FooterFlowers
+          reasons from exactly that figure, so widening this would need the
+          clusters re-checked.
         */}
-        <h2 className="text-[clamp(1.625rem,3.6vw,2.375rem)] font-medium leading-[1.3] tracking-[-0.025em] text-ink [font-feature-settings:'palt'_1]">
+        <h2 className="mx-auto max-w-3xl text-center text-[clamp(1.625rem,3.6vw,2.375rem)] font-medium leading-[1.3] tracking-[-0.025em] text-ink [font-feature-settings:'palt'_1]">
           導入について、お話ししませんか。
         </h2>
 
@@ -83,8 +109,11 @@ export function Footer() {
           The only route to the form the footer now needs: both hrefs are
           CONTACT_PATH with the enquiry pre-selected, so the separate
           お問い合わせフォーム text link was a third door onto the same page.
+
+          items-center keeps the stacked buttons at their own width and
+          centred on a phone, rather than stretched to the column.
         */}
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <ButtonLink variant="secondary" href={CTA.document.href}>
             {CTA.document.label}
           </ButtonLink>
@@ -94,11 +123,13 @@ export function Footer() {
         </div>
 
         {/*
-          items-center, not items-baseline: the mail link is an inline-flex
-          whose baseline comes from the icon inside it, which would sit the
-          address a pixel or two off the links it shares the line with.
+          The link row and the address stack, centred, at every width. They
+          used to share one line at md with the address pushed to the far
+          end, which only made sense under a left-aligned heading; centred,
+          an address hanging off the right of a centred row of links reads
+          as a mistake.
         */}
-        <div className="mt-14 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="mt-14 flex flex-col items-center gap-5">
           {/*
             Kept, but laid down as one wrapping line instead of a titled
             column. The nav hides its own link list below md with no menu
@@ -106,7 +137,7 @@ export function Footer() {
             phone — six items on two lines rather than six stacked rows.
           */}
           <nav aria-label="フッターナビゲーション">
-            <ul className="flex flex-wrap items-baseline gap-x-6 gap-y-3">
+            <ul className="flex flex-wrap items-baseline justify-center gap-x-6 gap-y-3">
               {NAV_LINKS.map(({ id, label }) => (
                 <li key={id}>
                   <a href={sectionHref(id, onHome)} className={QUIET_LINK}>
@@ -118,10 +149,10 @@ export function Footer() {
           </nav>
 
           {/*
-            The mail route, at the far end of the same line. It keeps its icon
-            now that it is the only one left down here: without it, an address
-            sitting in the same size and colour as the links reads as a
-            seventh nav item.
+            The mail route, on its own line under the links. It keeps its
+            icon now that it is the only one left down here: without it, an
+            address sitting in the same size and colour as the links reads
+            as a seventh nav item.
 
             It stays in this band rather than joining the copyright, because
             the copyright row is the one the wordmark reads through and a
@@ -144,7 +175,7 @@ export function Footer() {
           only at md and up because the mark is hidden below that.
         */}
         <div className="mt-16 border-t border-line pt-8 md:mt-24">
-          <p className="text-[0.78rem] text-muted">© 2026 Blesc</p>
+          <p className="text-center text-[0.78rem] text-muted">© 2026 Blesc</p>
         </div>
       </Container>
 
