@@ -103,6 +103,19 @@
   --risk-high-text: #f87171;
 
   /*
+   * The ground the closing statement sits on, inside its sky.
+   *
+   * The dark palette has white ribbons in it, and the statement is set in
+   * white, so the band puts a flat-topped ellipse of the page ground behind
+   * the line. 0.7 was set from the sky itself: the brightest pixel read back
+   * from the canvas under the type was #dadee2, and at the ends of the line,
+   * where the ellipse has fallen to 59% of this, white holds 7.0:1 over it;
+   * a pure-white ribbon, which the palette permits, would still hold 5.7:1.
+   * Above this the middle of the band went black and the sky was lost.
+   */
+  --band-scrim: rgba(10, 11, 13, 0.7);
+
+  /*
    * Spotlight. The pointer position is published to :root by
    * SpotlightPointer; it starts far off-screen so nothing is lit before the
    * first move.
@@ -193,6 +206,13 @@
   --risk-low: #15803d;
   /* 5.10:1 on the 15% tint, against #dc2626's 3.81:1. */
   --risk-high-text: #b91c1c;
+
+  /*
+   * Nothing. The light sky's darkest pixel under the type read back as
+   * #95c3f0, and ink over that is 10.6:1 with no help — the white wash the
+   * band started with only took the sky away.
+   */
+  --band-scrim: rgba(255, 255, 255, 0);
 }
 
 @theme inline {
