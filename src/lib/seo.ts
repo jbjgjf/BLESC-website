@@ -36,19 +36,28 @@ export const TAGLINE = "生徒のSOSを可視化する";
 export const TAGLINE_EN = "Hearing the unspoken. Preventing the unseen.";
 
 /**
- * ~120 JP characters. Long enough to carry the product category, the
- * mechanism and the privacy guarantee; short enough that Google is unlikely
- * to truncate it in a Japanese SERP.
+ * Budgeted to what Google actually renders, not to what the field allows.
+ *
+ * Japanese desktop snippets cut around 92 full-width characters. The previous
+ * copy ran to 114, so its tail — the line saying the diary itself is never
+ * shown to a teacher — was dropped before anyone read it, and that line is
+ * what a school cares about most. It moves inside the budget; the descriptive
+ * half is what gets tightened instead. Search Console has 84% of impressions
+ * on desktop, so desktop is the budget to hit and mobile still truncates.
+ *
+ * "Blesc" stays in the text deliberately: every impression the site currently
+ * gets is the query "blesc", and Google bolds a matched term in the snippet.
  *
  * This string is not only page copy. `siteJsonLd()` puts it on the
  * Organization, WebSite *and* SoftwareApplication nodes, so whatever it says
  * ships to search engines and LLMs as machine-readable structured data. It
  * previously said Blesc 検知s 抑うつ — a medical condition named as the object
  * of a detection verb, which `sentra/docs/product_policy.md` forbids outright.
- * The verbs here are 捉える / 可視化する, which are what the implementation does.
+ * The verbs here are 捉える / 可視化する, which are what the implementation
+ * does, and the two negated clauses are wording docs/claims.md asks for.
  */
 export const DESCRIPTION =
-  "Blescは、生徒が毎日5分で綴る日記を独自のAIが深掘りし、言葉づかいや書きぶりの変化を捉えて可視化する学校向けメンタルヘルスプラットフォームです。心理的リスクの判定は行いません。日記の本文そのものが教員に公開されることもありません。";
+  "Blescは、生徒が毎日5分綴る日記から書きぶりの変化を捉えて可視化する学校向けメンタルヘルスプラットフォーム。日記の本文が教員に公開されることはなく、心理的リスクの判定も行いません。";
 
 /** Shorter variant for social cards, where the card itself truncates hard. */
 export const DESCRIPTION_SHORT =
