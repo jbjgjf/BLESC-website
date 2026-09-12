@@ -214,10 +214,16 @@
   --color-risk-mid: var(--risk-mid);
   --color-risk-low: var(--risk-low);
 
-  --font-sans: var(--font-inter), var(--font-noto-jp), ui-sans-serif, system-ui,
-    "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
-  --font-serif: var(--font-instrument-serif), var(--font-noto-serif-jp),
-    ui-serif, "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif;
+  /*
+   * One stack, walked per glyph. Helvetica Neue carries the Latin; it has no
+   * kana or kanji, so Japanese falls through the Latin faces and lands on
+   * Hiragino Sans, which is what macOS and iOS should set this page in. Inter
+   * sits behind Helvetica for the platforms that do not ship it, and Noto
+   * Sans JP behind Hiragino for the same reason on Windows and Android.
+   */
+  --font-sans: "Helvetica Neue", var(--font-inter), Helvetica, Arial,
+    "Hiragino Sans", "Hiragino Kaku Gothic ProN", var(--font-noto-jp),
+    ui-sans-serif, system-ui, sans-serif;
 }
 
 html {
@@ -277,8 +283,12 @@ body {
    size: full-width punctuation otherwise leaves holes in a headline.
 --------------------------------------------------------------------------- */
 @utility type-hero {
-  font-family: var(--font-serif);
-  font-weight: 400;
+  /*
+   * Helvetica Neue Light. The weight is the whole character of it — at
+   * display size 300 reads as composed where 400 reads as a shout — and on
+   * Japanese it maps to Hiragino Sans W3.
+   */
+  font-weight: 300;
   font-size: clamp(2.75rem, 1.1rem + 6.4vw, 5.25rem);
   line-height: 1.05;
   letter-spacing: -0.02em;

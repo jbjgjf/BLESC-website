@@ -178,7 +178,8 @@ function Rich({
  * That is where the display face was always headed — it is the one other
  * place on the page where type rather than a picture of the product carries
  * the weight, and the sans at the same size read as one more paragraph at
- * the end of a long scroll. Instrument Serif has no kana, so Noto Serif JP
+ * the end of a long scroll, set in the display weight rather than the body
+ * one — Helvetica Neue Light for the Latin, Hiragino Sans W3 for the kana.
  * picks these lines up; both are high-contrast old-style faces, so the page
  * still reads as one pairing.
  *
@@ -187,13 +188,13 @@ function Rich({
  * and `palt` is what keeps full-width punctuation from leaving holes.
  */
 const STYLE = {
-  pull: "font-serif text-[clamp(1.35rem,2.6vw,1.8rem)] leading-[1.65] tracking-[-0.005em] text-ink [font-feature-settings:'palt'_1]",
+  pull: "text-[clamp(1.35rem,2.6vw,1.8rem)] font-light leading-[1.65] tracking-[-0.015em] text-ink [font-feature-settings:'palt'_1]",
   /*
    * Sized for the column it sits in rather than for the full container — it
    * shares the row with the photographs, so roughly 590px at desktop.
    */
   close:
-    "font-serif text-[clamp(1.5rem,3vw,2.25rem)] leading-[1.5] tracking-[-0.005em] text-ink [font-feature-settings:'palt'_1]",
+    "text-[clamp(1.5rem,3vw,2.25rem)] font-light leading-[1.5] tracking-[-0.02em] text-ink [font-feature-settings:'palt'_1]",
 } as const;
 
 /**

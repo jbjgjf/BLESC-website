@@ -138,7 +138,7 @@ export function Nav() {
         aria-label="メインナビゲーション"
         className={`relative mx-auto flex w-full items-center justify-between transition-[max-width,height,padding,border-radius] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           pill
-            ? "h-14 max-w-[50rem] rounded-3xl px-3 md:px-4"
+            ? "h-14 max-w-[56rem] rounded-3xl px-3 md:px-4"
             : "h-20 max-w-[68rem] rounded-none px-6 md:px-10"
         }`}
       >
@@ -181,11 +181,11 @@ export function Nav() {
             {NAV_LINKS.map(({ id, label }) => {
               const isActive = activeId === id;
               return (
-                <li key={id}>
+                <li key={id} className="shrink-0">
                   <a
                     href={sectionHref(id, onHome)}
                     aria-current={isActive ? "true" : undefined}
-                    className={`group relative block py-1 text-[0.9rem] transition-colors duration-300 ${
+                    className={`group relative block py-1 text-[0.9rem] whitespace-nowrap transition-colors duration-300 ${
                       isActive ? "text-ink" : "text-muted hover:text-ink"
                     }`}
                   >
@@ -207,7 +207,7 @@ export function Nav() {
           <ThemeToggle compact />
 
           {/* Was a hand-rolled copy of ButtonLink's glass markup. */}
-          <ButtonLink href={CTA.consult.href} size="sm">
+          <ButtonLink href={CTA.consult.href} size="sm" className="whitespace-nowrap">
             {CTA.consult.label}
           </ButtonLink>
         </div>

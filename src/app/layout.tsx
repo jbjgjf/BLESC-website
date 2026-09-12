@@ -1,10 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import {
-  Inter,
-  Instrument_Serif,
-  Noto_Sans_JP,
-  Noto_Serif_JP,
-} from "next/font/google";
+import { Inter, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
@@ -30,30 +25,6 @@ const notoSansJp = Noto_Sans_JP({
   variable: "--font-noto-jp",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
-  display: "swap",
-});
-
-/**
- * The display face. Headlines are set in a serif and everything else stays
- * in the sans — the contrast between the two is what gives the page its
- * voice, and it is why a headline can be large without shouting.
- *
- * Two files for one role: Instrument Serif has no kana or kanji, so Noto
- * Serif JP sits behind it in the stack and picks up Japanese. Both are
- * high-contrast old-style faces, so a line mixing scripts still reads as
- * one typeface.
- */
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
-  subsets: ["latin"],
-  weight: "400",
-  display: "swap",
-});
-
-const notoSerifJp = Noto_Serif_JP({
-  variable: "--font-noto-serif-jp",
-  subsets: ["latin"],
-  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -88,7 +59,7 @@ export default function RootLayout({
       lang="ja"
       data-theme="light"
       suppressHydrationWarning
-      className={`${inter.variable} ${notoSansJp.variable} ${instrumentSerif.variable} ${notoSerifJp.variable}`}
+      className={`${inter.variable} ${notoSansJp.variable}`}
     >
       <head>
         {/*
