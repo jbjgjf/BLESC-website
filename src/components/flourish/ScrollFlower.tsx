@@ -135,25 +135,23 @@ export function ScrollFlower({ children }: { children: ReactNode }) {
         }}
       >
         <motion.div
-          className="absolute top-0 left-0 aspect-square w-[clamp(18rem,46vw,40rem)]"
+          className="absolute top-0 left-0 aspect-square w-[clamp(20rem,54vw,48rem)]"
           style={{ x, rotate, willChange: still ? undefined : "transform" }}
         >
           {/*
-            The wash is 20% of --mark-1 under a 28px blur, and the alpha is
-            set by the worst case rather than by taste: secondary copy passing
-            directly over the flower measures 4.74:1 in the light build and
-            8.4:1 in the dark one, against the 4.5:1 AA floor. 22% is the last
-            step that still clears it (4.60:1) and 26% does not (4.33:1), so
-            this sits one notch inside the limit. At 10% — where this started
-            — the flower was invisible on a white ground, which defeats the
-            point of it travelling at all; the tighter blur is what lets the
-            five petals read as a flower rather than as a haze.
+            22% of --mark-1 under a 22px blur, which is the ceiling rather
+            than a preference: secondary copy passing directly over the mark
+            measures 4.60:1 in the light build against the 4.5:1 AA floor, and
+            26% would drop it to 4.33:1. Presence past this point has to come
+            from size and sharpness instead of alpha — hence the wider box and
+            the tighter blur, which is what lets the petals read as the mark
+            rather than as a haze.
 
             inset-0 rather than h-full: a height that comes from aspect-ratio
             is the kind of definite-enough that percentage heights have been
             unreliable against, and this box must fill its parent exactly.
           */}
-          <div className="absolute inset-0 text-mark-1 opacity-20 blur-[28px]">
+          <div className="absolute inset-0 text-mark-1 opacity-[0.22] blur-[22px]">
             <FlowerMark />
           </div>
         </motion.div>

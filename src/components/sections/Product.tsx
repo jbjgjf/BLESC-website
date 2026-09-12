@@ -256,7 +256,7 @@ export function Product() {
         <Reveal>
           <Screen
             title="生徒の画面"
-            caption="毎日5分。書いた内容に、AIが問いを返します。"
+            caption="自分のタイミングで。書いた内容に、AIが問いを返します。"
           >
             <StudentScreen />
           </Screen>

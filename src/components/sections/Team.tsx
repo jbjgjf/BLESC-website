@@ -223,7 +223,22 @@ export function Team() {
         section clips the x axis so the scrollbar's width cannot turn it into
         a horizontal scroll.
       */}
-      <div className="relative left-1/2 mt-14 h-[420px] w-screen -translate-x-1/2 md:h-[560px]">
+      {/*
+        Focusable, with the arrows bound: dragging a canvas is not something a
+        keyboard can do, and the buttons underneath are a long way from the
+        thing they move. Tab to the roster and the left and right keys walk it.
+      */}
+      <div
+        tabIndex={0}
+        role="group"
+        aria-label="メンバー一覧。左右の矢印キーで移動できます。"
+        onKeyDown={(e) => {
+          if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+          e.preventDefault();
+          stepRef.current?.(e.key === "ArrowRight" ? 1 : -1);
+        }}
+        className="relative left-1/2 mt-14 h-[420px] w-screen -translate-x-1/2 md:h-[560px]"
+      >
         <CircularGallery
           items={items}
           bend={1.8}

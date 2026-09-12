@@ -1,8 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { GlassSurface } from "@/components/GlassSurface";
 import { Logo } from "@/components/Logo";
 import { ButtonLink } from "@/components/ui";
@@ -12,21 +12,46 @@ import { CTA, NAV_LINKS, sectionHref } from "@/lib/site";
 /**
  * Fixed nav, in two states.
  *
- * Over the hero it is a plain full-width row with no ground of its own —
+ * At the very top it is a plain full-width row with no ground of its own —
  * the sky is the page's one piece of colour and a bar across it would cut
- * it in half. Once the hero has gone past, it draws in to a glass pill
- * floating at the top of the screen, because from there on it sits over
- * body copy and has to obscure what runs underneath it.
+ * it in half. The moment the page moves it draws in to a floating glass box,
+ * because from the first scroll onward it is sitting over content.
  *
  * The two states are one element. Width, height, padding and radius are CSS
  * transitions on real properties, so the bar draws in rather than cutting;
  * the glass is a separate layer behind the content that fades in, which
  * keeps the links, the toggle and the CTA from remounting at the boundary.
  */
+
+/*
+ * One scroll of a wheel is enough to bring the box up. The threshold exists
+ * only so that a page which restores a few pixels down, or rubber-bands at
+ * the top, cannot flicker it in and out.
+ */
+const SETTLED = 24;
+
+/**
+ * Whether the page has moved, read from the window rather than held in state.
+ *
+ * useSyncExternalStore rather than an effect that sets state on mount: a
+ * refresh or a back-button restore can land the page well down the document,
+ * and this reports that on the very first client render instead of a frame
+ * later. The server snapshot is false, which is the top of the page — where a
+ * cold load starts.
+ */
+function useScrolled() {
+  return useSyncExternalStore(
+    (onChange) => {
+      window.addEventListener("scroll", onChange, { passive: true });
+      return () => window.removeEventListener("scroll", onChange);
+    },
+    () => window.scrollY > SETTLED,
+    () => false,
+  );
+}
 export function Nav() {
-  const { scrollY } = useScroll();
   const reduce = useReducedMotion();
-  const [pill, setPill] = useState(false);
+  const pill = useScrolled();
   const [activeId, setActiveId] = useState<string>("");
 
   /*
@@ -35,35 +60,6 @@ export function Nav() {
    * on, and the scroll-spy below simply finds nothing and stays quiet.
    */
   const onHome = usePathname() === "/";
-
-  /*
-   * Where the hero ends, measured rather than assumed: the hero holds a
-   * screen that grows with the viewport, so a hardcoded offset would be
-   * wrong at every size but one. Pages without a hero (contact) report 0 and
-   * get the pill immediately, which is what they want anyway.
-   */
-  const boundary = useRef(0);
-
-  useEffect(() => {
-    const hero = document.getElementById("top");
-    const measure = () => {
-      boundary.current = hero
-        ? hero.offsetTop + hero.offsetHeight - 96
-        : 0;
-      setPill(window.scrollY > boundary.current);
-    };
-    measure();
-
-    const observer = new ResizeObserver(measure);
-    if (hero) observer.observe(hero);
-    window.addEventListener("resize", measure);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", measure);
-    };
-  }, [onHome]);
-
-  useMotionValueEvent(scrollY, "change", (y) => setPill(y > boundary.current));
 
   // Scroll-spy: whichever section straddles the upper third of the viewport
   // owns the active indicator.
@@ -111,7 +107,7 @@ export function Nav() {
         aria-label="メインナビゲーション"
         className={`relative mx-auto flex w-full items-center justify-between transition-[max-width,height,padding,border-radius] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           pill
-            ? "h-14 max-w-[52rem] rounded-full px-4 md:px-5"
+            ? "h-14 max-w-[52rem] rounded-3xl px-4 md:px-5"
             : "h-20 max-w-[68rem] rounded-none px-6 md:px-10"
         }`}
       >
@@ -134,7 +130,7 @@ export function Nav() {
                 className="glass-nav h-full w-full"
                 style={{
                   background: "var(--glass-tint)",
-                  borderRadius: 9999,
+                  borderRadius: 24,
                   border: "1px solid var(--color-border)",
                   boxShadow: "var(--shadow-card)",
                 }}

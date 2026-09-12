@@ -60,7 +60,7 @@ const notoSerifJp = Noto_Serif_JP({
 export const metadata: Metadata = {
   title: "Blesc — 生徒のSOSを可視化する",
   description:
-    "Blescは、生徒が毎日5分で綴る日記を独自のAIが深掘りし、心理的リスクの早期サインを検知する学校向けプラットフォームです。日記の本文そのものが教員に公開されることはありません。",
+    "Blescは、生徒が自分のタイミングで綴る日記を独自のAIが深掘りし、心理的リスクの早期サインを検知する学校向けプラットフォームです。日記の本文そのものが教員に公開されることはありません。",
   openGraph: {
     title: "Blesc — 生徒のSOSを可視化する",
     description:
