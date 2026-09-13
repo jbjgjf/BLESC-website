@@ -157,10 +157,10 @@ export function Philosophy() {
               and useInView inside FloatingFlower reports the display:none
               one as out of view, so only the visible one breathes.
             */}
-            <FloatingFlower size={56} className="text-mark-1 md:hidden" glow />
+            <FloatingFlower size={56} className="text-accent md:hidden" glow />
             <FloatingFlower
               size={88}
-              className="hidden text-mark-1 md:block"
+              className="hidden text-accent md:block"
               glow
             />
 

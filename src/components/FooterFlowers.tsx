@@ -50,7 +50,7 @@ import { FloatingFlower } from "@/components/flourish/FloatingFlower";
  * 1024 even tucked off the edge, so it drops to 104px there.
  */
 const WASH =
-  "absolute aspect-square w-26 text-mark-1 opacity-[0.22] blur-[22px] xl:w-36";
+  "absolute aspect-square w-26 text-accent opacity-[0.22] blur-[22px] xl:w-36";
 
 /*
  * Geometry, so the clusters can be checked against the heading without a
@@ -143,7 +143,7 @@ export function FooterFlowers() {
         <div className="absolute top-17 left-4 xl:left-10">
           <FloatingFlower
             size={88}
-            className="text-mark-1"
+            className="text-accent"
             rotate={-12}
             duration={5.2}
             glow
@@ -152,7 +152,7 @@ export function FooterFlowers() {
         <div className="absolute top-4 left-21 xl:left-33">
           <FloatingFlower
             size={40}
-            className="text-mark-1 opacity-60"
+            className="text-accent opacity-60"
             rotate={22}
             duration={3.8}
             delay={0.9}
@@ -168,7 +168,7 @@ export function FooterFlowers() {
         <div className="absolute top-14 right-4 xl:right-12">
           <FloatingFlower
             size={88}
-            className="text-mark-1"
+            className="text-accent"
             rotate={14}
             duration={5.8}
             delay={0.6}
@@ -178,7 +178,7 @@ export function FooterFlowers() {
         <div className="absolute top-38 right-20 xl:right-36">
           <FloatingFlower
             size={40}
-            className="text-mark-1 opacity-60"
+            className="text-accent opacity-60"
             rotate={-20}
             duration={4.2}
             delay={1.4}

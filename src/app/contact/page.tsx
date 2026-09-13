@@ -42,7 +42,7 @@ export default function ContactPage() {
       */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-[14%] bottom-[4%] hidden aspect-square w-[clamp(20rem,36vw,34rem)] text-mark-1 opacity-[0.12] blur-[6px] lg:block"
+        className="pointer-events-none absolute -left-[14%] bottom-[4%] hidden aspect-square w-[clamp(20rem,36vw,34rem)] text-accent opacity-[0.12] blur-[6px] lg:block"
       >
         {/*
           The size prop writes width/height attributes, which h-full/w-full

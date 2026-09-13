@@ -90,8 +90,8 @@ export function AppMock() {
             ease: "easeInOut",
           }}
         >
-          <Flower size={54} className="text-mark-1 md:hidden" />
-          <Flower size={72} className="hidden text-mark-1 md:block" />
+          <Flower size={54} className="text-accent md:hidden" />
+          <Flower size={72} className="hidden text-accent md:block" />
         </motion.div>
 
         <p className="mt-5 text-[0.95rem] font-semibold tracking-[-0.01em] text-ink md:mt-7 md:text-[1.3rem]">
