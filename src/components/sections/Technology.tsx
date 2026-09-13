@@ -83,7 +83,8 @@ export function Technology() {
           <p className="mt-8 text-[0.8rem] font-medium tracking-[0.02em] text-muted">
             因果連鎖の一例
           </p>
-          <ol className="mt-4">
+          {/* role="list": see Stagger — WebKit drops unmarked lists. */}
+          <ol className="mt-4" role="list">
             {TRACE.map((node, i) => (
               <li key={node.id} className="flex gap-3.5">
                 <span aria-hidden className="flex flex-col items-center pt-[0.5rem]">

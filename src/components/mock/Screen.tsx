@@ -41,7 +41,7 @@ export function Screen({
       className={`flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[0.875rem] border border-line bg-surface shadow-[var(--shadow-card)] ${className}`}
     >
       {(title || trailing) && (
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-3.5 py-2.5">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-3 py-2.5 sm:px-3.5">
           {typeof title === "string" ? (
             <span className="truncate text-[0.8rem] font-medium tracking-[-0.01em] text-ink">
               {title}
@@ -66,7 +66,7 @@ export function Screen({
       </div>
 
       {footer && (
-        <div className="flex shrink-0 items-center gap-3 border-t border-line px-3.5 py-2.5">
+        <div className="flex shrink-0 items-center gap-3 border-t border-line px-3 py-2.5 sm:px-3.5">
           {footer}
         </div>
       )}

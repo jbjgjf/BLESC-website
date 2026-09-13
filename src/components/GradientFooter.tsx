@@ -110,12 +110,15 @@ export function GradientFooter({
     const doc = el.ownerDocument;
     const win = doc.defaultView ?? window;
 
-    if (win.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      // Scroll-linked or not, this is movement. Show the glow at rest instead.
-      el.style.transform = "scaleY(1)";
-      return;
-    }
-
+    /*
+     * No reduced-motion branch. This used to pin the band at scaleY(1) for
+     * anyone with the setting on, which put the full glow over the bottom
+     * 400px of every screen of the site — the hero's buttons, the product
+     * figure, body copy — instead of only the last one. The transform below
+     * is a pure function of scroll position with no easing of its own, so
+     * it is not motion the setting objects to: the band simply is the height
+     * the page's position says it is.
+     */
     let frame = 0;
 
     const apply = () => {

@@ -1,6 +1,12 @@
 "use client";
 
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import {
+  motion,
+  useInView,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "motion/react";
 import { useEffect, useRef } from "react";
 import { Flower } from "@/components/Flower";
 import { FloatingFlower } from "@/components/flourish/FloatingFlower";
@@ -110,12 +116,20 @@ export function FooterFlowers() {
    */
   const y = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [18, -14]);
 
+  /*
+   * The layer holds four blurred elements, and a permanent will-change would
+   * keep all of them rasterised in GPU memory from first paint for a layer
+   * that only moves during the last screen of scroll. The promise is made as
+   * the footer comes within half a screen and withdrawn when it leaves.
+   */
+  const near = useInView(layerRef, { margin: "50% 0px 50% 0px" });
+
   return (
     <motion.div
       ref={layerRef}
       aria-hidden
       className="pointer-events-none absolute inset-x-0 top-10 z-0 hidden h-[18rem] overflow-x-clip lg:block"
-      style={{ y, willChange: reduce ? undefined : "transform" }}
+      style={{ y, willChange: !reduce && near ? "transform" : undefined }}
     >
       {/* Left cluster: wash low, solid mark over it, small mark up and inward. */}
       <div className="absolute inset-y-0 left-[calc(3vw-3.5rem)] w-48 xl:left-[3vw]">

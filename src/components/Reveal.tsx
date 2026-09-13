@@ -67,6 +67,13 @@ export function Stagger({
   return (
     <Tag
       className={className}
+      /*
+       * The preflight removes list markers, and WebKit then drops an
+       * unmarked list out of the accessibility tree as a list — VoiceOver
+       * reads the items as loose paragraphs. An explicit role puts the
+       * "list, N items" back.
+       */
+      role={as === "ol" ? "list" : undefined}
       initial="hidden"
       whileInView="show"
       viewport={VIEWPORT}

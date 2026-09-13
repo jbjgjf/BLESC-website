@@ -65,10 +65,15 @@ export function PrivacyFigure({ children }: { children: ReactNode }) {
     offset: ["start 0.85", "end 0.4"],
   });
 
-  /* Beat 1 — the read. Travels the full width of the writing surface and
-     fades out over the last stretch, so it reads as absorbed by the wall
-     rather than as stopping short of it. */
-  const scanX = useTransform(scrollYProgress, [0, 0.5], ["-1%", "100%"], {
+  /* Beat 1 — the read. The scanner is parked just past the surface's right
+     edge (`left-full`, clipped by the surface) and travels its own width
+     back and across, so the line runs from −1% to 100% of the surface and
+     fades out over the last stretch — absorbed by the wall rather than
+     stopping short of it. Parking it off the edge is what makes its rest
+     state honest without JavaScript: the layout's <noscript> rule resets
+     every inline transform, and an unmoved scanner is then a line in the
+     clipped margin rather than a stray accent down the left of the entry. */
+  const scanX = useTransform(scrollYProgress, [0, 0.5], ["-101%", "0%"], {
     clamp: true,
   });
   const scanOpacity = useTransform(
@@ -101,11 +106,7 @@ export function PrivacyFigure({ children }: { children: ReactNode }) {
       */}
       <Frame tint={1} className="md:h-[27rem] lg:h-[29rem]">
         <div className="grid h-full w-full gap-3 md:grid-cols-[1fr_auto_1fr] md:gap-4">
-          <DiaryScreen
-            scanX={scanX}
-            scanOpacity={scanOpacity}
-            scanning={!reduce}
-          />
+          <DiaryScreen scanX={scanX} scanOpacity={reduce ? 0 : scanOpacity} />
           <Wall glow={reduce ? 1 : wallGlow} />
           <ReportScreen
             barScale={reduce ? 1 : barScale}
@@ -136,18 +137,20 @@ export function PrivacyFigure({ children }: { children: ReactNode }) {
  * the probe screen draws it. Static: this is the side with words on it, and
  * the only thing that moves here is the scanner reading them.
  *
- * The scanner sits inside the writing surface so its corners clip it, and
- * it is not rendered at all under reduced motion — its end state is to have
- * merged into the wall, so there is nothing to show at rest.
+ * The scanner sits inside the writing surface so its corners clip it. It is
+ * always in the tree, and reduced motion is expressed as a value — opacity
+ * 0 — rather than by leaving the node out. useReducedMotion is null on the
+ * server and true on the first client render for anyone with the setting
+ * on, so a node that exists in one and not the other is a hydration
+ * mismatch that makes React throw the server HTML away for exactly the
+ * people the setting is meant to serve.
  */
 function DiaryScreen({
   scanX,
   scanOpacity,
-  scanning,
 }: {
   scanX: MotionValue<string>;
-  scanOpacity: MotionValue<number>;
-  scanning: boolean;
+  scanOpacity: MotionValue<number> | number;
 }) {
   return (
     <Screen
@@ -176,14 +179,12 @@ function DiaryScreen({
           {ENTRY_LENGTH}字
         </span>
 
-        {scanning && (
-          <motion.div
-            className="pointer-events-none absolute inset-y-0 left-0 w-full"
-            style={{ x: scanX, opacity: scanOpacity }}
-          >
-            <span className="absolute inset-y-0 left-0 w-px bg-mark-1" />
-          </motion.div>
-        )}
+        <motion.div
+          className="pointer-events-none absolute inset-y-0 left-full w-full"
+          style={{ x: scanX, opacity: scanOpacity }}
+        >
+          <span className="absolute inset-y-0 left-0 w-px bg-mark-1" />
+        </motion.div>
       </div>
 
       {/*
@@ -215,6 +216,13 @@ function DiaryScreen({
  * line has to be seen to be believed, and line-strong would not clear the
  * 3:1 a meaningful non-text mark needs on the dark build.
  *
+ * From md the line is `inset-y-0` and nothing else on the vertical axis.
+ * It used to carry `md:top-auto` as well, and Tailwind emits `top-*` after
+ * `inset-y-*`, so `top: auto` won and an empty absolutely-positioned span
+ * with `top: auto; bottom: 0` is zero pixels tall — on every desktop width
+ * the wall was the lock alone, with no line. `inset-y-0` already overrides
+ * the phone layout's `top-1/2` by media order.
+ *
  * The glow is a gradient rather than a blurred block — a filter on a
  * full-height element is the one thing here that would cost anything, and a
  * three-stop fade is the same picture. Its direction is perpendicular to the
@@ -223,9 +231,9 @@ function DiaryScreen({
 function Wall({ glow }: { glow: MotionValue<number> | number }) {
   return (
     <div className="relative flex items-center justify-center py-1 md:w-8 md:py-0">
-      <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-mark-1 md:inset-x-auto md:inset-y-0 md:left-1/2 md:top-auto md:h-auto md:w-px md:-translate-x-1/2 md:translate-y-0" />
+      <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-mark-1 md:inset-x-auto md:inset-y-0 md:left-1/2 md:h-auto md:w-px md:-translate-x-1/2 md:translate-y-0" />
       <motion.span
-        className="absolute inset-x-0 top-1/2 h-4 -translate-y-1/2 bg-linear-to-b from-transparent via-mark-1/25 to-transparent md:inset-x-auto md:inset-y-0 md:left-1/2 md:top-auto md:h-auto md:w-4 md:-translate-x-1/2 md:translate-y-0 md:bg-linear-to-r"
+        className="absolute inset-x-0 top-1/2 h-4 -translate-y-1/2 bg-linear-to-b from-transparent via-mark-1/25 to-transparent md:inset-x-auto md:inset-y-0 md:left-1/2 md:h-auto md:w-4 md:-translate-x-1/2 md:translate-y-0 md:bg-linear-to-r"
         style={{ opacity: glow }}
       />
       <span className="relative rounded-full border border-line bg-surface p-1.5 text-muted">

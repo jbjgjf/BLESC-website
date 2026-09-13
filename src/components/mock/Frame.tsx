@@ -23,6 +23,11 @@ import type { ReactNode } from "react";
  * Height comes from the caller (`className="h-[17rem]"`), because a row of
  * these only looks deliberate when every panel in it is the same height —
  * and that is a decision about the grid, not about one panel.
+ *
+ * p-3 below sm, not p-4. At 320px a window's title bar has 210px to hold
+ * 今月のリスクレポート and its badge, which want 216, and the composer's note
+ * lost its last character the same way; the 8px this returns, with the 4px
+ * the window's own bars give back, is what lets both fit.
  */
 export function Frame({
   tint = 1,
@@ -37,7 +42,7 @@ export function Frame({
   return (
     <div
       aria-hidden
-      className={`flex items-center justify-center overflow-hidden rounded-[1.5rem] p-4 sm:p-6 ${TINTS[tint]} ${className}`}
+      className={`flex items-center justify-center overflow-hidden rounded-[1.5rem] p-3 sm:p-6 ${TINTS[tint]} ${className}`}
     >
       {children}
     </div>

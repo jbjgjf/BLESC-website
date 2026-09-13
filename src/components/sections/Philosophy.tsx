@@ -2,6 +2,7 @@
 
 import {
   motion,
+  useInView,
   useReducedMotion,
   useScroll,
   useTransform,
@@ -40,6 +41,17 @@ export function Philosophy() {
    */
   const pins = usePinCapable();
   const still = reduce || !pins;
+
+  /*
+   * The layer promise is only made while the band is near the viewport. A
+   * permanent will-change on an 88vw line of display type would hold that
+   * text rasterised in its own layer for the whole visit, and at scale(0.7)
+   * until the compositor chose to redraw it — soft type, for nothing, on
+   * every screen of the page above this one. One state change on the way
+   * in and one on the way out; nothing per frame.
+   */
+  const near = useInView(track, { margin: "25% 0px 25% 0px" });
+  const moving = !still && near;
 
   /*
    * Measured against the track rather than the band: the band is sticky,
@@ -172,12 +184,13 @@ export function Philosophy() {
               lets that line still fit a 320px phone inside its 24px
               gutters, where a 2rem floor overran them by 9px.
 
-              `will-change` is only promised while the line actually moves:
-              a permanent compositor layer for a still heading is a cost
-              with nothing to show for it.
+              `will-change` is only promised while the band is near the
+              viewport and the line can actually move: a permanent
+              compositor layer for a still heading is a cost with nothing
+              to show for it.
             */}
             <motion.h2
-              style={{ scale, willChange: still ? undefined : "transform" }}
+              style={{ scale, willChange: moving ? "transform" : undefined }}
               className="mt-8 text-[clamp(1.9rem,9.2vw,3.25rem)] font-light leading-[1.05] tracking-[-0.02em] text-ink [font-feature-settings:'palt'_1] md:mt-10 md:text-[5.55vw] md:whitespace-nowrap"
             >
               <span className="block md:inline">声にならないSOSに、</span>
