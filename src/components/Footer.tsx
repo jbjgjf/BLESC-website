@@ -168,28 +168,22 @@ export function Footer() {
         </div>
 
         {/*
-          md:mt-24 buys the wordmark clearance it did not have. The mark is
-          pulled up a fixed distance from the bottom of this Container, so at
-          lg its cap line lands about 65px above the rule — inside the old
-          64px gap, i.e. level with whatever sat above it. Widening the gap
-          only at md and up because the mark is hidden below that.
+          The rule and the copyright close the content, and nothing else
+          shares their space. They used to sit across the wordmark's capitals
+          — the letters read through them by design — and what that looked
+          like was a line and a copyright printed over a logo.
         */}
-        <div className="mt-16 border-t border-line pt-8 md:mt-24">
+        <div className="mt-16 border-t border-line pt-8 md:mt-20">
           <p className="text-center text-[0.78rem] text-muted">© 2026 Blesc</p>
         </div>
       </Container>
 
       {/*
-        Pulled up far enough that the capitals break above the rule over the
-        copyright, and pushed behind it — the footer's own Container carries
-        z-10 — so the line and the copyright read across the letters rather
-        than being covered by them.
-
-        Hidden below md: it is a wide wordmark, and at phone widths it either
-        shrinks to nothing or collides with the copyright it is meant to sit
-        behind.
+        The wordmark, on its own below everything, dissolving downward into
+        the glow (its own mask does that). Hidden below md: it is a wide
+        wordmark, and at phone widths it shrinks to nothing.
       */}
-      <div className="relative z-0 -mt-[6.25rem] hidden md:block lg:-mt-[7.25rem]">
+      <div className="relative z-0 mt-10 hidden md:block lg:mt-12">
         <WordmarkReveal />
       </div>
     </GradientFooter>

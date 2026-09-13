@@ -119,8 +119,17 @@ export function ButtonLink({
           borderRadius: 12,
           padding: SIZES[size].padding,
           transition: "background 300ms cubic-bezier(0.16,1,0.3,1)",
+          /*
+           * The secondary pill is the page ground at 78%, which on the page
+           * ground is nothing: 資料請求 sat on white with no edge to it. Its
+           * edge and its lift are tokens per theme (globals.css), because a
+           * white pill wants a shadow and a dark pill wants a lit rim.
+           */
           ...(variant === "secondary"
-            ? { border: "1px solid rgba(242,241,238,0.16)" }
+            ? {
+                border: "1px solid var(--glass-edge)",
+                boxShadow: "var(--glass-shadow)",
+              }
             : null),
         }}
       >

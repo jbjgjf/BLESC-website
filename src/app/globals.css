@@ -342,6 +342,17 @@ body {
 
 .glass-btn-secondary {
   --glass-tint: rgba(10, 11, 13, 0.72);
+  /*
+   * The pill's edge and lift. The tint is the page ground, so on the page
+   * ground the button had no outline at all; an edge of the text colour at
+   * 18% and a shadow are what separate it from the surface it sits on. The
+   * light build's shadow leads with a drop, because an inset highlight on a
+   * white pill on a white page is invisible.
+   */
+  --glass-edge: color-mix(in srgb, var(--color-text) 18%, transparent);
+  --glass-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+    0 10px 28px -14px rgba(0, 0, 0, 0.7);
 }
 .glass-btn-secondary:hover {
   --glass-tint: rgba(48, 52, 58, 0.78);
@@ -355,6 +366,11 @@ body {
  */
 :root[data-theme="light"] .glass-btn-secondary {
   --glass-tint: rgba(255, 255, 255, 0.78);
+  --glass-edge: color-mix(in srgb, var(--color-text) 16%, transparent);
+  --glass-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px 0 rgba(11, 13, 18, 0.08),
+    0 10px 28px -14px rgba(11, 13, 18, 0.35);
 }
 :root[data-theme="light"] .glass-btn-secondary:hover {
   --glass-tint: rgba(255, 255, 255, 0.92);
