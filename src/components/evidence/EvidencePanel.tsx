@@ -1,6 +1,7 @@
 import { Counter } from "@/components/Counter";
-import { RankScale } from "@/components/evidence/RankScale";
+import { SatisfactionChart } from "@/components/evidence/SatisfactionChart";
 import { StudentCrowd } from "@/components/evidence/StudentCrowd";
+import { RC16 } from "@/lib/wellbeing";
 
 /**
  * The whole evidence half of the 課題 argument, in one panel.
@@ -21,13 +22,13 @@ import { StudentCrowd } from "@/components/evidence/StudentCrowd";
  * The captions under the figures are gone too, so each half is now a label, a
  * number and one figure — which is why the craft in this block sits in those
  * three things rather than in anything around them. The digits are drums that
- * settle (see Counter), the scale builds left to right until it reaches Japan
- * (see RankScale), and the crowd is scattered and receding rather than a
- * lattice (see StudentCrowd). Each of the three is the same argument as the
- * number it belongs to, made in a second way.
+ * settle (see Counter), the rank is shown as the indicator it is made of — a
+ * handful of countries' life-satisfaction figures with Japan's bar shortest
+ * (see SatisfactionChart) — and the crowd is scattered and receding rather
+ * than a lattice (see StudentCrowd). Each of the three is the same argument
+ * as the number it belongs to, made in a second way.
  */
 
-const JAPAN_RANK = 37;
 
 /*
  * Both figures are set at one size, so neither reads as the larger claim.
@@ -63,12 +64,12 @@ export function EvidencePanel() {
           <p className="text-[0.95rem] text-muted">日本の子どもの精神的幸福度</p>
 
           <p className="mt-5 flex items-baseline text-ink">
-            <Counter to={JAPAN_RANK} className={FIGURE} />
+            <Counter to={RC16.japanMentalRank} className={FIGURE} />
             <span className={UNIT}>位</span>
-            <span className={`ml-2 text-muted ${UNIT}`}>/ 38</span>
+            <span className={`ml-2 text-muted ${UNIT}`}>/ {RC16.countriesRanked}</span>
           </p>
 
-          <RankScale />
+          <SatisfactionChart />
         </div>
 
         {/*
