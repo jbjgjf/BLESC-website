@@ -279,30 +279,47 @@ function ReportScreen({
         </span>
       }
     >
-      {ROWS.map((row, i) => (
-        <Row
-          key={`${row.klass}${row.no}`}
-          klass={row.klass}
-          no={row.no}
-          className="py-2.5"
-          trailing={
-            /* `row.text` is a whole class name written out in sample.ts —
-               Tailwind reads it there, so nothing is assembled here. */
-            <motion.span
-              className={`w-4 shrink-0 text-right text-[0.75rem] font-medium ${row.text}`}
-              style={{ opacity: i === 0 ? levelOpacity : 1 }}
-            >
-              {row.level}
-            </motion.span>
-          }
-        >
-          {i === 0 ? (
-            <MeasuredBar pct={row.width} scale={barScale} />
-          ) : (
-            <Bar pct={row.width} tone={row.tone} />
-          )}
-        </Row>
-      ))}
+      {ROWS.map((row, i) => {
+        const line = (
+          <Row
+            key={`${row.klass}${row.no}`}
+            klass={row.klass}
+            no={row.no}
+            className="py-2.5"
+            trailing={
+              /* `row.text` is a whole class name written out in sample.ts —
+                 Tailwind reads it there, so nothing is assembled here. */
+              <motion.span
+                className={`w-4 shrink-0 text-right text-[0.75rem] font-medium ${row.text}`}
+                style={{ opacity: i === 0 ? levelOpacity : 1 }}
+              >
+                {row.level}
+              </motion.span>
+            }
+          >
+            {i === 0 ? (
+              <MeasuredBar pct={row.width} scale={barScale} />
+            ) : (
+              <Bar pct={row.width} tone={row.tone} />
+            )}
+          </Row>
+        );
+
+        /*
+          The first row is where the signal thread arrives from the analysis
+          in 仕組み, and data-thread is how the page's thread layer finds it.
+          A wrapper rather than a prop on <Row>, so the kit's one component
+          with no room for a name gains no room for anything else either;
+          divide-y still rules between it and the row below.
+        */
+        return i === 0 ? (
+          <div key={`${row.klass}${row.no}`} data-thread="report">
+            {line}
+          </div>
+        ) : (
+          line
+        );
+      })}
     </Screen>
   );
 }

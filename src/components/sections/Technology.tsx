@@ -143,8 +143,15 @@ export function Technology() {
           column grew to 546px at 375px, the whole page gained a horizontal
           scroll, and the phone zoomed out to fit it. With it, the panel stays
           the width of the page and the drawing scrolls inside the panel.
+
+          data-thread marks the panel as where the signal thread ends: the
+          page's thread layer finds it by this attribute, and the section
+          knows nothing more about it.
         */}
-        <div className="min-w-0 rounded-[1.25rem] border border-line bg-inset p-5 shadow-[var(--shadow-card)]">
+        <div
+          data-thread="graph"
+          className="min-w-0 rounded-[1.25rem] border border-line bg-inset p-5 shadow-[var(--shadow-card)]"
+        >
           <OntologyGraph />
         </div>
       </div>

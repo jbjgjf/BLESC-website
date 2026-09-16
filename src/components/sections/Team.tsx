@@ -1,13 +1,7 @@
 "use client";
 
 import { useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
-import {
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   CircularGallery,
   type GalleryApi,
@@ -15,7 +9,7 @@ import {
 } from "@/components/CircularGallery";
 import { MemberModal } from "@/components/MemberModal";
 import { Reveal } from "@/components/Reveal";
-import { Icon, Section } from "@/components/ui";
+import { Icon, Section, SectionTitle } from "@/components/ui";
 import { initialsCard } from "@/lib/initialsCard";
 
 type Member = {
@@ -133,9 +127,9 @@ const TEAM_INTRO =
 /**
  * How far back the ring sits while the roster is still below the fold, in
  * cards. It turns forward by this much as the roster's top climbs from the
- * bottom of the viewport to the middle, and is exactly at rest from then on
- * — which it has to be, because the title and the caption are laid over the
- * cards one slot either side of centre at rest and nowhere else.
+ * bottom of the viewport to the middle, and is at rest from then on, so the
+ * reader arrives to a roster settling into place rather than one that is
+ * simply there.
  *
  * Under half a card on purpose: the gallery reports whichever card is
  * nearest the centre, and a turn of less than half a slot never changes
@@ -147,156 +141,6 @@ const ENTRANCE_PAN = 0.45;
 function entrancePan(progress: number) {
   const p = Math.min(1, Math.max(0, progress));
   return -ENTRANCE_PAN * (1 - p);
-}
-
-/* -------------------------------------------------------------------------- */
-/* The title, laid on the roster                                              */
-/* -------------------------------------------------------------------------- */
-
-/**
- * The canvas height the wide layout gives the roster — `md:h-[560px]` on the
- * group below — and the constants the gallery derives every card from. They
- * are repeated here rather than exported from CircularGallery because the
- * gallery must not know that a heading is being laid over it; what this
- * file needs is only where one card ends up, and that is arithmetic.
- */
-const CANVAS_HEIGHT = 560;
-const GALLERY = { fov: 45, z: 20, bend: 1.8, padding: 2 } as const;
-
-/** Air between a card's top edge and the block laid above it, in px. */
-const TITLE_GAP = 22;
-
-/**
- * Where the card one slot left (−1) or right (+1) of centre sits when the
- * roster is at rest.
- *
- * The gallery centres index 0, with the roster's last member on its left —
- * the ring is doubled so it can wrap, and the copy of the last card is the
- * one that lands there — and the second member on its right. Centre, size
- * and tilt all follow from the gallery's own maths (a 45° camera at z=20,
- * planes scaled from the canvas height, an arc of bend 1.8): the card sits
- * one slot out, drops a little onto the arc, and turns by asin(x / R) —
- * anticlockwise on the left, clockwise on the right, so each leans away
- * from the centre.
- *
- * Only the tilt depends on the viewport width, and it does so a lot — the
- * arc's radius follows the visible width, so the same card leans 8.7° at
- * 1024px and 3.1° at 1920px. That is why this is computed rather than
- * written down as one angle.
- *
- * `rotate` is the CSS rotation that matches the card, in degrees, and
- * `above(d)` is the point d pixels up the card's own axis from its centre —
- * the axis leans with the card, so a block placed there stays over the card
- * rather than drifting off its corner.
- */
-function restingCard(viewportWidth: number, slot: -1 | 1) {
-  const fov = (GALLERY.fov * Math.PI) / 180;
-  const vh = 2 * Math.tan(fov / 2) * GALLERY.z;
-  const vw = vh * (viewportWidth / CANVAS_HEIGHT);
-  const pxPerUnit = CANVAS_HEIGHT / vh;
-  const scale = CANVAS_HEIGHT / 1500;
-  const planeX = (vw * (700 * scale)) / viewportWidth;
-  const planeY = (vh * (900 * scale)) / CANVAS_HEIGHT;
-
-  const x = slot * (planeX + GALLERY.padding);
-  const half = vw / 2;
-  const radius = (half * half + GALLERY.bend * GALLERY.bend) / (2 * GALLERY.bend);
-  const arc = radius - Math.sqrt(radius * radius - x * x);
-
-  /* Signed as CSS reads it: negative is anticlockwise. */
-  const angle = slot * Math.asin(Math.abs(x) / radius);
-  const centerX = viewportWidth / 2 + x * pxPerUnit;
-  const centerY = CANVAS_HEIGHT / 2 + arc * pxPerUnit;
-
-  return {
-    rotate: `${(angle * 180) / Math.PI}deg`,
-    width: planeX * pxPerUnit,
-    height: planeY * pxPerUnit,
-    above: (d: number) => ({
-      left: centerX + Math.sin(angle) * d,
-      top: centerY - Math.cos(angle) * d,
-    }),
-  };
-}
-
-/**
- * The viewport width, read from the window rather than held in state.
- *
- * The server snapshot is a common laptop width, so the markup React hydrates
- * is the markup the server sent; the real width replaces it in the render
- * that follows. One re-render per resize event, nothing per frame.
- */
-function useViewportWidth() {
-  return useSyncExternalStore(
-    (onChange) => {
-      window.addEventListener("resize", onChange);
-      return () => window.removeEventListener("resize", onChange);
-    },
-    () => window.innerWidth,
-    () => 1280,
-  );
-}
-
-/*
- * Both blocks below hang from their bottom-centre: `-translate-x-1/2
- * -translate-y-full` puts that point on the left/top they are given, and
- * `origin-bottom` makes the rotation turn about it. So each block's bottom
- * edge sits a fixed gap above its card's top edge, parallel to it, whatever
- * the block's own height turns out to be. left/top and the `rotate`
- * property are used rather than a transform, so the centring translate
- * from the utilities and the rotation never share one transform.
- */
-const LAID_ON_CARD =
-  "pointer-events-none absolute z-10 hidden origin-bottom -translate-x-1/2 -translate-y-full lg:block";
-
-/**
- * The section title, set on the roster: as wide as a card, sitting just
- * above the card one slot left of centre — 梅澤's, at rest — and turned to
- * the same angle, so the word reads as one more object on the arc rather
- * than as a label above a widget. The size is the card's width over the
- * three glyphs of チーム. Rendered from lg only — below that the card's left
- * half is off the page.
- */
-function RosterTitle() {
-  const card = restingCard(useViewportWidth(), -1);
-  const size = card.width / 2.9;
-
-  return (
-    <h2
-      className={`${LAID_ON_CARD} font-light leading-none tracking-[-0.02em] whitespace-nowrap text-ink [font-feature-settings:'palt'_1]`}
-      style={{
-        ...card.above(card.height / 2 + TITLE_GAP),
-        fontSize: size,
-        rotate: card.rotate,
-      }}
-    >
-      チーム
-    </h2>
-  );
-}
-
-/**
- * The company's sentence about the team, laid on the roster the same way:
- * as wide as a card, just above the card one slot right of centre, leaning
- * with it. The title on one side and the caption on the other, each on its
- * own card, is what makes the two read as a pair rather than as a heading
- * and a stray paragraph.
- */
-function RosterCaption() {
-  const card = restingCard(useViewportWidth(), 1);
-
-  return (
-    <p
-      className={`${LAID_ON_CARD} text-[0.9rem] leading-[1.75] text-muted`}
-      style={{
-        ...card.above(card.height / 2 + TITLE_GAP),
-        width: card.width,
-        rotate: card.rotate,
-      }}
-    >
-      {TEAM_INTRO}
-    </p>
-  );
 }
 
 /**
@@ -437,25 +281,11 @@ export function Team() {
 
   return (
     <Section id="team" className="overflow-x-clip">
-      {/*
-        Two titles, one per layout, and only one of them in the tree at a
-        time. Below lg the word sits in the flow at display size with a
-        small lean of its own; from lg it leaves the flow and lies on the
-        roster, over 梅澤's card, in <RosterTitle>. display: none takes the
-        hidden one out of the accessibility tree, so the outline has one h2.
-      */}
-      <Reveal className="lg:hidden">
-        <h2 className="w-fit origin-bottom-left rotate-[-4deg] text-[clamp(3rem,10vw,4.5rem)] font-light leading-none tracking-[-0.02em] text-ink [font-feature-settings:'palt'_1]">
-          チーム
-        </h2>
+      <Reveal>
+        <SectionTitle>チーム</SectionTitle>
       </Reveal>
 
-      {/*
-        The company's sentence about who the team is. In the flow under the
-        title on narrow screens; from lg it lies on the roster too, over the
-        card right of centre, in <RosterCaption>.
-      */}
-      <Reveal className="mt-8 max-w-2xl lg:hidden">
+      <Reveal className="max-w-2xl">
         <p className="measure-jp text-[1.0625rem] text-muted">{TEAM_INTRO}</p>
       </Reveal>
 
@@ -470,22 +300,14 @@ export function Team() {
         left-1/2 + w-screen + -translate-x-1/2 is the standard break-out; the
         section clips the x axis so the scrollbar's width cannot turn it into
         a horizontal scroll. The break-out sits on this wrapper rather than on
-        the focusable group so the title can be positioned against the same
-        box the canvas fills without living inside the group's label.
-
-        No top margin from lg: the title is inside the canvas's own empty top
-        band, so the roster starts where the section's content starts.
-
-        The entrance turn is measured against this box too: it is the roster
-        as the reader sees it, title and all, and its top is what the scroll
-        window above is read from.
+        the focusable group, which keeps the group's label on the roster
+        alone and gives the entrance turn a box to measure: its top is what
+        the scroll window above is read from.
       */}
       <div
         ref={wrapperRef}
-        className="relative left-1/2 mt-10 w-screen -translate-x-1/2 lg:mt-0"
+        className="relative left-1/2 mt-14 w-screen -translate-x-1/2"
       >
-        <RosterTitle />
-        <RosterCaption />
 
         {/*
           Focusable, with the arrows bound: dragging a canvas is not something

@@ -226,14 +226,21 @@ export function TrendMock() {
     <Screen
       title={TREND_TITLE}
       footer={
-        <Row
-          klass={flagged.klass}
-          no={flagged.no}
-          trailing={<Chip tone="risk">{flagged.level}</Chip>}
-          className="w-full"
-        >
-          <Bar pct={flagged.width} tone="risk-high" />
-        </Row>
+        /*
+          data-thread marks this row as the point the signal thread leaves
+          from on its way to the report: the page's thread layer finds it by
+          this attribute and nothing else here knows the thread exists.
+        */
+        <div data-thread="analysis" className="w-full">
+          <Row
+            klass={flagged.klass}
+            no={flagged.no}
+            trailing={<Chip tone="risk">{flagged.level}</Chip>}
+            className="w-full"
+          >
+            <Bar pct={flagged.width} tone="risk-high" />
+          </Row>
+        </div>
       }
     >
       {/*

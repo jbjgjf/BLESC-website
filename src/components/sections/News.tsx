@@ -1,4 +1,5 @@
 import { DrawnRule } from "@/components/DrawnRule";
+import { Flower } from "@/components/Flower";
 import { RevealItem, Reveal, Stagger } from "@/components/Reveal";
 import { Container, SectionTitle } from "@/components/ui";
 
@@ -139,9 +140,19 @@ export function News() {
                   margin it reads as a stamp. The border takes the same hue
                   at 35% so the stamp does not outweigh the text it frames.
                 */}
-                <span className="inline-flex w-fit items-center justify-center self-start rounded-md border border-mark-1/35 px-2.5 py-1 text-[0.8rem] font-medium tracking-[0.18em] text-mark-1 md:px-1.5 md:py-3 md:[writing-mode:vertical-rl]">
-                  {item.category}
-                </span>
+                <div className="flex items-start gap-3 self-start">
+                  {/*
+                    The brand flower, in ink rather than blue: the same shape
+                    the logo draws, set as a bullet in the text colour so it
+                    marks the entry without taking the one colour the stamp
+                    beside it already carries. Decorative; the stamp is the
+                    label.
+                  */}
+                  <Flower size={22} className="mt-0.5 shrink-0 text-ink md:mt-1" />
+                  <span className="inline-flex w-fit items-center justify-center rounded-md border border-mark-1/35 px-2.5 py-1 text-[0.8rem] font-medium tracking-[0.18em] text-mark-1 md:px-1.5 md:py-3 md:[writing-mode:vertical-rl]">
+                    {item.category}
+                  </span>
+                </div>
 
                 {/*
                   Weight 300: the hero's voice, not the section head's. The
