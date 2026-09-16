@@ -59,18 +59,52 @@ const ITEMS: NewsItem[] = [
  * the rhythm down the page does not change, scroll-mt-24 included: the nav
  * scroll-spy and the Lenis anchors both depend on that offset and on the id.
  *
+ * This is the one place the page's ground shifts. The register sits on
+ * bg-canvas-alt — #f5f7fa on the white build, #121417 on the dark — which is
+ * the second surface the palette has always had and the page has never used
+ * as a ground. It is a change of light rather than a band: a 6rem fade from
+ * the canvas colour at the top and another at the bottom, so there is no
+ * edge to the section, only a slightly different air. The fades sit at -z-10
+ * inside the section's own stacking context (isolate), which puts them
+ * above the section's fill and under everything in flow — the title cannot
+ * be tinted by them, with or without JS. Both are aria-hidden and take no
+ * pointer.
+ *
+ * Every pair was measured on the alt ground. Secondary copy 5.83:1 light and
+ * 11.38:1 dark; the mark-1 stamp 5.07:1 and 9.45:1; ink 18.11:1 and 18.45:1.
+ * The rules were the one thing that slipped: line-strong is 3.46:1 on the
+ * light alt ground but 2.95:1 on the dark one, under the 3:1 a structural
+ * line needs. The fix is theme-neutral — a flat layer of the text colour at
+ * 4% laid over the rule's own fill, which pulls a light rule darker and a
+ * dark rule lighter — and it returns the rules to the weight they have on
+ * the plain canvas: 3.70:1 light and 3.25:1 dark against 3.72:1 and 3.15:1
+ * there. It is a background-image, so it composes with DrawnRule's
+ * background-color rather than fighting it for the same property.
+ *
  * From md each row is three columns — the category stamp turned on its side,
  * the proper noun at display size, and the sentence. The sentence sits last
  * because it is where the eye lands after the name: に登壇し opens with a
  * particle that continues the name, so name → sentence has to run left to
  * right. Below md the three stack in the same reading order.
  */
+const LEDGER_RULE =
+  "bg-[linear-gradient(color-mix(in_srgb,var(--color-text)_4%,transparent),color-mix(in_srgb,var(--color-text)_4%,transparent))]";
+
 export function News() {
   return (
     <section
       id="news"
-      className="scroll-mt-24 bg-canvas py-[clamp(5rem,10vw,9rem)]"
+      className="relative isolate scroll-mt-24 bg-canvas-alt py-[clamp(5rem,10vw,9rem)]"
     >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-24 bg-linear-to-b from-canvas to-transparent"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-24 bg-linear-to-t from-canvas to-transparent"
+      />
+
       <Container>
         <Reveal>
           <SectionTitle>ニュース</SectionTitle>
@@ -85,7 +119,7 @@ export function News() {
         default hold so the words arrive before the line under them does.
       */}
       <div className="relative">
-        <DrawnRule className="top-0" delay={0.1} />
+        <DrawnRule className={`top-0 ${LEDGER_RULE}`} delay={0.1} />
 
         <Stagger as="ol" stagger={0.1}>
           {ITEMS.map((item) => (
@@ -143,7 +177,7 @@ export function News() {
                 </div>
               </Container>
 
-              <DrawnRule className="bottom-0" />
+              <DrawnRule className={`bottom-0 ${LEDGER_RULE}`} />
             </RevealItem>
           ))}
         </Stagger>

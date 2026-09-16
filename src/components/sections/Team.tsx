@@ -1,5 +1,6 @@
 "use client";
 
+import { useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
 import {
   useCallback,
   useMemo,
@@ -7,7 +8,11 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { CircularGallery, type GalleryItem } from "@/components/CircularGallery";
+import {
+  CircularGallery,
+  type GalleryApi,
+  type GalleryItem,
+} from "@/components/CircularGallery";
 import { MemberModal } from "@/components/MemberModal";
 import { Reveal } from "@/components/Reveal";
 import { Icon, Section } from "@/components/ui";
@@ -124,6 +129,25 @@ const MEMBERS: Member[] = [
  */
 const TEAM_INTRO =
   "BLESCは、中国、日本、オーストラリア、インドなど多様なバックグラウンドを持つバイリンガルの帰国子女が、国内外の視点から社会課題の解決に取り組むチームです。";
+
+/**
+ * How far back the ring sits while the roster is still below the fold, in
+ * cards. It turns forward by this much as the roster's top climbs from the
+ * bottom of the viewport to the middle, and is exactly at rest from then on
+ * — which it has to be, because the title and the caption are laid over the
+ * cards one slot either side of centre at rest and nowhere else.
+ *
+ * Under half a card on purpose: the gallery reports whichever card is
+ * nearest the centre, and a turn of less than half a slot never changes
+ * that, so the name under the roster stays put while the ring arrives.
+ */
+const ENTRANCE_PAN = 0.45;
+
+/** The pan, in cards, the ring should carry at a point in the entrance. */
+function entrancePan(progress: number) {
+  const p = Math.min(1, Math.max(0, progress));
+  return -ENTRANCE_PAN * (1 - p);
+}
 
 /* -------------------------------------------------------------------------- */
 /* The title, laid on the roster                                              */
@@ -331,7 +355,9 @@ function MemberCard({
 export function Team() {
   const [active, setActive] = useState(0);
   const [shown, setShown] = useState<number | null>(null);
-  const stepRef = useRef<((delta: number) => void) | null>(null);
+  const galleryRef = useRef<GalleryApi | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
 
   // Stable identity: a new array each render would tear down the WebGL scene.
   const items = useMemo<GalleryItem[]>(
@@ -343,12 +369,64 @@ export function Team() {
     [],
   );
 
-  const onReady = useCallback(
-    (api: { step: (delta: number) => void }) => {
-      stepRef.current = api.step;
-    },
-    [],
+  /*
+   * The entrance turn, as a function of where the roster is on the page:
+   * 0 with its top at the bottom edge of the viewport, 1 with its top at
+   * the middle. Under reduced motion the pan is 0 at every point, so the
+   * ring is simply at rest and nothing below ever sends it a nudge.
+   */
+  const { scrollYProgress } = useScroll({
+    target: wrapperRef,
+    offset: ["start end", "start center"],
+  });
+  const panAt = useCallback(
+    (progress: number) => (reduce ? 0 : entrancePan(progress)),
+    [reduce],
   );
+
+  /*
+   * The pan the ring currently carries, in cards. Every change is sent as a
+   * difference from this rather than as a position, because drag, the wheel
+   * and the arrow keys move the same target and a turn written as an
+   * absolute would throw theirs away. No easing of our own: the gallery's
+   * lerp already smooths each nudge.
+   */
+  const appliedPan = useRef(0);
+
+  const onReady = useCallback(
+    (api: GalleryApi) => {
+      galleryRef.current = api;
+      /*
+       * A fresh scene starts at rest, so the pan has to be read from where
+       * the page actually is and put on the ring before it is seen: on a
+       * deep link into the section that is 0 and nothing happens, and from
+       * the top of the page it is the full pan, landed outright while the
+       * roster is still off screen. Measured from the element rather than
+       * from scrollYProgress, which only takes its first reading on the
+       * frame after this runs and would say 0 wherever the page was — the
+       * arithmetic is the same window the offset above describes.
+       */
+      const wrapper = wrapperRef.current;
+      const vh = window.innerHeight;
+      const progress = wrapper
+        ? (vh - wrapper.getBoundingClientRect().top) / (vh / 2)
+        : 1;
+      const pan = panAt(progress);
+      appliedPan.current = pan;
+      if (pan !== 0) api.nudge(pan, true);
+    },
+    [panAt],
+  );
+
+  useMotionValueEvent(scrollYProgress, "change", (progress) => {
+    const api = galleryRef.current;
+    if (!api) return;
+    const next = panAt(progress);
+    const delta = next - appliedPan.current;
+    if (delta === 0) return;
+    appliedPan.current = next;
+    api.nudge(delta);
+  });
 
   // Stable too: the dialog's open effect depends on it, and a fresh function
   // each render would re-run that effect and steal focus back to the close
@@ -397,8 +475,15 @@ export function Team() {
 
         No top margin from lg: the title is inside the canvas's own empty top
         band, so the roster starts where the section's content starts.
+
+        The entrance turn is measured against this box too: it is the roster
+        as the reader sees it, title and all, and its top is what the scroll
+        window above is read from.
       */}
-      <div className="relative left-1/2 mt-10 w-screen -translate-x-1/2 lg:mt-0">
+      <div
+        ref={wrapperRef}
+        className="relative left-1/2 mt-10 w-screen -translate-x-1/2 lg:mt-0"
+      >
         <RosterTitle />
         <RosterCaption />
 
@@ -415,7 +500,7 @@ export function Team() {
           onKeyDown={(e) => {
             if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
             e.preventDefault();
-            stepRef.current?.(e.key === "ArrowRight" ? 1 : -1);
+            galleryRef.current?.step(e.key === "ArrowRight" ? 1 : -1);
           }}
           className="relative h-[420px] w-full md:h-[560px]"
         >
@@ -444,7 +529,7 @@ export function Team() {
         <div className="mt-8 flex items-center justify-center gap-4">
           <button
             type="button"
-            onClick={() => stepRef.current?.(-1)}
+            onClick={() => galleryRef.current?.step(-1)}
             aria-label="前のメンバーを表示"
             className="flex size-11 items-center justify-center rounded-full border-2 border-line-strong text-muted transition-[color,border-color,scale] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] hover:border-ink/40 hover:text-ink"
           >
@@ -455,7 +540,7 @@ export function Team() {
           </p>
           <button
             type="button"
-            onClick={() => stepRef.current?.(1)}
+            onClick={() => galleryRef.current?.step(1)}
             aria-label="次のメンバーを表示"
             className="flex size-11 items-center justify-center rounded-full border-2 border-line-strong text-muted transition-[color,border-color,scale] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] hover:border-ink/40 hover:text-ink"
           >

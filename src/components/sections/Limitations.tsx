@@ -3,6 +3,7 @@ import {
   type FigureKind,
 } from "@/components/evidence/LimitationFigure";
 import { PhotoFrame } from "@/components/evidence/PhotoFrame";
+import { Drift } from "@/components/flourish/Drift";
 import { Reveal } from "@/components/Reveal";
 import { Section, SectionTitle } from "@/components/ui";
 
@@ -74,23 +75,57 @@ function Row({ item, index }: { item: Limitation; index: number }) {
           <PhotoFrame src={item.photo} sizes="(min-width: 768px) 36rem, 100vw" />
         </div>
 
-        <div className={`md:col-span-5 ${flipped ? "md:order-1" : ""}`}>
+        <div className={`relative md:col-span-5 ${flipped ? "md:order-1" : ""}`}>
           {/*
-            A plain numeral in muted. The coloured dot and the mark-coloured
-            figure that used to sit beside it were the tab's decoration, not
-            the sequence; the sequence is all this needs to carry.
+            The row's number again, giant and almost not there, behind the
+            copy. Set in the hero's voice — weight 300, tight — at 5% of the
+            text colour, which is #f3f3f3 on the white build and #161719 on
+            the dark one: a watermark, not a figure. Secondary copy over it
+            holds 5.63:1 light and 11.04:1 dark, so the paragraph is unharmed
+            wherever it lands. It drifts 28px slower than the row it belongs
+            to, which is what separates it from the copy in depth rather than
+            just in tone.
+
+            It hangs off the top-left of the copy column, so on a flipped row
+            it follows the column to the other side without knowing it did.
+            The overhang is smaller below md: there the photograph sits
+            directly above with a 2rem gap, and 2rem is exactly how far the
+            numeral may rise before it lies over the picture. Nothing about
+            it reaches the viewport's edge, since the column keeps the
+            Container's own padding on both sides. The small numeral beside
+            the title stays; this one is aria-hidden as well and says
+            nothing the small one does not.
           */}
-          <p aria-hidden className="text-[0.85rem] font-medium tabular-nums text-muted">
-            {item.n}
-          </p>
+          <Drift
+            amount={28}
+            className="pointer-events-none absolute -top-8 -left-4 z-0 select-none md:-top-24"
+          >
+            <span
+              aria-hidden
+              className="block font-light text-[clamp(7rem,16vw,14rem)] leading-none tracking-[-0.04em] whitespace-nowrap text-ink/5"
+            >
+              {item.n}
+            </span>
+          </Drift>
 
-          <h3 className="mt-3 text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink">
-            {item.title}
-          </h3>
+          <div className="relative z-10">
+            {/*
+              A plain numeral in muted. The coloured dot and the mark-coloured
+              figure that used to sit beside it were the tab's decoration, not
+              the sequence; the sequence is all this needs to carry.
+            */}
+            <p aria-hidden className="text-[0.85rem] font-medium tabular-nums text-muted">
+              {item.n}
+            </p>
 
-          <p className="measure-jp mt-4 text-[1.0625rem] text-muted">{item.body}</p>
+            <h3 className="mt-3 text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink">
+              {item.title}
+            </h3>
 
-          <LimitationFigure kind={item.figure} />
+            <p className="measure-jp mt-4 text-[1.0625rem] text-muted">{item.body}</p>
+
+            <LimitationFigure kind={item.figure} />
+          </div>
         </div>
       </div>
     </Reveal>
@@ -99,7 +134,14 @@ function Row({ item, index }: { item: Limitation; index: number }) {
 
 export function Limitations() {
   return (
-    <Section>
+    /*
+     * overflow-x-clip is a precaution, not a fix: the giant numerals hang off
+     * their columns but never past the Container's padding. clip rather than
+     * hidden because hidden would make the section a scroll container and
+     * cut off the numerals where they rise above their rows; clip leaves the
+     * vertical axis alone.
+     */
+    <Section className="overflow-x-clip">
       <Reveal>
         <SectionTitle>構造的な限界</SectionTitle>
         <p className="measure-jp max-w-2xl text-[1.0625rem] text-muted">

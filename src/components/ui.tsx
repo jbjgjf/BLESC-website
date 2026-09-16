@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Fragment } from "react";
+import { Drift } from "@/components/flourish/Drift";
 import { GlassSurface } from "@/components/GlassSurface";
 
 /* -------------------------------------------------------------------------- */
@@ -194,7 +195,16 @@ export function Section({
  */
 export function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <h2 className="type-head mb-10 text-ink md:mb-12">{children}</h2>
+    /*
+     * Every section head floats a few pixels against the scroll. It is the
+     * one depth cue the page repeats, so it lives here rather than in each
+     * section: a heading that lags the copy under it by ten pixels across a
+     * screen of travel is felt more than seen, which is the right amount.
+     * The h2 keeps its own margin, so the wrapper changes no layout.
+     */
+    <Drift amount={10}>
+      <h2 className="type-head mb-10 text-ink md:mb-12">{children}</h2>
+    </Drift>
   );
 }
 
