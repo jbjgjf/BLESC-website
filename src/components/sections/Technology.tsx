@@ -128,21 +128,25 @@ export function Technology() {
           is still animating a translate would be measured mid-flight. The
           graph brings its own on-view reveal for the nodes and edges.
 
-          bg-inset rather than bg-surface because the node pills are filled
-          with --surface-raised: on the inset plane they read as raised in
-          light and sunken in dark, where on a surface-coloured panel the
-          dark build would fill them with exactly the panel colour.
+          The graph is WebGL now, with the flat SVG it replaced kept as its
+          fallback, and both are drawn for this ground. bg-inset rather than
+          bg-surface: the scene reads --surface-inset as the colour its far
+          nodes and edges recede toward, and the fallback's pills are filled
+          with --surface-raised, which on the inset plane read as raised in
+          light and sunken in dark — on a surface-coloured panel the dark
+          build would fill them with exactly the panel colour.
 
           The padding stays at p-5 at every width. Going to p-8 on desktop
-          would take the frame below the width at which its labels hold 11px,
-          which would put a scrollbar inside a panel that fits.
+          would take the fallback's frame below the width at which its labels
+          hold 11px, which would put a scrollbar inside a panel that fits.
 
-          min-w-0 is what lets the graph's own overflow-x-auto do its job on a
-          phone. A grid item's minimum width is its content's, and the figure
-          inside sets a 30rem floor on the drawing — so without this the
+          min-w-0 is what lets the fallback's own overflow-x-auto do its job
+          on a phone. A grid item's minimum width is its content's, and that
+          figure sets a 30rem floor on its drawing — so without this the
           column grew to 546px at 375px, the whole page gained a horizontal
           scroll, and the phone zoomed out to fit it. With it, the panel stays
-          the width of the page and the drawing scrolls inside the panel.
+          the width of the page and the drawing scrolls inside the panel. The
+          WebGL figure sets no floor at all; it is the width of the panel.
 
           data-thread marks the panel as where the signal thread ends: the
           page's thread layer finds it by this attribute, and the section
