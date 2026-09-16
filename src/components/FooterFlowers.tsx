@@ -8,7 +8,6 @@ import {
   useTransform,
 } from "motion/react";
 import { useEffect, useRef } from "react";
-import { Flower } from "@/components/Flower";
 import { FloatingFlower } from "@/components/flourish/FloatingFlower";
 
 /*
@@ -17,9 +16,11 @@ import { FloatingFlower } from "@/components/flourish/FloatingFlower";
  * The footer closes the page with a centred heading and two buttons, which
  * leaves the gutters beside them empty. Product sites fill that spot with
  * floating objects from the product; the only object this company has is
- * its flower, so each gutter gets a small cluster of three — one soft wash
- * behind, one solid mark with its glow, one small mark drifting above — and
- * the whole layer eases upward as the footer scrolls in.
+ * its flower, so each gutter gets a pair — one solid mark, one small mark
+ * drifting above it out of phase — and the whole layer eases upward as the
+ * footer scrolls in. They are flat marks, the way the flower is flat in the
+ * logo: a blurred wash behind them and a halo around them were both tried
+ * and both read as an effect rather than as the brand.
  *
  * Hidden below lg. The heading is 768px wide and centred, so below 1024px
  * there is no gutter for the clusters to sit in; anything shown there would
@@ -40,19 +41,6 @@ import { FloatingFlower } from "@/components/flourish/FloatingFlower";
  */
 
 /*
- * 22% of --mark-1 under a 22px blur is the ceiling ScrollFlower established
- * for a wash anywhere near copy, and it is kept here even though no text is
- * ever over these: the same wash at two strengths on one page would read as
- * two different ornaments. The wash is static on purpose — it is the soft
- * ground the two marks float over, not a third object.
- *
- * w-26 at lg, w-36 from xl: the 144px box does not fit the 128px gutter at
- * 1024 even tucked off the edge, so it drops to 104px there.
- */
-const WASH =
-  "absolute aspect-square w-26 text-accent opacity-[0.22] blur-[22px] xl:w-36";
-
-/*
  * Geometry, so the clusters can be checked against the heading without a
  * browser. The heading is centred at max-w-3xl (768px), so the gutter each
  * side is (viewport − 768) / 2: 128px at 1024, 256px at 1280, 336px at 1440.
@@ -60,21 +48,18 @@ const WASH =
  * is narrower than the heading and centred, so the heading's box is the
  * bound. Each cluster is anchored 3vw in from its edge (3vw − 3.5rem at lg,
  * which tucks it part-way off the page) and the figures below are how far
- * inward it reaches from the page edge, with a blur counted as one standard
- * deviation past its box: 22px for the wash, 18px for the glow, which
- * FloatingFlower draws at 1.6× the mark. Past one deviation a blur is under
- * a sixth of its own alpha and reads as nothing on the page.
+ * inward its marks reach from the page edge.
  *
- *             left cluster reach   right cluster reach   gutter   margin
- *   1024      99 sharp / 123 halo   95 sharp / 123 halo  128      5px
- *   1280     210 sharp / 210 halo  184 sharp / 180 halo  256     46px
- *   1440     215 sharp / 215 halo  184 sharp / 180 halo  336    121px
+ *             left reach   right reach   gutter   margin
+ *   1024        99           95           128      29px
+ *   1280       210          184           256      46px
+ *   1440       215          184           336     121px
  *
  * The right cluster's figures are distances in from the right edge; at
  * 1280 the right small mark sits at 184 + 38 = 222px in, 34px short of the
  * heading's box. The two sides are arranged differently, not mirrored: on
  * the left the small mark floats above and inward of the solid one, on the
- * right it sits below it, and the washes are set at different heights.
+ * right it sits below it.
  *
  * The FloatingFlower marks sit in plain positioned wrappers rather than
  * taking the offsets through className: its className lands on a box that
@@ -117,10 +102,10 @@ export function FooterFlowers() {
   const y = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [18, -14]);
 
   /*
-   * The layer holds four blurred elements, and a permanent will-change would
-   * keep all of them rasterised in GPU memory from first paint for a layer
-   * that only moves during the last screen of scroll. The promise is made as
-   * the footer comes within half a screen and withdrawn when it leaves.
+   * A permanent will-change would keep the layer rasterised in GPU memory
+   * from first paint for something that only moves during the last screen
+   * of scroll. The promise is made as the footer comes within half a screen
+   * and withdrawn when it leaves.
    */
   const near = useInView(layerRef, { margin: "50% 0px 50% 0px" });
 
@@ -131,22 +116,14 @@ export function FooterFlowers() {
       className="pointer-events-none absolute inset-x-0 top-10 z-0 hidden h-[18rem] overflow-x-clip lg:block"
       style={{ y, willChange: !reduce && near ? "transform" : undefined }}
     >
-      {/* Left cluster: wash low, solid mark over it, small mark up and inward. */}
+      {/* Left cluster: solid mark low, small mark up and inward. */}
       <div className="absolute inset-y-0 left-[calc(3vw-3.5rem)] w-48 xl:left-[3vw]">
-        <div className={`${WASH} top-8 left-0`}>
-          {/*
-            The size prop only fixes the ratio the viewBox is drawn against;
-            h-full/w-full then fill the square box, as the contact page does.
-          */}
-          <Flower size={100} rotate={-10} className="h-full w-full" />
-        </div>
         <div className="absolute top-17 left-4 xl:left-10">
           <FloatingFlower
             size={88}
             className="text-accent"
             rotate={-12}
             duration={5.2}
-            glow
           />
         </div>
         <div className="absolute top-4 left-21 xl:left-33">
@@ -160,11 +137,8 @@ export function FooterFlowers() {
         </div>
       </div>
 
-      {/* Right cluster: wash set lower, solid mark higher, small mark below and inward. */}
+      {/* Right cluster: solid mark higher, small mark below and inward. */}
       <div className="absolute inset-y-0 right-[calc(3vw-3.5rem)] w-48 xl:right-[3vw]">
-        <div className={`${WASH} top-12 right-0`}>
-          <Flower size={100} rotate={16} className="h-full w-full" />
-        </div>
         <div className="absolute top-14 right-4 xl:right-12">
           <FloatingFlower
             size={88}
@@ -172,7 +146,6 @@ export function FooterFlowers() {
             rotate={14}
             duration={5.8}
             delay={0.6}
-            glow
           />
         </div>
         <div className="absolute top-38 right-20 xl:right-36">

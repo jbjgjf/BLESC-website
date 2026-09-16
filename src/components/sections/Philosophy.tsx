@@ -157,12 +157,8 @@ export function Philosophy() {
               and useInView inside FloatingFlower reports the display:none
               one as out of view, so only the visible one breathes.
             */}
-            <FloatingFlower size={56} className="text-accent md:hidden" glow />
-            <FloatingFlower
-              size={88}
-              className="hidden text-accent md:block"
-              glow
-            />
+            <FloatingFlower size={56} className="text-accent md:hidden" />
+            <FloatingFlower size={88} className="hidden text-accent md:block" />
 
             {/*
               The hero's voice: weight 300, 1.05 leading, −0.02em tracking

@@ -18,8 +18,9 @@ import { Flower } from "@/components/Flower";
  * half a dozen of these on one page. Under reduced motion the mark is simply
  * drawn at rest.
  *
- * `glow` draws a blurred copy behind at low opacity — the wash the flower
- * behind 仕組み uses — so a solid mark on a plain ground still has depth.
+ * No halo. A blurred copy behind the mark was tried and read as a glow
+ * around a logo rather than as depth; the flower is a flat mark in the
+ * logo and stays one here.
  *
  * Decorative everywhere it appears: <Flower> is already aria-hidden.
  */
@@ -29,7 +30,6 @@ export function FloatingFlower({
   rotate = 0,
   duration = 4.5,
   delay = 0,
-  glow = false,
 }: {
   /** Pixel size of the mark. */
   size: number;
@@ -40,7 +40,6 @@ export function FloatingFlower({
   /** Seconds per breath. Give neighbours different values so they drift out of phase. */
   duration?: number;
   delay?: number;
-  glow?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
@@ -60,12 +59,7 @@ export function FloatingFlower({
           : { duration: 0.4 }
       }
     >
-      {glow && (
-        <div className="absolute inset-0 scale-[1.6] opacity-40 blur-[18px]">
-          <Flower size={size} className="h-full w-full" />
-        </div>
-      )}
-      <Flower size={size} className="relative h-full w-full" />
+      <Flower size={size} className="h-full w-full" />
     </motion.div>
   );
 }
