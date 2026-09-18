@@ -19,6 +19,19 @@ export const NAV_LINKS = [
   { id: "news", label: "ニュース" },
 ] as const;
 
+/**
+ * Footer sitemap. Every section the nav lists, plus the FAQ.
+ *
+ * The FAQ is deliberately not in NAV_LINKS: the top bar already runs six
+ * links against a theme toggle and a CTA at md, and a seventh wraps it. It
+ * still wants a crawlable internal link from somewhere on the page, so it
+ * lives here — which is also where a visitor looking for it would look.
+ */
+export const FOOTER_LINKS = [
+  ...NAV_LINKS,
+  { id: "faq", label: "よくあるご質問" },
+] as const;
+
 export const sectionHref = (id: string, onHome: boolean) =>
   onHome ? `#${id}` : `/#${id}`;
 

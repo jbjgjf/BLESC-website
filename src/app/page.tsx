@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { Faq } from "@/components/sections/Faq";
 import { ScrollFlower } from "@/components/flourish/ScrollFlower";
 import { ScrollWash } from "@/components/flourish/ScrollWash";
 import { SignalThread } from "@/components/flourish/SignalThread";
@@ -10,10 +12,25 @@ import { Problem } from "@/components/sections/Problem";
 import { Product } from "@/components/sections/Product";
 import { Team } from "@/components/sections/Team";
 import { Technology } from "@/components/sections/Technology";
+import { faqJsonLd } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function Home() {
   return (
     <>
+      {/*
+        FAQPage, quoting the <Faq> section verbatim. Kept on the home page
+        rather than in the root layout: it describes this document, and
+        claiming an FAQ on /contact — which has none — is exactly the
+        mismatch that costs a rich result.
+      */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd()) }}
+      />
       <Hero />
       <Problem />
       {/*
@@ -57,11 +74,18 @@ export default function Home() {
       <Team />
       <News />
       {/*
-        The closing statement sits last so it runs straight into the footer's
-        invitation: 声にならないSOSに、気づける社会へ。 and then 導入について、
-        お話ししませんか。 with nothing between them. The news used to sit
-        here, and two rows of announcements between the statement and the
-        CTA broke that line of thought.
+        After the argument and the news, before the close: someone convinced
+        enough to still be reading is the one with objections left, and the
+        answers here are also the page's densest block of the plain language
+        people actually search in.
+      */}
+      <Faq />
+      {/*
+        The closing statement is the last thing in <main>, and the footer
+        opens straight out of it: the statement's sky fades to the page
+        ground, the footer's flower dive opens on that ground (see
+        FlowerDive), and 導入について、お話ししませんか。 follows the dive.
+        Nothing else sits between the statement and the invitation.
       */}
       <Philosophy />
     </>

@@ -448,7 +448,7 @@ export function ContactForm() {
           <Icon
             name="error"
             size={20}
-            className="mt-0.5 shrink-0 text-[var(--risk-high)]"
+            className="mt-0.5 shrink-0 text-error"
           />
           <p className="measure-jp text-[0.9rem] text-ink">
             {status === "unconfirmed" ? (

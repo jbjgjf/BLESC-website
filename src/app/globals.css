@@ -1,11 +1,4 @@
 @import "tailwindcss";
-/*
- * Layered on purpose. Imported unlayered, the icon font's own
- * .material-symbols-outlined { display: inline-block } outranks every
- * Tailwind utility, because unlayered CSS beats anything inside a layer —
- * so `hidden md:block` on an icon silently did nothing.
- */
-@import "material-symbols/outlined.css" layer(base);
 
 /* ---------------------------------------------------------------------------
    Design tokens — dark. The light palette is inverted about its own axis:
@@ -55,7 +48,7 @@
   --surface-raised: #14171b;
   /*
    * Wells sunk INTO a raised plane — chat bubbles, the message field, the
-   * risk-bar tracks. --color-bg-alt was doing this job and measured 1.03:1
+   * signal-bar tracks. --color-bg-alt was doing this job and measured 1.03:1
    * against the card it sat on, i.e. invisible; it only ever worked because
    * the light build happens to land at 1.14:1. This is the dark equivalent
    * of that separation, taken slightly further because a dark ground needs
@@ -85,24 +78,6 @@
   --glare-opacity: 0.15;
 
   /*
-   * Risk levels for the teacher-report mockup. The first non-blue colours on
-   * the site, and the only ones justified: severity is the whole point of
-   * that table. 高/中/低 is printed beside every bar, so colour is never the
-   * sole signal — which keeps it usable for red-green colour blindness and
-   * satisfies WCAG 1.4.1.
-   */
-  --risk-high: #f87171;
-  --risk-mid: #fbbf24;
-  --risk-low: #4ade80;
-  /*
-   * The same red as TEXT on a chip filled with 15% of itself. --risk-high
-   * over that tint measures 3.81:1 on the light build — under AA for the
-   * small 要対応 label — so the text variant is taken darker there. On this
-   * ground the fill colour already holds 5.23:1, so it is unchanged.
-   */
-  --risk-high-text: #f87171;
-
-  /*
    * The ground the closing statement sits on, inside its sky.
    *
    * The dark palette has white ribbons in it, and the statement is set in
@@ -114,6 +89,13 @@
    * Above this the middle of the band went black and the sky was lost.
    */
   --band-scrim: rgba(10, 11, 13, 0.7);
+
+  /*
+   * The form's error mark. A red is the conventional signal there, and this
+   * is the only place the page uses one — the risk colours that used to share
+   * these values went with the band (docs/claims.md §2). 7.1:1 on this ground.
+   */
+  --color-error-fg: #f87171;
 
   /*
    * Spotlight. The pointer position is published to :root by
@@ -200,19 +182,15 @@
   --spot-ring: 0.75;
 
 
-  /* Darkened for a white card; the dark-theme tints would wash out. */
-  --risk-high: #dc2626;
-  --risk-mid: #b45309;
-  --risk-low: #15803d;
-  /* 5.10:1 on the 15% tint, against #dc2626's 3.81:1. */
-  --risk-high-text: #b91c1c;
-
   /*
    * Nothing. The light sky's darkest pixel under the type read back as
    * #95c3f0, and ink over that is 10.6:1 with no help — the white wash the
    * band started with only took the sky away.
    */
   --band-scrim: rgba(255, 255, 255, 0);
+
+  /* 6.47:1 on white. */
+  --color-error-fg: #b91c1c;
 }
 
 @theme inline {
@@ -229,11 +207,7 @@
   --color-mark-1: var(--mark-1);
   --color-mark-2: var(--mark-2);
   --color-mark-3: var(--mark-3);
-  --color-risk-high: var(--risk-high);
-  --color-risk-high-text: var(--risk-high-text);
-  --color-risk-mid: var(--risk-mid);
-  --color-risk-low: var(--risk-low);
-
+  --color-error: var(--color-error-fg);
   /*
    * One stack, walked per glyph. Helvetica Neue carries the Latin; it has no
    * kana or kanji, so Japanese falls through the Latin faces and lands on
@@ -548,16 +522,6 @@ body {
 }
 .typing-dot:nth-child(3) {
   animation-delay: 0.4s;
-}
-
-/* Material Symbols — outlined style only, never filled. */
-.material-symbols-outlined {
-  font-variation-settings:
-    "FILL" 0,
-    "wght" 300,
-    "GRAD" 0,
-    "opsz" 24;
-  user-select: none;
 }
 
 /* ---------------------------------------------------------------------------

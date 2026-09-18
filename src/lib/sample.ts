@@ -60,8 +60,15 @@ export const STUDENT_BAR = {
   action: "提出する",
 } as const;
 
-/** The promise printed along the foot of the teacher's report. */
-export const TEACHER_BAR = { note: "日記の本文は共有されません" } as const;
+/**
+ * The promise printed along the foot of the teacher's screen: the tool does
+ * not diagnose, and the entry itself does not travel. The display policy
+ * requires the first half on every educator mock; the second is the privacy
+ * claim the product figure is built on.
+ */
+export const TEACHER_BAR = {
+  note: "本ツールは診断を行いません。日記の本文も共有されません。",
+} as const;
 
 /* -------------------------------------------------------------------------- */
 /* The class                                                                  */
@@ -81,96 +88,97 @@ export const CLASS = { label: "3年2組", size: "全40名", count: 40 } as const
 /* -------------------------------------------------------------------------- */
 
 /**
- * Sample rows for the teacher panel.
+ * Sample rows for the teacher's screen.
  *
- * Anonymised exactly the way the real report is — class and roll number,
+ * Anonymised exactly the way the real screen is — class and roll number,
  * never a name, never a line quoted from the entry itself. That is the
- * product decision made visible: the panel is the *whole* of what a teacher
- * receives. Holding the mockup to that standard also means it cannot be
+ * product decision made visible: these rows are the *whole* of what a teacher
+ * receives, and holding the mockup to that standard means it cannot be
  * mistaken for a screenshot of real students.
  *
- * Full class names throughout — Tailwind scans source text, so an
- * interpolated `bg-risk-${level}` would never be generated. `tone` is the
- * same level as a <Bar> tone; `text` is the colour the printed level takes on
- * the window surface, and the high row uses the darkened text variant because
- * the fill red measures 4.83:1 there in the light build — over AA, but with
- * no margin at the kit's 0.75rem.
+ * What each row shows is an *observation* — which category of expression was
+ * matched, when, and on which surface — never a classification of the
+ * student. The company's educator display policy (2026-08-06) removed the
+ * 高/中/低 band on arithmetic rather than on a validation gap: at 5%
+ * prevalence with 80/90 sensitivity/specificity the positive predictive value
+ * is about 30%, so seven in ten students labelled 高 would not be cases, and a
+ * better model does not move that. Nothing here carries a level, a score or a
+ * bar, and the rows are newest-first — ordering by severity would put the
+ * classification back through the sort. See docs/claims.md §2.
+ *
+ * The wording is the product's own (its safety.reason catalogue), as the
+ * production site's teacher mock already quotes it, so the mock and the
+ * screen cannot drift apart. The first row is the sample entry above: the
+ * same class and roll number, the same evening, written in the journal.
  */
 export const ROWS = [
   {
     klass: "3年2組",
     no: "#14",
-    level: "高",
-    width: "88%",
-    tone: "risk-high",
-    bar: "bg-risk-high",
-    text: "text-risk-high-text",
+    observation: "苦痛の表現（危険の明示なし）",
+    at: "8月20日 21:47",
+    surface: "ジャーナル",
   },
   {
     klass: "3年1組",
     no: "#08",
-    level: "中",
-    width: "63%",
-    tone: "risk-mid",
-    bar: "bg-risk-mid",
-    text: "text-risk-mid",
-  },
-  {
-    klass: "3年2組",
-    no: "#27",
-    level: "中",
-    width: "54%",
-    tone: "risk-mid",
-    bar: "bg-risk-mid",
-    text: "text-risk-mid",
+    observation: "「消えたい」など離脱を示唆する曖昧な表現",
+    at: "8月19日 22:03",
+    surface: "チャット",
   },
   {
     klass: "3年3組",
     no: "#03",
-    level: "低",
-    width: "21%",
-    tone: "risk-low",
-    bar: "bg-risk-low",
-    text: "text-risk-low",
+    observation: "別の画面での開示を引き継ぎ",
+    at: "8月18日 20:15",
+    surface: "音声",
   },
 ] as const;
 
 export type Row = (typeof ROWS)[number];
 
-/** The heading the report is filed under, as the teacher's screen prints it. */
-export const REPORT_TITLE = "今月のリスクレポート";
+/**
+ * Printed under every row. An educator has to be able to tell a lexicon match
+ * from a model judgement, so the provenance is stated rather than implied —
+ * and an observation with no basis is not displayed at all.
+ */
+export const BASIS = "根拠: 記述との一致 / 推論なし";
+
+/** The heading the rows are filed under, as the teacher's screen prints it. */
+export const REPORT_TITLE = "要確認の観測";
 
 /**
- * The count in the report's title bar, derived from the rows rather than
- * typed beside them. A hand-written 3件 and a list of four rows can drift
- * apart, and a number on this site that disagrees with the figure under it
- * is exactly the invented statistic the sample data exists to rule out.
- * 要対応 is any row above 低.
+ * The order, stated in the title bar. It is time, and it says so: anything
+ * that ranked these rows by severity would be the removed band re-entering
+ * through the sort.
  */
-export const REPORT_BADGE = `${ROWS.filter((row) => row.level !== "低").length}件の要対応`;
+export const REPORT_SORT = "新しい順";
 
 /* -------------------------------------------------------------------------- */
 /* The trend                                                                  */
 /* -------------------------------------------------------------------------- */
 
 /**
- * The shape of the analysis, one column per entry.
+ * How the student's writing has moved, one column per entry.
  *
- * Deliberately unlabelled and unnumbered. It is not a measurement of
- * anything real and must not be able to be read as one — what it carries is
- * a *distinction*: one tall day on its own stays in the neutral mark, while
- * a run of rising days is what the report escalates. The claim that shape
- * illustrates is written out in the caption beside it, so the figure never
- * has to be annotated to be understood.
+ * Deliberately unlabelled and unnumbered, and in one colour. It is not a
+ * measurement of anything real and must not be read as one — above all not as
+ * a score for the student, which is exactly what the display policy forbids.
+ * What it carries is the thing the product does visualise: the student's own
+ * usual range (the band, `BASELINE`) and entries leaving it. One tall day on
+ * its own returns to the band; a run of recent days stays outside it. That is
+ * the distinction step 04 describes — a clue for the teacher to look closer,
+ * not a judgement — and the caption says so in words.
  *
  * `h` is a percentage of the chart's own height — the bars are styled, never
- * animated, so no frame animates a height.
+ * animated, so no frame animates a height. `recent` marks the latest run,
+ * which is drawn at full strength and the rest at a quieter one.
  */
-export const TREND: readonly { h: number; run?: true }[] = [
+export const TREND: readonly { h: number; recent?: true }[] = [
   { h: 26 },
   { h: 20 },
   { h: 33 },
-  // The isolated day. Tall, and deliberately not flagged.
+  // The isolated day. Tall, and back inside the band the next day.
   { h: 80 },
   { h: 24 },
   { h: 30 },
@@ -178,11 +186,14 @@ export const TREND: readonly { h: number; run?: true }[] = [
   { h: 35 },
   { h: 27 },
   { h: 41 },
-  { h: 57, run: true },
-  { h: 69, run: true },
-  { h: 81, run: true },
-  { h: 93, run: true },
+  { h: 57, recent: true },
+  { h: 69, recent: true },
+  { h: 81, recent: true },
+  { h: 93, recent: true },
 ];
 
-/** The heading the analysis screen is filed under. */
-export const TREND_TITLE = "心理的リスクの推移";
+/** The student's usual range, as percentages of the chart's height. */
+export const BASELINE = { from: 16, to: 44 } as const;
+
+/** The heading the analysis screen is filed under — the step's own words. */
+export const TREND_TITLE = "書きぶりの変化";

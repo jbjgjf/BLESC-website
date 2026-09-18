@@ -2,9 +2,10 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { Logo } from "@/components/Logo";
-import { Bar, Chip, Composer, Row, Screen } from "@/components/mock";
+import { Chip, Composer, Row, Screen } from "@/components/mock";
 import { Icon } from "@/components/ui";
 import {
+  BASELINE,
   CLASS,
   ENTRY,
   ENTRY_LENGTH,
@@ -191,22 +192,24 @@ export function ProbeMock() {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The analysis, and the one line it produces.
+ * The student's writing over time, and the one line that comes out of it.
  *
- * Time is the thing a single screen cannot assert, and it is exactly what the
- * step claims: 書き重ねられるからこそ、一日の落ち込みと、続いている不調とを区別
- * できます。So the chart is an axis of entries, one tall day standing alone in
- * the neutral mark and a run of rising days in the risk colour — the shape of
- * the distinction, carrying no numbers, because it is not a measurement of
- * anything real.
+ * Time is the thing a single screen cannot assert, and it is what the step
+ * describes: 書き重ねられるからこそ、一日の落ち込みなのか、続いている変化なのか
+ * を見分ける手がかりになります。So the chart is an axis of entries against the
+ * student's own usual range — the band — with one tall day that returns to
+ * it and a recent run that stays outside. It is drawn in the one blue, with
+ * no numbers and no labels, because it is not a measurement of anything real
+ * and must not read as a score: the product draws no levels for a student,
+ * and this picture does not either (docs/claims.md §2).
  *
- * The foot is what comes out: a class, a roll number, a level. The same row
- * the teacher's report opens with, imported rather than restated, so the two
- * screens cannot come to disagree.
+ * The foot is what the teacher receives from the latest entry: a class, a
+ * roll number and an observation — the first row of the teacher's screen in
+ * プロダクト, imported rather than restated, so the two cannot disagree.
  */
 export function TrendMock() {
   const reduce = useReducedMotion();
-  const flagged = ROWS[0];
+  const latest = ROWS[0];
 
   const bar = reduce
     ? {
@@ -228,49 +231,61 @@ export function TrendMock() {
       footer={
         /*
           data-thread marks this row as the point the signal thread leaves
-          from on its way to the report: the page's thread layer finds it by
-          this attribute and nothing else here knows the thread exists.
+          from on its way to the teacher's screen: the page's thread layer
+          finds it by this attribute and nothing else here knows the thread
+          exists.
         */
-        <div data-thread="analysis" className="w-full">
-          <Row
-            klass={flagged.klass}
-            no={flagged.no}
-            trailing={<Chip tone="risk">{flagged.level}</Chip>}
-            className="w-full"
-          >
-            <Bar pct={flagged.width} tone="risk-high" />
+        <div data-thread="analysis" className="w-full min-w-0">
+          <Row klass={latest.klass} no={latest.no} className="w-full">
+            <span className="min-w-0 truncate text-[0.72rem] text-ink">
+              観測: {latest.observation}
+            </span>
           </Row>
         </div>
       }
     >
-      {/*
-        One column per entry, bottom-aligned. The heights are styles, not
-        animations: the bars arrive with a fade and a small rise rather than
-        growing, so no frame animates a height.
-      */}
-      <motion.div
-        className="flex min-h-0 flex-1 items-end gap-[2px] pt-1 sm:gap-[3px]"
-        initial="hidden"
-        whileInView="show"
-        viewport={VIEWPORT}
-        variants={{
-          show: { transition: { staggerChildren: reduce ? 0 : 0.03 } },
-        }}
-      >
-        {TREND.map((day, i) => (
-          <motion.span
-            key={i}
-            variants={bar}
-            /* flex-1 rather than a grid track: a flex item's percentage
-               height resolves against this row's own definite height, where
-               an auto-sized grid row would collapse every bar to nothing. */
-            className={`block min-w-0 flex-1 rounded-t-[2px] ${
-              day.run ? "bg-risk-high" : "bg-mark-1"
-            }`}
-            style={{ height: `${day.h}%` }}
-          />
-        ))}
-      </motion.div>
+      <div className="relative flex min-h-0 flex-1 pt-1">
+        {/*
+          The student's usual range. A band rather than a line: a range is
+          what "usual" is, and a single threshold would read as a cut-off
+          that a student is above or below — a level by another name.
+        */}
+        <span
+          className="absolute inset-x-0 rounded-sm bg-accent/15"
+          style={{
+            bottom: `${BASELINE.from}%`,
+            height: `${BASELINE.to - BASELINE.from}%`,
+          }}
+        />
+        {/*
+          One column per entry, bottom-aligned. The heights are styles, not
+          animations: the bars arrive with a fade and a small rise rather than
+          growing, so no frame animates a height.
+        */}
+        <motion.div
+          className="relative flex min-h-0 flex-1 items-end gap-[2px] sm:gap-[3px]"
+          initial="hidden"
+          whileInView="show"
+          viewport={VIEWPORT}
+          variants={{
+            show: { transition: { staggerChildren: reduce ? 0 : 0.03 } },
+          }}
+        >
+          {TREND.map((day, i) => (
+            <motion.span
+              key={i}
+              variants={bar}
+              /* flex-1 rather than a grid track: a flex item's percentage
+                 height resolves against this row's own definite height, where
+                 an auto-sized grid row would collapse every bar to nothing. */
+              className={`block min-w-0 flex-1 rounded-t-[2px] ${
+                day.recent ? "bg-mark-1" : "bg-mark-1/35"
+              }`}
+              style={{ height: `${day.h}%` }}
+            />
+          ))}
+        </motion.div>
+      </div>
     </Screen>
   );
 }

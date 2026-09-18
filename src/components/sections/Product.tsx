@@ -28,7 +28,7 @@ export function Product() {
 
       <Reveal className="max-w-2xl">
         <p className="text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.5] tracking-[-0.02em] text-ink">
-          教員に届くのは、要点のみ。
+          教員に届くのは、観測と根拠だけ。
         </p>
       </Reveal>
 
@@ -36,7 +36,7 @@ export function Product() {
         <PrivacyFigure>
           <Reveal>
             <Caption lead="日記の本文は共有されません" className="mt-5">
-              自分のタイミングで書いた日記にAIが問いをひとつ返し、教員にはクラスと出席番号、リスクの高低だけが届きます。
+              自分のタイミングで書いた日記にAIが問いをひとつ返します。教員に届くのは観測された記述とその時刻・根拠だけで、心理的リスクの判定は行いません。
             </Caption>
           </Reveal>
         </PrivacyFigure>

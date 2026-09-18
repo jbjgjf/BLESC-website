@@ -3,13 +3,33 @@ import { Suspense } from "react";
 import { ContactForm } from "@/components/ContactForm";
 import { Flower } from "@/components/Flower";
 import { Container, Icon } from "@/components/ui";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { CONTACT_EMAIL, CONTACT_PATH } from "@/lib/site";
+import { DESCRIPTION_SHORT, SITE_NAME, absoluteUrl, breadcrumbJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "お問い合わせ | Blesc",
+  /* The layout's template appends "｜Blesc", so this is the page name only. */
+  title: "お問い合わせ・資料請求",
   description:
-    "Blescの資料請求・導入のご相談を承っております。お問い合わせフォームよりご連絡ください。",
+    "Blescの資料請求・導入のご相談を承っております。学校・教育委員会からのお問い合わせは、フォームより数営業日以内にご返信いたします。",
+  alternates: { canonical: CONTACT_PATH },
+  openGraph: {
+    type: "website",
+    locale: "ja_JP",
+    url: absoluteUrl(CONTACT_PATH),
+    siteName: SITE_NAME,
+    title: `お問い合わせ・資料請求｜${SITE_NAME}`,
+    description: DESCRIPTION_SHORT,
+  },
 };
+
+/**
+ * A form page is a conversion endpoint, not a body of content — this exists
+ * so Google renders the "ホーム > お問い合わせ" trail in the SERP rather than
+ * a bare URL, and so the page is understood as a child of the home page.
+ */
+const BREADCRUMBS = breadcrumbJsonLd([
+  { name: "お問い合わせ", path: CONTACT_PATH },
+]);
 
 export default function ContactPage() {
   return (
@@ -22,6 +42,10 @@ export default function ContactPage() {
       without putting a horizontal scrollbar on a narrow window.
     */
     <main className="relative overflow-x-clip bg-canvas pb-24 pt-36 md:pb-32 md:pt-44">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(BREADCRUMBS) }}
+      />
       {/*
         The mark, quietly, filling the hole.
 

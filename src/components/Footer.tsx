@@ -7,7 +7,7 @@ import { WordmarkReveal } from "@/components/WordmarkReveal";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
 import { ButtonLink, Container, Icon } from "@/components/ui";
-import { CONTACT_EMAIL, CTA, NAV_LINKS, sectionHref } from "@/lib/site";
+import { CONTACT_EMAIL, CTA, FOOTER_LINKS, sectionHref } from "@/lib/site";
 
 /**
  * Glow ramp per theme. Dark rises toward light at the core; light deepens
@@ -163,7 +163,7 @@ export function Footer() {
             */}
             <nav aria-label="フッターナビゲーション">
               <ul className="flex flex-wrap items-baseline justify-center gap-x-6 gap-y-3">
-                {NAV_LINKS.map(({ id, label }) => (
+                {FOOTER_LINKS.map(({ id, label }) => (
                   <li key={id}>
                     <a href={sectionHref(id, onHome)} className={QUIET_LINK}>
                       {label}

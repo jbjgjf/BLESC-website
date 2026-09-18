@@ -9,12 +9,13 @@ import {
 } from "motion/react";
 import { useRef, type ReactNode } from "react";
 import { Logo } from "@/components/Logo";
-import { Bar, Chip, Composer, Frame, Row, Screen } from "@/components/mock";
+import { Chip, Composer, Frame, Screen } from "@/components/mock";
 import { Icon } from "@/components/ui";
 import {
+  BASIS,
   ENTRY,
   ENTRY_LENGTH,
-  REPORT_BADGE,
+  REPORT_SORT,
   REPORT_TITLE,
   ROWS,
   STUDENT_BAR,
@@ -24,7 +25,7 @@ import {
 /**
  * The privacy boundary, as one figure.
  *
- * 教員に届くのは、要点のみ。is the strongest claim the product makes, and the
+ * 教員に届くのは、観測と根拠だけ。is the strongest claim the product makes, and the
  * section used to assert it in a sentence and then show two screens, drawn
  * in a second style, that happened not to contradict it. A reader had to
  * hold both in their head and notice an absence — and absences are exactly
@@ -40,14 +41,19 @@ import {
  *   1. a hairline scans across the entry — the model reading it — and fades
  *      out as it reaches the wall;
  *   2. the wall brightens as the scan arrives;
- *   3. beyond it, the flagged row's bar measures out;
- *   4. its level is printed.
+ *   3. beyond it, the entry's row arrives in the teacher's list, sliding in
+ *      from the wall's side;
+ *   4. and its observation is printed.
+ *
+ * What crosses is an observation — a category of expression, a time, a
+ * surface and its basis — never a level or a score for the student: the
+ * product draws no bands (docs/claims.md §2), so neither does its picture.
  *
  * All four are motion values off one `useScroll`; nothing per frame touches
- * React state, and the bar is a scaleX rather than a width so no frame
- * triggers layout. Under `prefers-reduced-motion` the figure renders its end
- * state — wall lit, bar measured, level printed — and the scanner, whose end
- * state is "gone into the wall", is simply not drawn.
+ * React state, and nothing animates a size — the row arrives on opacity and
+ * a translate. Under `prefers-reduced-motion` the figure renders its end
+ * state — wall lit, row in place, observation printed — and the scanner,
+ * whose end state is "gone into the wall", stays at opacity 0.
  *
  * Not wrapped in a <Reveal>, and with no entrance of its own: the beats are
  * measured against this element's position, and an ancestor still animating
@@ -88,14 +94,18 @@ export function PrivacyFigure({ children }: { children: ReactNode }) {
     clamp: true,
   });
 
-  /* Beats 3 and 4 — what crosses. The bar scales within a track already cut
-     to its true length (see <MeasuredBar>), so 1 here means 88%, not full. */
-  const barScale = useTransform(scrollYProgress, [0.5, 0.95], [0, 1], {
+  /* Beats 3 and 4 — what crosses. The row slides in from the wall's side,
+     then the observation line resolves. A translate and an opacity only. */
+  const rowIn = useTransform(scrollYProgress, [0.5, 0.8], [0, 1], {
     clamp: true,
   });
-  const levelOpacity = useTransform(scrollYProgress, [0.72, 0.92], [0, 1], {
-    clamp: true,
-  });
+  const rowX = useTransform(rowIn, [0, 1], [-14, 0]);
+  const observationOpacity = useTransform(
+    scrollYProgress,
+    [0.72, 0.92],
+    [0, 1],
+    { clamp: true },
+  );
 
   return (
     <figure ref={ref}>
@@ -109,8 +119,9 @@ export function PrivacyFigure({ children }: { children: ReactNode }) {
           <DiaryScreen scanX={scanX} scanOpacity={reduce ? 0 : scanOpacity} />
           <Wall glow={reduce ? 1 : wallGlow} />
           <ReportScreen
-            barScale={reduce ? 1 : barScale}
-            levelOpacity={reduce ? 1 : levelOpacity}
+            rowOpacity={reduce ? 1 : rowIn}
+            rowX={reduce ? 0 : rowX}
+            observationOpacity={reduce ? 1 : observationOpacity}
           />
         </div>
       </Frame>
@@ -248,112 +259,79 @@ function Wall({ glow }: { glow: MotionValue<number> | number }) {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The report, and nothing underneath it.
+ * The teacher's screen, and nothing underneath it.
  *
- * Four rows of a class, a roll number, a length and a level — the whole of
- * what a teacher receives. The first row is the entry on the other side of
- * the wall, and it is the one that resolves as the reader scrolls: the bar
- * measures out, then the level prints. The other three are already there,
- * because the figure has to state its claim at rest too.
+ * Three rows of a class, a roll number, a time, a surface, an observation and
+ * its basis — the whole of what a teacher receives. The first row is the
+ * entry on the other side of the wall, and it is the one that arrives as the
+ * reader scrolls. The other two are already there, because the figure has to
+ * state its claim at rest too.
  *
- * The level is printed, not merely coloured. Red-amber-green is the worst
- * possible pairing for colour blindness, so the label is what actually
- * carries the meaning — WCAG 1.4.1.
+ * Newest first, and the title bar says so. No row carries a level, a score or
+ * a bar, and the order is time rather than severity: the display policy
+ * removed the 高/中/低 band, and a list ranked by severity would put it back
+ * through the sort.
  */
 function ReportScreen({
-  barScale,
-  levelOpacity,
+  rowOpacity,
+  rowX,
+  observationOpacity,
 }: {
-  barScale: MotionValue<number> | number;
-  levelOpacity: MotionValue<number> | number;
+  rowOpacity: MotionValue<number> | number;
+  rowX: MotionValue<number> | number;
+  observationOpacity: MotionValue<number> | number;
 }) {
   return (
     <Screen
       title={REPORT_TITLE}
-      trailing={<Chip tone="risk">{REPORT_BADGE}</Chip>}
+      trailing={<Chip>{REPORT_SORT}</Chip>}
       bodyClassName="flex flex-col justify-center divide-y divide-line px-3.5 py-1"
       footer={
-        <span className="flex items-center gap-1.5 text-[0.66rem] text-muted sm:text-[0.7rem]">
-          <Icon name="lock" size={13} className="shrink-0" />
+        <span className="flex items-start gap-1.5 text-[0.66rem] leading-snug text-muted sm:text-[0.7rem]">
+          <Icon name="lock" size={13} className="mt-px shrink-0" />
           {TEACHER_BAR.note}
         </span>
       }
     >
       {ROWS.map((row, i) => {
-        const line = (
-          <Row
+        const first = i === 0;
+        return (
+          /*
+            The first row is where the signal thread arrives from the
+            analysis in 仕組み, and data-thread is how the page's thread layer
+            finds it. The row is its own element rather than a kit <Row>,
+            because what it holds is three lines — who and when, what was
+            observed, and on what basis — not one line with a value at the end.
+          */
+          <motion.div
             key={`${row.klass}${row.no}`}
-            klass={row.klass}
-            no={row.no}
+            data-thread={first ? "report" : undefined}
             className="py-2.5"
-            trailing={
-              /* `row.text` is a whole class name written out in sample.ts —
-                 Tailwind reads it there, so nothing is assembled here. */
-              <motion.span
-                className={`w-4 shrink-0 text-right text-[0.75rem] font-medium ${row.text}`}
-                style={{ opacity: i === 0 ? levelOpacity : 1 }}
-              >
-                {row.level}
-              </motion.span>
-            }
+            style={first ? { opacity: rowOpacity, x: rowX } : undefined}
           >
-            {i === 0 ? (
-              <MeasuredBar pct={row.width} scale={barScale} />
-            ) : (
-              <Bar pct={row.width} tone={row.tone} />
-            )}
-          </Row>
-        );
-
-        /*
-          The first row is where the signal thread arrives from the analysis
-          in 仕組み, and data-thread is how the page's thread layer finds it.
-          A wrapper rather than a prop on <Row>, so the kit's one component
-          with no room for a name gains no room for anything else either;
-          divide-y still rules between it and the row below.
-        */
-        return i === 0 ? (
-          <div key={`${row.klass}${row.no}`} data-thread="report">
-            {line}
-          </div>
-        ) : (
-          line
+            <p className="flex min-w-0 items-baseline gap-2 text-[0.7rem] tabular-nums text-muted">
+              <span className="shrink-0 text-ink">
+                {row.klass} {row.no}
+              </span>
+              <span className="truncate">
+                {row.at} · {row.surface}
+              </span>
+            </p>
+            {/*
+              The observation is the row. It says which category of expression
+              was matched — not how the student is doing, and not a line
+              quoted from what they wrote.
+            */}
+            <motion.p
+              className="mt-1 text-[0.75rem] leading-snug text-ink lg:text-[0.8rem]"
+              style={first ? { opacity: observationOpacity } : undefined}
+            >
+              観測: {row.observation}
+            </motion.p>
+            <p className="mt-0.5 text-[0.66rem] text-muted">└ {BASIS}</p>
+          </motion.div>
         );
       })}
     </Screen>
-  );
-}
-
-/**
- * The kit's <Bar>, with its fill able to measure out.
- *
- * Three layers rather than two. The middle span is cut to the true length as
- * a static style, and the fill inside it scales from 0 to 1 of *that* — so
- * the animation is a scaleX and never a width, and the end state cannot
- * overshoot. It also means the bar is honest without JavaScript: the
- * layout's <noscript> rule resets every inline transform, which would turn a
- * scaleX on the track itself into a full bar, but here it can only ever fill
- * the 88% the row actually says.
- */
-function MeasuredBar({
-  pct,
-  scale,
-}: {
-  /** A CSS length, e.g. "88%". Set as a style, never animated. */
-  pct: string;
-  scale: MotionValue<number> | number;
-}) {
-  return (
-    <span className="block h-1.5 w-full overflow-hidden rounded-full bg-inset">
-      <span
-        className="block h-full overflow-hidden rounded-full"
-        style={{ width: pct }}
-      >
-        <motion.span
-          className="block h-full w-full origin-left rounded-full bg-risk-high"
-          style={{ scaleX: scale }}
-        />
-      </span>
-    </span>
   );
 }

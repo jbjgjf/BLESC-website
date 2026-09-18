@@ -22,4 +22,4 @@
 export { Frame } from "./Frame";
 export { Screen } from "./Screen";
 export { Caption } from "./Caption";
-export { Bar, Chip, Composer, Row, TextLine } from "./parts";
+export { Chip, Composer, Row, TextLine } from "./parts";

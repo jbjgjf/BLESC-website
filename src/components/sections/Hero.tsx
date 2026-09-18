@@ -78,9 +78,16 @@ export function Hero() {
       <Container className="relative z-10 flex min-h-[72svh] flex-col justify-center pt-28 pb-4 md:min-h-[76svh]">
         <div className="mx-auto max-w-4xl text-center">
           {/*
-            The serif is the whole point of the hero: it is the one place on
-            the page where the type, rather than a picture of the product,
-            carries the weight.
+            Helvetica Neue Light at display size: the one place on the page
+            where the type, rather than a picture of the product, carries the
+            weight.
+
+            The Japanese line is inside the h1, not in a <p> after it.
+            Visually it keeps its own size, weight and colour, but the page's
+            most weighted heading then states what Blesc does in the language
+            its visitors search in, instead of an English couplet no one
+            queries for. It is a span so the heading still contains only
+            phrasing content.
           */}
           <h1 className="type-hero text-ink">
             {HEADLINE_LINES.map((line, i) => (
@@ -94,13 +101,15 @@ export function Hero() {
                 />
               </span>
             ))}
-          </h1>
 
-          <IntroFade delay={AFTER_HEADLINE}>
-            <p className="mt-7 text-lg text-muted md:text-xl">
+            <IntroFade
+              as="span"
+              delay={AFTER_HEADLINE}
+              className="mt-7 block text-lg font-normal leading-normal tracking-normal text-muted md:text-xl"
+            >
               生徒のSOSを可視化する。
-            </p>
-          </IntroFade>
+            </IntroFade>
+          </h1>
 
           <IntroFade delay={AFTER_HEADLINE + 0.08}>
             <div className="mt-11 flex flex-col gap-4 sm:flex-row sm:justify-center">

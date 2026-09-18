@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { Flower } from "@/components/Flower";
 import { Logo } from "@/components/Logo";
 import { Icon } from "@/components/ui";
+import type { IconName } from "@/lib/icons";
 
 /** The three openers the app offers, as they appear in the product. */
 const PROMPTS = [
@@ -13,7 +14,7 @@ const PROMPTS = [
   "考えを整理したい",
 ];
 
-const TABS = [
+const TABS: { icon: IconName; label: string; active?: boolean }[] = [
   { icon: "home", label: "今日" },
   { icon: "edit_note", label: "日記" },
   { icon: "chat_bubble", label: "相談", active: true },

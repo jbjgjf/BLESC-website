@@ -3,24 +3,6 @@ import { DOMAINS, TRACE } from "@/components/product/ontology";
 import { Reveal } from "@/components/Reveal";
 import { SectionTitle, Section } from "@/components/ui";
 
-/**
- * Who builds which half of the system.
- *
- * Set as text, never as logos. These are collaborations the company has
- * stated in its own words, not sponsors who supplied artwork, and a row of
- * marks would read as an endorsement wall — which is a claim nobody made.
- *
- * The two paragraphs this replaces said the same two things at four times
- * the length; a credit pair is the shape the information actually has.
- */
-const CREDITS = [
-  { role: "モデル開発", body: "京都大学の臨床心理学研究との協働" },
-  {
-    role: "プラットフォーム基盤",
-    body: "株式会社Hataproとの連携による、学校環境の要件に耐えうるスケーラブルな設計",
-  },
-] as const;
-
 export function Technology() {
   return (
     <Section id="technology">
@@ -54,7 +36,7 @@ export function Technology() {
             would break the sentence a third of the way into its own line.
           */}
           <p className="measure-jp mt-5 text-[1rem] text-muted">
-            心理の因果連鎖を医学的研究にもとづいて構造化したオントロジー知識グラフで、臨床心理士の思考プロセスを機械可読な形で再現しています。
+            心理のつながりを、WHOやNICEなど公開されている医学的ガイドラインをもとに構造化したオントロジー知識グラフをAIに実装しています。
           </p>
 
           {/*
@@ -107,19 +89,23 @@ export function Technology() {
             ))}
           </ol>
 
-          <dl className="mt-8 space-y-5 border-t border-line pt-7">
-            {CREDITS.map(({ role, body }) => (
-              // A div around each pair, which <dl> permits as a grouping
-              // wrapper: at this measure the role sits above its line rather
-              // than beside it, so the two have to share a block.
-              <div key={role}>
-                <dt className="text-[0.85rem] font-medium text-ink">{role}</dt>
-                <dd className="measure-jp mt-1 text-[0.9rem] text-muted">
-                  {body}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          {/*
+            What this section may claim is bounded by docs/claims.md, and the
+            bound is written rather than remembered: a named institution goes
+            on this page only once its permission is on file. 京都大学 and
+            株式会社Hatapro were both named here as settled collaborations
+            while the company's own alignment record still had the
+            collaborator line blank — an unagreed use of a university's name
+            in copy aimed at schools and boards of education. They come back
+            the day the permission does.
+
+            What replaces them is the part that is checkable today: curated
+            subgraphs, every node and relation carrying a source, and the ones
+            that carry none saying so.
+          */}
+          <p className="measure-jp mt-8 border-t border-line pt-7 text-[0.9rem] text-muted">
+            グラフは社内でキュレーションしています。ノードと関係のひとつずつに出典を紐づけ、出典を示せないものは専門家の判断であることを明記しています。現在は睡眠・社会的ひきこもり・学業上の負荷の3領域を整備しており、臨床の専門家によるレビューを準備しています。
+          </p>
         </Reveal>
 
         {/*

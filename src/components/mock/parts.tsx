@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Icon } from "@/components/ui";
+import type { IconName } from "@/lib/icons";
 
 /* -------------------------------------------------------------------------- */
 /* Row                                                                        */
@@ -26,9 +27,9 @@ export function Row({
   klass: string;
   /** e.g. #14 */
   no: string;
-  /** The middle of the row — usually a <Bar>. Takes the spare width. */
+  /** The middle of the row — an observation, say. Takes the spare width. */
   children?: ReactNode;
-  /** The right end — usually a <Chip> or a printed level. */
+  /** The right end — a <Chip>, a time. */
   trailing?: ReactNode;
   className?: string;
 }) {
@@ -48,19 +49,17 @@ export function Row({
 /* -------------------------------------------------------------------------- */
 
 /**
- * A small filled pill: a count in a title bar, a state, a risk level.
+ * A small filled pill: a count or a state in a title bar.
  *
- * Three tones, and deliberately no 中/低 tone. A level chip is coloured text
- * on 15% of its own colour, and only --risk-high has a darkened text variant
- * (--risk-high-text) for that tint — #b45309 over its own light tint measures
- * 4.08:1, under AA. Mid and low levels are printed as plain coloured text on
- * the window surface instead, where they hold 5.0:1.
+ * Two tones and deliberately no third. There was a risk tone, for a level
+ * chip on the teacher's report; the product draws no levels (docs/claims.md
+ * §2), so the kit no longer has a way to draw one.
  */
 export function Chip({
   tone = "neutral",
   children,
 }: {
-  tone?: "neutral" | "accent" | "risk";
+  tone?: "neutral" | "accent";
   children: ReactNode;
 }) {
   return (
@@ -75,50 +74,6 @@ export function Chip({
 const CHIP_TONES = {
   neutral: "bg-inset text-muted",
   accent: "bg-accent/10 text-mark-1",
-  risk: "bg-risk-high/15 text-risk-high-text",
-} as const;
-
-/* -------------------------------------------------------------------------- */
-/* Bar                                                                        */
-/* -------------------------------------------------------------------------- */
-
-/**
- * A level, as a length in a track.
- *
- * Why it exists: the teacher's report is a list of rows where the only
- * quantity is "how much", and a bar is how software says that. The fill is
- * always accompanied by a printed level — red/amber/green is the worst
- * possible pairing for colour blindness, so colour is never the only signal
- * (WCAG 1.4.1). Every fill tone clears 3:1 against the window surface in
- * both themes.
- */
-export function Bar({
-  pct,
-  tone = "mark-1",
-  className = "",
-}: {
-  /** A CSS length, e.g. "88%". Set as a style, never animated as a width. */
-  pct: string;
-  tone?: "mark-1" | "risk-high" | "risk-mid" | "risk-low";
-  className?: string;
-}) {
-  return (
-    <span
-      className={`block h-1.5 w-full overflow-hidden rounded-full bg-inset ${className}`}
-    >
-      <span
-        className={`block h-full rounded-full ${BAR_TONES[tone]}`}
-        style={{ width: pct }}
-      />
-    </span>
-  );
-}
-
-const BAR_TONES = {
-  "mark-1": "bg-mark-1",
-  "risk-high": "bg-risk-high",
-  "risk-mid": "bg-risk-mid",
-  "risk-low": "bg-risk-low",
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -167,7 +122,7 @@ export function Composer({
 }: {
   note: string;
   action: string;
-  icon?: string;
+  icon?: IconName;
 }) {
   return (
     <>
