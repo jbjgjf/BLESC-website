@@ -20,12 +20,13 @@ import { DARK_PALETTE, LIGHT_PALETTE } from "@/lib/sky";
  * The pinned stretch, in fractions of its own scroll. The line grows first,
  * holds, and then the flower above it takes over: it drifts to the centre of
  * the screen, grows and turns once, and the statement fades as the petals
- * pass over it. By the end the flower's blue fills the screen, and the pin
- * releases straight into the footer, which begins in that same blue.
+ * pass over it. The flower's blue fills the screen, and then the whole stage
+ * fades away over the footer, which has been sitting underneath it the
+ * whole time — so the pin ends on the footer, with nothing left to scroll.
  */
-const LINE = [0, 0.2] as const;
-const DIVE = [0.34, 0.94] as const;
-const LINE_OUT = [0.44, 0.58] as const;
+const LINE = [0, 0.18] as const;
+const DIVE = [0.3, 0.82] as const;
+const LINE_OUT = [0.4, 0.52] as const;
 /*
  * The flower stops growing at 2.6 viewport diagonals — by then every petal
  * is off the screen and only the notches between them still show the sky —
@@ -33,7 +34,13 @@ const LINE_OUT = [0.44, 0.58] as const;
  * reads as the flower finishing its opening. The notch arithmetic alone would
  * ask for about eight diagonals, a shape over 13,000px across on a laptop.
  */
-const COVER = [0.78, 0.94] as const;
+const COVER = [0.68, 0.82] as const;
+/*
+ * The blue dissolving into the footer beneath. It ends a little before the
+ * pin does, so the last stretch of scroll is the footer, uncovered and
+ * still, rather than the tail of a fade.
+ */
+const REVEAL = [0.84, 0.96] as const;
 const MAX_DIAGONALS = 2.6;
 /** Growth follows a power curve, so the rush comes at the end of the dive. */
 const DIVE_POWER = 2.3;
@@ -53,9 +60,10 @@ const window01 = (p: number, [from, to]: readonly [number, number]) =>
  *
  * Then the flower is the transition. The band pins; the line grows to fill
  * the width and holds; and the flower drifts to the centre of the screen,
- * turns once and grows until its blue is all there is. The pin releases
- * into the footer, which begins in that same blue and fades to the page
- * ground as the invitation rises out of it (see Footer).
+ * turns once and grows until its blue is all there is — and then the blue
+ * fades away, and the footer is already there underneath it: the footer is
+ * pulled up under this section's last pinned screen (see Footer), so the
+ * pin ends on it and there is nothing left to scroll.
  *
  * Reduced motion, or a page without JavaScript, gets one still screen: the
  * sky, the flower and the line at rest, and a footer that simply follows.
@@ -118,6 +126,9 @@ export function Philosophy() {
    */
   const lineOpacity = useTransform(() => 1 - window01(scrollYProgress.get(), LINE_OUT));
   const cover = useTransform(() => window01(scrollYProgress.get(), COVER));
+  const stageOpacity = useTransform(
+    () => 1 - window01(scrollYProgress.get(), REVEAL),
+  );
 
   /*
    * The dive's geometry, from the viewport: how far the flower has to move
@@ -201,7 +212,14 @@ export function Philosophy() {
      * overflow-x-clip, never overflow-hidden: hidden on any ancestor is
      * what switches `position: sticky` off.
      */
-    <section className="relative overflow-x-clip bg-canvas">
+    /*
+     * z-10, and no background of its own. The footer is pulled up under this
+     * section's last pinned screen (see Footer), so the section has to paint
+     * above it, and has to be see-through wherever the stage is not — the
+     * stage paints its own sky, and it covers the whole section at every
+     * scroll position, pinned or not.
+     */
+    <section className="relative z-10 overflow-x-clip">
       {/*
         The track is only tall — and so the stage only pins — when motion is
         allowed and a script is running to drive it, decided in CSS so the
@@ -225,9 +243,15 @@ export function Philosophy() {
           height the viewport grows to, and overflow-hidden clips the rest
           while the toolbar is still showing.
         */}
-        <div
+        {/*
+          pointer-events-none: nothing in the stage is interactive, and at
+          the end of the pin it is a transparent layer over the footer's
+          buttons, which have to take the click.
+        */}
+        <motion.div
           ref={stage}
-          className="sticky top-0 flex min-h-[72svh] items-center justify-center overflow-hidden px-6 md:h-[100svh] md:px-10 motion-safe:js:h-[100lvh]"
+          className="pointer-events-none sticky top-0 flex min-h-[72svh] items-center justify-center overflow-hidden px-6 md:h-[100svh] md:px-10 motion-safe:js:h-[100lvh]"
+          style={{ opacity: reduce ? 1 : stageOpacity }}
         >
           {/*
             The sky, composed exactly as the hero composes it: the static
@@ -341,7 +365,7 @@ export function Philosophy() {
             className="pointer-events-none absolute inset-0 z-20 hidden bg-accent motion-safe:js:block"
             style={{ opacity: reduce ? 0 : cover }}
           />
-        </div>
+        </motion.div>
       </div>
     </section>
   );

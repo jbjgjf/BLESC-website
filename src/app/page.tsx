@@ -83,8 +83,8 @@ export default function Home() {
       {/*
         The closing statement is the last thing in <main>, and it is also the
         way out of the page: its flower grows and turns until the screen is
-        the flower's blue, and the footer begins in that blue and fades to the
-        ground as 導入について、お話ししませんか。 rises out of it (see
+        the flower's blue, and the blue then fades to leave the footer, which
+        has been sitting underneath the statement's last screen (see
         Philosophy and Footer).
       */}
       <Philosophy />

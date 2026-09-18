@@ -2,13 +2,12 @@
 
 import { FooterFlowers } from "@/components/FooterFlowers";
 import { GradientFooter } from "@/components/GradientFooter";
+import { getLenis } from "@/components/SmoothScroll";
 import { WordmarkReveal } from "@/components/WordmarkReveal";
-import { motion, useScroll, useTransform } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useRef } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { ButtonLink, Container, Icon } from "@/components/ui";
-import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 import { CONTACT_EMAIL, CTA, FOOTER_LINKS, sectionHref } from "@/lib/site";
 
 /**
@@ -56,90 +55,63 @@ const QUIET_LINK =
 export function Footer() {
   const { theme } = useTheme();
   const onHome = usePathname() === "/";
-  const reduce = usePrefersReducedMotion();
-  const content = useRef<HTMLDivElement>(null);
-
   /*
-   * The invitation rising out of the flower's blue. On the home page the
-   * closing statement's flower grows until the screen is its blue, and the
-   * pin releases straight into this footer; the footer begins in that blue
-   * and fades to the page ground, and its content fades up as it arrives —
-   * from the footer's top entering the viewport to it reaching the upper
-   * third. A plain number when there is no dive to come out of: on
-   * /contact, under reduced motion, and (via the noscript rule) without JS.
+   * On the home page the footer is already there when the closing
+   * statement's flower finishes: it is pulled up by one pinned screen and
+   * sits underneath the statement's last frame, and that frame — the
+   * flower's blue — fades away to leave it in place (see Philosophy). The
+   * pull-up is CSS-gated like the pin itself (motion allowed and a script
+   * running), so /contact, reduced motion and no-JS get a footer that simply
+   * follows.
+   *
+   * The one thing CSS cannot arrange is focus. A keyboard user tabbing out
+   * of the page's last section lands on a footer button that, until the
+   * pin has run to its end, is still underneath the statement. So focus
+   * arriving in the footer from above takes the page to the end of the pin,
+   * where the footer is uncovered.
    */
-  const { scrollYProgress } = useScroll({
-    target: content,
-    offset: ["start end", "start 0.3"],
-  });
-  /*
-   * Computed in JavaScript rather than as a range mapping, which motion
-   * would hand to a native scroll timeline for opacity — and on this page
-   * those were measured running at the wrong rate (see Philosophy).
-   */
-  const rise = useTransform(() =>
-    Math.min(1, Math.max(0, (scrollYProgress.get() - 0.25) / 0.75)),
-  );
-  const riseY = useTransform(() => (1 - rise.get()) * 32);
-  const fades = onHome && !reduce;
+  const footerRef = useRef<HTMLElement>(null);
+  const onFocusIn = () => {
+    const footer = footerRef.current;
+    if (!onHome || !footer) return;
+    if (parseFloat(getComputedStyle(footer).marginTop) >= 0) return;
+    const top = footer.getBoundingClientRect().top + window.scrollY;
+    if (window.scrollY >= top - 1) return;
+    const lenis = getLenis();
+    if (lenis) lenis.scrollTo(top, { immediate: true });
+    else window.scrollTo({ top });
+  };
 
   /*
    * `relative` is the only positioning the footer gets. Nothing else — no
    * transform, filter or overflow — because the glow band inside
    * GradientFooter is position: fixed and any of those on an ancestor would
    * capture it and pin it to the footer instead of the viewport. The
-   * content block below does carry a transform (its rise), but on its own
-   * subtree: a transform captures only its own descendants, and the band
-   * is not one of them.
+   * negative margin that pulls it under the statement is only a margin.
    *
-   * No border-top on the footer: on the home page its top edge is the
-   * flower's blue, and a rule across that would cut the hand-over in two.
+   * `isolate` gives the footer a stacking context of its own, and it has to:
+   * the statement above paints at z-10 so that it covers the footer while
+   * the flower runs, and without one the Container's own z-10 in here would
+   * compete with it in the page's stacking context — and, coming later in
+   * the document, win, printing the invitation over the flower's blue before
+   * the blue had faded. isolation creates no containing block, so the glow
+   * band's position: fixed is unaffected.
+   *
+   * No border-top on the footer: on the home page it is revealed rather than
+   * scrolled to, and a rule across its top would be the first thing seen.
    */
   return (
     <GradientFooter
-      className="relative bg-canvas"
+      ref={footerRef}
+      onFocusCapture={onFocusIn}
+      className={`relative isolate bg-canvas ${onHome ? "motion-safe:js:-mt-[100lvh]" : ""}`}
       stops={theme === "light" ? LIGHT_STOPS : DARK_STOPS}
     >
       {/*
-        The flower's blue, handing over to the page ground — as its own
-        stretch of the page, above the content rather than behind it. The
-        closing statement ends with its flower filling the screen in
-        --color-primary; this lead-in starts in exactly that colour and fades
-        to the ground over most of a screen, and the invitation then rises in
-        on the plain ground below it.
-
-        Above, not behind, because the blue is #85c0ed in both themes: laid
-        under the content it took the dark build's white heading to 2.4:1 and
-        its muted links under 3:1, hid the light build's muted links under
-        4.5:1, swallowed the flower marks and the primary button, and made
-        the focus ring (mark-1, the same blue) vanish. On the ground, every
-        pair is what it is everywhere else.
-
-        Only on the home page, and only when that dive runs — motion allowed
-        and a script running — decided in CSS so the server and every
-        visitor's first paint agree. Elsewhere there is no blue to come out
-        of, and the footer simply starts.
+        The content, in a positioned block of its own, which FooterFlowers
+        sits against.
       */}
-      {onHome && (
-        <div
-          aria-hidden
-          className="pointer-events-none hidden h-[65svh] bg-linear-to-b from-accent to-canvas motion-safe:js:block"
-        />
-      )}
-
-      {/*
-        The content, in a block of its own so it can rise out of the blue as
-        one piece — opacity and a short translate, scroll-linked. Positioned,
-        so FooterFlowers sits against it. data-rise is what the layout's
-        noscript rule uses to show it at rest when no script will animate it:
-        the footer is outside <main>, which the general rule covers.
-      */}
-      <motion.div
-        ref={content}
-        data-rise
-        className="relative"
-        style={{ opacity: fades ? rise : 1, y: fades ? riseY : 0 }}
-      >
+      <div className="relative">
         {/*
           First in the block on purpose: it is a z-0 layer and the Container
           after it carries z-10, so the flowers paint above the footer's
@@ -160,7 +132,15 @@ export function Footer() {
           gutters either side of the heading a place the flowers can float,
           rather than dead space to the right of a left-aligned block.
         */}
-        <Container className="relative z-10 pt-16">
+        {/*
+          On the home page the footer is revealed with its top at the top of
+          the screen, under the fixed nav, so the invitation starts lower
+          there — far enough that the heading, the buttons and the links all
+          sit in that first screen, clear of the nav.
+        */}
+        <Container
+          className={`relative z-10 pt-16 ${onHome ? "motion-safe:js:pt-[26svh]" : ""}`}
+        >
           {/*
             導入について, folded in from the old standalone CTA section.
 
@@ -260,7 +240,7 @@ export function Footer() {
         <div className="relative z-0 mt-10 hidden md:block lg:mt-12">
           <WordmarkReveal />
         </div>
-      </motion.div>
+      </div>
     </GradientFooter>
   );
 }

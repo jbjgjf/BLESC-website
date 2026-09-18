@@ -17,7 +17,9 @@ import {
   useId,
   useRef,
   type CSSProperties,
+  type FocusEventHandler,
   type ReactNode,
+  type Ref,
 } from "react";
 
 type Stop = { offset: number; color: string };
@@ -86,6 +88,9 @@ export interface GradientFooterProps {
   stops?: Stop[];
   className?: string;
   style?: CSSProperties;
+  /** The <footer> element itself (a plain prop in React 19). */
+  ref?: Ref<HTMLElement>;
+  onFocusCapture?: FocusEventHandler<HTMLElement>;
 }
 
 export function GradientFooter({
@@ -99,6 +104,8 @@ export function GradientFooter({
   stops = BLESC_STOPS,
   className,
   style,
+  ref,
+  onFocusCapture,
 }: GradientFooterProps) {
   const uid = useId().replace(/:/g, "");
   const bandRef = useRef<HTMLDivElement>(null);
@@ -159,6 +166,8 @@ export function GradientFooter({
     // The glow is pinned to the viewport, so the footer reserves the same
     // height beneath its content for it to land in.
     <footer
+      ref={ref}
+      onFocusCapture={onFocusCapture}
       className={className}
       style={{ paddingBottom: gradientHeight, ...style }}
     >
