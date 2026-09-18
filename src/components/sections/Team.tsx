@@ -1,7 +1,7 @@
 "use client";
 
-import { useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMotionValueEvent, useScroll } from "motion/react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CircularGallery,
   type GalleryApi,
@@ -11,6 +11,7 @@ import { MemberModal } from "@/components/MemberModal";
 import { Reveal } from "@/components/Reveal";
 import { Icon, Section, SectionTitle } from "@/components/ui";
 import { initialsCard } from "@/lib/initialsCard";
+import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 
 type Member = {
   name: string;
@@ -201,7 +202,7 @@ export function Team() {
   const [shown, setShown] = useState<number | null>(null);
   const galleryRef = useRef<GalleryApi | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
 
   // Stable identity: a new array each render would tear down the WebGL scene.
   const items = useMemo<GalleryItem[]>(
@@ -218,6 +219,12 @@ export function Team() {
    * 0 with its top at the bottom edge of the viewport, 1 with its top at
    * the middle. Under reduced motion the pan is 0 at every point, so the
    * ring is simply at rest and nothing below ever sends it a nudge.
+   *
+   * The flag reads "not reduced" through hydration and the real setting on
+   * the render after, the same as every other reduced-motion branch on the
+   * page. The gallery's scene is built in the hydration pass's effects, so a
+   * reduced-motion visitor's ring can take the pan before the flag turns;
+   * the effect further down takes it straight back off.
    */
   const { scrollYProgress } = useScroll({
     target: wrapperRef,
@@ -250,17 +257,31 @@ export function Team() {
        * frame after this runs and would say 0 wherever the page was — the
        * arithmetic is the same window the offset above describes.
        */
-      const wrapper = wrapperRef.current;
-      const vh = window.innerHeight;
-      const progress = wrapper
-        ? (vh - wrapper.getBoundingClientRect().top) / (vh / 2)
-        : 1;
-      const pan = panAt(progress);
+      const pan = panAt(progressNow(wrapperRef.current));
       appliedPan.current = pan;
       if (pan !== 0) api.nudge(pan, true);
     },
     [panAt],
   );
+
+  /*
+   * When the setting changes — including the flag turning to the real value
+   * just after hydration — the ring is landed outright on the pan the new
+   * setting wants for where the page is: at rest when motion is reduced,
+   * back on its entrance turn when it is not. Outright, because easing the
+   * ring back would be the very movement the setting asks to be spared. On
+   * first mount the gallery's own effect has already run (a child's effects
+   * run before its parent's), so the difference here is zero.
+   */
+  useEffect(() => {
+    const api = galleryRef.current;
+    if (!api) return;
+    const next = panAt(progressNow(wrapperRef.current));
+    const delta = next - appliedPan.current;
+    if (delta === 0) return;
+    appliedPan.current = next;
+    api.nudge(delta, true);
+  }, [panAt]);
 
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
     const api = galleryRef.current;
@@ -377,7 +398,7 @@ export function Team() {
       />
 
       {/*
-        Only the centred person is in the visible DOM, and the other nine sit
+        Only the centred person is in the visible DOM, and the others sit
         inside a canvas a screen reader cannot reach or drag. The full roster
         stays in the markup here so every member is readable and indexable.
       */}
@@ -392,4 +413,16 @@ export function Team() {
       </ul>
     </Section>
   );
+}
+
+/**
+ * Where the roster is in its entrance window right now: 0 with its top at the
+ * bottom edge of the viewport, 1 with its top at the middle — the window the
+ * useScroll offset in Team describes, read from the element because
+ * scrollYProgress only takes its first reading on the frame after mount.
+ */
+function progressNow(wrapper: HTMLElement | null) {
+  if (!wrapper) return 1;
+  const vh = window.innerHeight;
+  return (vh - wrapper.getBoundingClientRect().top) / (vh / 2);
 }

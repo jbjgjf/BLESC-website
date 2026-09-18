@@ -3,7 +3,6 @@
 import {
   motion,
   useInView,
-  useReducedMotion,
   useScroll,
   useTransform,
 } from "motion/react";
@@ -13,6 +12,7 @@ import { usePinCapable } from "@/components/hero/usePinCapable";
 import { ShaderBackground } from "@/components/ShaderBackground";
 import { useTheme } from "@/components/ThemeProvider";
 import { WebGLFallback } from "@/components/webgl/WebGLErrorBoundary";
+import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 import { DARK_PALETTE, LIGHT_PALETTE } from "@/lib/sky";
 
 /**
@@ -24,16 +24,25 @@ import { DARK_PALETTE, LIGHT_PALETTE } from "@/lib/sky";
  * greeting-screen composition, mark above words, rather than a page
  * ornament. The heading is the only text: no subline, no photographs,
  * nothing to read but the one sentence the rest of the page was leading
- * to, and the footer's invitation follows it directly.
+ * to. The footer follows it: the sky fades to the page ground, the
+ * footer's flower dive opens on that ground, and the invitation comes
+ * after the dive.
  *
  * On a fine-pointer desktop the band pins for most of a screen while the
- * line grows from 0.7 to fill the width. A phone, a tablet or a
- * reduced-motion setting gets one screen with the line already at rest.
+ * line grows from 0.7 to fill the width. A phone, a tablet, a
+ * reduced-motion setting or a page without JavaScript gets one screen with
+ * the line already at rest.
  */
 export function Philosophy() {
   const track = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
-  const reduce = useReducedMotion();
+  /*
+   * The hydration-safe hook, not motion's: `still` picks the scale range
+   * below, so it has to read the same on the server and in the hydration
+   * pass. Both it and usePinCapable answer "moving" there, and the real
+   * values arrive on the render after.
+   */
+  const reduce = usePrefersReducedMotion();
   /*
    * The pin is a desktop gesture. On a coarse pointer the band is one
    * screen tall and never sticks, so a line that grew as it crossed the
@@ -91,14 +100,17 @@ export function Philosophy() {
     <section className="relative overflow-x-clip bg-canvas">
       {/*
         The track is only tall — and so the band only pins — for a fine
-        pointer from md when motion is allowed, and that is decided in CSS
-        rather than by a state flag so the server, the stylesheet and the
-        JS above all agree before hydration. Everywhere else the track is
-        exactly the band's height and there is nothing to stick to.
+        pointer from md when motion is allowed and a script is running to
+        grow the line, and that is decided in CSS rather than by a state
+        flag so the server, the stylesheet and the JS above all agree
+        before hydration. Everywhere else the track is exactly the band's
+        height and there is nothing to stick to; without the js: gate a
+        page with no script would scroll most of a screen past a line that
+        never moves.
       */}
       <div
         ref={track}
-        className="relative motion-safe:pointer-fine:md:h-[190svh]"
+        className="relative motion-safe:pointer-fine:md:js:h-[190svh]"
       >
         {/*
           The one place `overflow-hidden` is allowed: this is the sticky

@@ -1,8 +1,9 @@
 "use client";
 
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import type { ReactNode } from "react";
 import { useRef } from "react";
+import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 
 /**
  * Moves its children a little slower than the page.
@@ -24,7 +25,11 @@ import { useRef } from "react";
  *
  * Under reduced motion the range collapses to zero rather than the style
  * being dropped — motion keeps ownership of the transform and writes the
- * resting position, which is exactly where the element sits without JS.
+ * resting position, which is exactly where the element sits without JS. The
+ * flag is usePrefersReducedMotion rather than motion's hook because it picks
+ * the range, and so the transform written into the server HTML: it reads
+ * "not reduced" on the server and through hydration, then collapses the
+ * range on the render straight after.
  */
 export function Drift({
   children,
@@ -37,7 +42,7 @@ export function Drift({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: ref,

@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/*
+ * `js:` — applies once the pre-paint script in lib/theme.ts has run, i.e.
+ * whenever JavaScript is on. Used to give the pinned, scroll-driven stages
+ * their extra height only when something will drive them; without a script
+ * they are one still screen instead of several screens of a picture that
+ * never changes.
+ */
+@custom-variant js (&:where([data-js], [data-js] *));
+
 /* ---------------------------------------------------------------------------
    Design tokens — dark. The light palette is inverted about its own axis:
    the warm off-white becomes the text, the near-navy becomes the ground.
@@ -16,8 +25,8 @@
   /*
    * Secondary text. Inverting to a dark ground cost this a lot of apparent
    * weight — light type on dark needs more separation than the same pair
-   * reversed. Raised from #868f9a (6.0:1) to 8.8:1 on the page ground and
-   * 8.0:1 on a raised card.
+   * reversed. Raised from #868f9a (6.0:1) to 12.1:1 on the page ground and
+   * 11.1:1 on a raised card.
    */
   --color-text-muted: #c3ccd8;
 

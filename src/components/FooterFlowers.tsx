@@ -3,12 +3,12 @@
 import {
   motion,
   useInView,
-  useReducedMotion,
   useScroll,
   useTransform,
 } from "motion/react";
 import { useEffect, useRef } from "react";
 import { FloatingFlower } from "@/components/flourish/FloatingFlower";
+import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 
 /*
  * The brand flower, floating at either side of the footer's invitation.
@@ -69,7 +69,7 @@ import { FloatingFlower } from "@/components/flourish/FloatingFlower";
 export function FooterFlowers() {
   const layerRef = useRef<HTMLDivElement>(null);
   const footerRef = useRef<HTMLElement | null>(null);
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
 
   /*
    * The scroll window is the footer's, not this layer's: the drift should
@@ -96,6 +96,9 @@ export function FooterFlowers() {
    * beside. Under reduced motion the range collapses to zero rather than the
    * style prop being dropped — handing motion `undefined` would leave the
    * server-rendered translate sitting in the style attribute for good. The
+   * flag is usePrefersReducedMotion because it picks the range and the
+   * will-change, both of which are rendered: it reads "not reduced" on the
+   * server and through hydration, and collapses the range just after. The
    * breathing of the individual marks is FloatingFlower's own and it handles
    * reduced motion itself.
    */

@@ -4,12 +4,12 @@ import {
   motion,
   useInView,
   useMotionValue,
-  useReducedMotion,
   useScroll,
   useTransform,
 } from "motion/react";
 import Image from "next/image";
 import { useLayoutEffect, useRef } from "react";
+import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 
 /*
  * The brand flower's outline, as drawn in public/logo/flower.svg and inlined
@@ -111,7 +111,8 @@ const FLOWER_MASK = `url("data:image/svg+xml,${MASK_SVG.replace(/</g, "%3C")
  * a CSS mask-image whose mask-size is driven by scroll on an eased curve,
  * the content scaling gently underneath — with the shape being the brand
  * flower and the window spinning as it opens. The dive pins on every
- * pointer, phones included; only reduced motion gets a single still screen.
+ * pointer, phones included; only reduced motion, or a page with no script
+ * to drive it, gets a single still screen.
  *
  * Wordless and decorative on purpose: the stage is aria-hidden, the
  * photograph has an empty alt, and the heading that carries the footer's
@@ -119,8 +120,13 @@ const FLOWER_MASK = `url("data:image/svg+xml,${MASK_SVG.replace(/</g, "%3C")
  */
 export function FlowerDive() {
   const track = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-  const still = reduce === true;
+  /*
+   * The hydration-safe hook, not motion's: `still` picks the ranges and the
+   * mask size below, so it has to be false on the server and in the
+   * hydration pass alike, and only then turn true for a visitor who asked
+   * for less motion.
+   */
+  const still = usePrefersReducedMotion();
 
   /*
    * The layer promise is made while the track is near the viewport and
@@ -155,6 +161,42 @@ export function FlowerDive() {
   const startPx = useMotionValue(0);
   const growPx = useMotionValue(0);
 
+  /*
+   * The window's size: start + progress^2.3 × growth, as a CSS string.
+   *
+   * Every input is read before any branch. useTransform subscribes only to
+   * the motion values whose .get() ran during the render's collection pass,
+   * so an early return ahead of scrollYProgress.get() would leave the
+   * scroll unsubscribed until React happened to re-render the stage.
+   *
+   * Under reduced motion, and before the viewport has been measured, the
+   * value is the resting size. The server and the hydration pass are always
+   * the second case, so every visitor hydrates onto the HTML the server
+   * sent, and a reduced-motion visitor simply stays at that size afterwards.
+   *
+   * mask-size is not a compositor property: each change repaints the mask
+   * for the visible tiles. That is the cost the reference accepts, and it
+   * is proportional to the viewport, not to the mask's size, since the
+   * SVG is drawn as vectors.
+   */
+  const maskSize = useTransform(() => {
+    const progress = scrollYProgress.get();
+    const start = startPx.get();
+    const grow = growPx.get();
+    if (still || start === 0) return `${REST_SIZE} ${REST_SIZE}`;
+    const size = Math.round(start + Math.pow(progress, DIVE_POWER) * grow);
+    return `${size}px ${size}px`;
+  });
+
+  /*
+   * Measured after maskSize is declared, not before, and the order is the
+   * point. useTransform subscribes to startPx and growPx in a layout effect
+   * of its own, and layout effects run in the order they are declared. A
+   * measurement declared above it would set both values before anyone was
+   * listening, the change would go unheard, and the window would sit at the
+   * resting size until something happened to re-render the stage. Declared
+   * here, the subscription exists by the time the first set() fires.
+   */
   useLayoutEffect(() => {
     const measure = () => {
       const w = window.innerWidth;
@@ -177,33 +219,6 @@ export function FlowerDive() {
     window.addEventListener("resize", measure, { passive: true });
     return () => window.removeEventListener("resize", measure);
   }, [startPx, growPx]);
-
-  /*
-   * The window's size: start + progress^2.3 × growth, as a CSS string.
-   *
-   * Every input is read before any branch. useTransform subscribes only to
-   * the motion values whose .get() ran during the render's collection pass,
-   * so an early return ahead of scrollYProgress.get() would leave the
-   * scroll unsubscribed until React happened to re-render the stage.
-   *
-   * Under reduced motion, and before the viewport has been measured, the
-   * value is the resting size. Both are the same string, so the HTML the
-   * server sends is what a reduced-motion visitor's first render produces
-   * too, and there is no hydration mismatch to warn about.
-   *
-   * mask-size is not a compositor property: each change repaints the mask
-   * for the visible tiles. That is the cost the reference accepts, and it
-   * is proportional to the viewport, not to the mask's size, since the
-   * SVG is drawn as vectors.
-   */
-  const maskSize = useTransform(() => {
-    const progress = scrollYProgress.get();
-    const start = startPx.get();
-    const grow = growPx.get();
-    if (still || start === 0) return `${REST_SIZE} ${REST_SIZE}`;
-    const size = Math.round(start + Math.pow(progress, DIVE_POWER) * grow);
-    return `${size}px ${size}px`;
-  });
 
   /*
    * One full turn over the dive for the window, and the exact opposite for
@@ -233,22 +248,28 @@ export function FlowerDive() {
    * then the unmasked photograph comes up over the last sixth of the dive.
    * Under reduced motion it stays down, so the still screen is the flower
    * window and nothing else.
+   *
+   * Unlike the ranges above, this one does not collapse: the reduced branch
+   * swaps the style value itself (see the dissolve layer below). Opacity is
+   * a property motion can hand to a native scroll timeline, and where it
+   * does, the keyframes are copied once when the value is bound to the
+   * element — at hydration, when `still` is always false. A range collapsed
+   * after that would never reach the running animation, while swapping the
+   * motion value for a plain 0 unbinds it and cancels the animation.
    */
-  const dissolve = useTransform(
-    scrollYProgress,
-    [DISSOLVE_FROM, 1],
-    still ? [0, 0] : [0, 1],
-  );
+  const dissolve = useTransform(scrollYProgress, [DISSOLVE_FROM, 1], [0, 1]);
 
   return (
     /*
-     * The track is 260svh only when motion is allowed, decided in CSS so
-     * the server, the stylesheet and the JS above agree before hydration.
-     * Under reduced motion it is exactly the stage's height, so there is
-     * nothing to stick to and the dive is one still screen. No overflow on
-     * the track: hidden on any ancestor is what switches sticky off.
+     * The track is 260svh only when motion is allowed and a script is
+     * running to drive it, decided in CSS so the server, the stylesheet and
+     * the JS above agree before hydration. Under reduced motion, or with
+     * JavaScript off, it is exactly the stage's height, so there is nothing
+     * to stick to and the dive is one still screen — rather than two and a
+     * half screens of a flower that never opens. No overflow on the track:
+     * hidden on any ancestor is what switches sticky off.
      */
-    <div ref={track} className="relative motion-safe:h-[260svh]">
+    <div ref={track} className="relative motion-safe:js:h-[260svh]">
       {/*
         The one place overflow-hidden is allowed: this is the sticky element
         itself, not an ancestor of one, and it is what keeps the oversized
@@ -322,18 +343,25 @@ export function FlowerDive() {
           The same photograph again, unmasked and upright, fading in over
           the masked one at the end of the dive — see MAX_DIAGONALS. Its
           scale follows the masked copy's so the two never slide against
-          each other during the fade. Behind the foot band below, so the
+          each other during the fade. It declares the same sizes as the
+          masked copy although its box is only 100vw: with a different
+          hint the browser may pick a second width from the srcset and
+          download the same photograph twice. Behind the foot band below, so the
           hand-off to the footer still dissolves into the page ground.
         */}
         <motion.div
           className="absolute inset-0"
-          style={{ opacity: dissolve, scale, willChange: moving ? "opacity" : undefined }}
+          style={{
+            opacity: still ? 0 : dissolve,
+            scale,
+            willChange: moving ? "opacity" : undefined,
+          }}
         >
           <Image
             src="/photos/philosophy.png"
             alt=""
             fill
-            sizes="100vw"
+            sizes="120vw"
             className="object-cover"
           />
         </motion.div>

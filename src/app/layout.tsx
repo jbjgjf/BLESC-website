@@ -181,6 +181,7 @@ export default function RootLayout({
         <noscript>
           <style>{`
             main [style], header [style] { opacity: 1 !important; filter: none !important; transform: none !important; }
+            footer svg text { stroke-dashoffset: 0 !important; }
           `}</style>
         </noscript>
       </head>

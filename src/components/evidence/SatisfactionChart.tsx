@@ -23,17 +23,25 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
  *
  * The bars grow from the left as the panel arrives — scaleX on a fixed
  * width, so no frame animates a width — staggered so the eye reads down the
- * list to Japan. Reduced motion draws them at full length.
+ * list to Japan. Reduced motion puts them at full length the moment the
+ * panel arrives, with no growth and no stagger.
+ *
+ * The hidden state is scaleX 0 either way and only the transition differs.
+ * The hidden state is written into the server HTML; if it depended on the
+ * setting, the server (which cannot know it) and a reduced-motion visitor's
+ * hydration pass would disagree. A transition is read when the animation
+ * starts, which is after hydration, so motion's useReducedMotion is the right
+ * flag for it.
  */
 const MAX = 100;
 
-const barVariants = (reduce: boolean): Variants =>
-  reduce
-    ? { hidden: { scaleX: 1 }, show: { scaleX: 1 } }
-    : {
-        hidden: { scaleX: 0 },
-        show: { scaleX: 1, transition: { duration: 0.8, ease: EXPO_OUT } },
-      };
+const barVariants = (reduce: boolean): Variants => ({
+  hidden: { scaleX: 0 },
+  show: {
+    scaleX: 1,
+    transition: reduce ? { duration: 0 } : { duration: 0.8, ease: EXPO_OUT },
+  },
+});
 
 export function SatisfactionChart() {
   const reduce = useReducedMotion() ?? false;

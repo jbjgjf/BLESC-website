@@ -41,7 +41,7 @@ const LIGHT_STOPS = [
  * the mail address — so that row reads as a single line of type rather than
  * as two columns with headings of their own.
  *
- * muted holds 6.25:1 on the light ground and 8.8:1 on the dark one, so the
+ * muted holds 6.25:1 on the light ground and 12.1:1 on the dark one, so the
  * resting state already passes AA; hover only raises it to ink.
  *
  * Tailwind v4 wraps `hover:` in `@media (hover: hover)` on its own. The

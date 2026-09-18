@@ -1,8 +1,9 @@
 "use client";
 
-import { motion, useInView, useReducedMotion } from "motion/react";
+import { motion, useInView } from "motion/react";
 import { useRef } from "react";
 import { Flower } from "@/components/Flower";
+import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 
 /**
  * The brand flower, breathing.
@@ -16,7 +17,11 @@ import { Flower } from "@/components/Flower";
  * The loop only runs while the flower is on screen. A repeat: Infinity
  * animation keeps a compositor layer busy wherever it is, and there can be
  * half a dozen of these on one page. Under reduced motion the mark is simply
- * drawn at rest.
+ * drawn at rest. The flag is usePrefersReducedMotion, not motion's hook,
+ * because it decides the `animate` target and so what is rendered: it agrees
+ * with the server through hydration, and the loop cannot start before it has
+ * its real value, since the in-view check that also gates it only answers
+ * after hydration.
  *
  * No halo. A blurred copy behind the mark was tried and read as a glow
  * around a logo rather than as depth; the flower is a flat mark in the
@@ -42,7 +47,7 @@ export function FloatingFlower({
   delay?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const inView = useInView(ref, { amount: 0.1 });
   const breathes = inView && !reduce;
   const amp = Math.max(4, Math.round(size / 10));

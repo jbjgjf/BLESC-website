@@ -1,9 +1,10 @@
 "use client";
 
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import type { ReactNode } from "react";
 import { useRef } from "react";
 import { usePinCapable } from "@/components/hero/usePinCapable";
+import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 
 /*
  * The path, as five stops along the span the wash is given — the same
@@ -49,7 +50,13 @@ const REST_Y = "14%";
  */
 export function ScrollWash({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
+  /*
+   * Not motion's useReducedMotion: `still` picks the ranges and the
+   * will-change below, so it has to read the same on the server and in the
+   * hydration pass. This one does, and flips to the visitor's setting on the
+   * render straight after.
+   */
+  const reduce = usePrefersReducedMotion();
   /*
    * Travelling is for pointer-driven screens, for the reason ScrollFlower
    * gives: on a phone the span is several screens long and the journey
@@ -81,11 +88,16 @@ export function ScrollWash({ children }: { children: ReactNode }) {
    * ellipse cannot reach above the first section or below the last one and
    * wash over a neighbour it would paint on top of.
    */
-  const fade = useTransform(
-    scrollYProgress,
-    still ? [0, 1] : [0, 0.1, 0.9, 1],
-    still ? [1, 1] : [0, 1, 1, 0],
-  );
+  /*
+   * The range is never collapsed here; the still case hands motion a plain 1
+   * instead (below). Opacity on a view-timeline scroll is one of the values
+   * motion runs as a native scroll animation, and it copies the keyframes
+   * into that animation once, at mount — which is during hydration, before
+   * the reduced-motion and pointer flags have their real values. A collapsed
+   * range arriving a render later would never reach it. Replacing the motion
+   * value with a number unbinds it and cancels the native animation.
+   */
+  const fade = useTransform(scrollYProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
 
   return (
     <div ref={ref} className="relative overflow-x-clip">
@@ -102,7 +114,7 @@ export function ScrollWash({ children }: { children: ReactNode }) {
         className="pointer-events-none absolute inset-0 z-0"
         style={{
           y,
-          opacity: fade,
+          opacity: still ? 1 : fade,
           willChange: still ? undefined : "transform, opacity",
         }}
       >

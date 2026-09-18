@@ -104,11 +104,16 @@ export function ScrollFlower({ children }: { children: ReactNode }) {
    * it would paint over, being later in the markup than that section's own
    * content. It is out before the end for the same reason at the bottom.
    */
-  const fade = useTransform(
-    scrollYProgress,
-    still ? [0, 1] : [0, 0.1, 0.9, 1],
-    still ? [1, 1] : [0, 1, 1, 0],
-  );
+  /*
+   * The range is never collapsed here; the still case hands motion a plain 1
+   * instead (below). Opacity on a view-timeline scroll is one of the values
+   * motion runs as a native scroll animation, and it copies the keyframes
+   * into that animation once, at mount — which is during hydration, before
+   * the reduced-motion and pointer flags have their real values. A collapsed
+   * range arriving a render later would never reach it. Replacing the motion
+   * value with a number unbinds it and cancels the native animation.
+   */
+  const fade = useTransform(scrollYProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
 
   return (
     <div ref={ref} className="relative overflow-x-clip">
@@ -130,7 +135,7 @@ export function ScrollFlower({ children }: { children: ReactNode }) {
         className="pointer-events-none absolute inset-0 z-0"
         style={{
           y,
-          opacity: fade,
+          opacity: still ? 1 : fade,
           willChange: still ? undefined : "transform, opacity",
         }}
       >

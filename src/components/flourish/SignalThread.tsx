@@ -2,7 +2,6 @@
 
 import {
   motion,
-  useReducedMotion,
   useScroll,
   useTransform,
   type MotionValue,
@@ -16,6 +15,7 @@ import {
   type Box,
   type Thread,
 } from "@/components/flourish/threadPath";
+import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 
 /**
  * The three points the thread is strung between, in the order it runs: the
@@ -87,7 +87,7 @@ type Geometry = Thread & {
  */
 export function SignalThread() {
   const layerRef = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const [geom, setGeom] = useState<Geometry | null>(null);
 
   useEffect(() => {
@@ -131,12 +131,20 @@ export function SignalThread() {
    * the reader's centre line against the anchors' document positions is the
    * one measure both instances share. Under reduced motion the whole line is
    * drawn and stays drawn — the range collapses, the style prop stays.
+   *
+   * Nothing is drawn until there is geometry, and that check comes before the
+   * reduced-motion one: the server and the hydration pass both render with no
+   * geometry, so they write the same dash attributes whatever the visitor's
+   * setting. The flag is usePrefersReducedMotion for the same reason — it
+   * agrees with the server through hydration — and has its real value long
+   * before the first measurement, which waits for a frame after mount.
    */
   const { scrollY } = useScroll();
   const drawn = useTransform(() => {
     const y = scrollY.get();
+    if (!geom) return 0;
     if (reduce) return 1;
-    return geom ? threadProgress(geom.stops, y + geom.vh / 2) : 0;
+    return threadProgress(geom.stops, y + geom.vh / 2);
   });
   const fades = [
     useNodeFade(drawn, geom?.nodes[0]?.t),

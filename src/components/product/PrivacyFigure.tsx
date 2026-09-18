@@ -2,7 +2,6 @@
 
 import {
   motion,
-  useReducedMotion,
   useScroll,
   useTransform,
   type MotionValue,
@@ -11,6 +10,7 @@ import { useRef, type ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { Chip, Composer, Frame, Screen } from "@/components/mock";
 import { Icon } from "@/components/ui";
+import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 import {
   BASIS,
   ENTRY,
@@ -53,7 +53,10 @@ import {
  * React state, and nothing animates a size — the row arrives on opacity and
  * a translate. Under `prefers-reduced-motion` the figure renders its end
  * state — wall lit, row in place, observation printed — and the scanner,
- * whose end state is "gone into the wall", stays at opacity 0.
+ * whose end state is "gone into the wall", stays at opacity 0. The flag is
+ * usePrefersReducedMotion, not motion's hook: it picks the style values, so
+ * it has to read "not reduced" on the server and through hydration, which
+ * this one does before switching to the end state on the render after.
  *
  * Not wrapped in a <Reveal>, and with no entrance of its own: the beats are
  * measured against this element's position, and an ancestor still animating
@@ -63,7 +66,7 @@ import {
  * itself says. Students are a class and a roll number.
  */
 export function PrivacyFigure({ children }: { children: ReactNode }) {
-  const reduce = useReducedMotion();
+  const reduce = usePrefersReducedMotion();
   const ref = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -150,11 +153,10 @@ export function PrivacyFigure({ children }: { children: ReactNode }) {
  *
  * The scanner sits inside the writing surface so its corners clip it. It is
  * always in the tree, and reduced motion is expressed as a value — opacity
- * 0 — rather than by leaving the node out. useReducedMotion is null on the
- * server and true on the first client render for anyone with the setting
- * on, so a node that exists in one and not the other is a hydration
- * mismatch that makes React throw the server HTML away for exactly the
- * people the setting is meant to serve.
+ * 0 — rather than by leaving the node out. The setting only has its real
+ * value after hydration, so a node that existed for one answer and not the
+ * other would be mounted or torn down on that first re-render; a value is
+ * simply written over.
  */
 function DiaryScreen({
   scanX,

@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import {
   Camera,
   Geometry,
@@ -16,7 +11,13 @@ import {
   Vec3,
   type OGLRenderingContext,
 } from "ogl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   BY_ID,
   DOMAINS,
@@ -28,6 +29,7 @@ import {
 import { useTheme } from "@/components/ThemeProvider";
 import { WebGLErrorBoundary } from "@/components/webgl/WebGLErrorBoundary";
 import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
+import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 
 /**
  * An illustration of the shape of the model, not a dump of it.
@@ -42,7 +44,8 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
  * turn it, and the chain lights up as the section scrolls into view.
  * <StaticGraph> is the flat SVG it replaced, kept whole as the fallback for
  * a browser with no WebGL, a reader who has asked for reduced data, and a
- * context that dies mid-session. Both draw from ./product/ontology, so the
+ * context that dies mid-session — and as what the server sends, so a
+ * reader without JavaScript still gets a picture. Both draw from ./product/ontology, so the
  * chain lit in either picture and the chain set as text beside it cannot
  * drift apart.
  */
@@ -62,9 +65,30 @@ const LIT_EDGES = EDGES.filter(([, , lit]) => lit).map(([from, to]) =>
  * What the picture says, for a reader who cannot see it. The same sentence
  * the flat figure carries as its image label; the 3D figure has no single
  * image element to hang it on, so it is set as visually-hidden text instead.
+ *
+ * The chain is read off TRACE rather than typed out, for the same reason
+ * the lit edges are: the sentence a screen reader hears and the path the
+ * picture lights must be the same path.
  */
-const DESCRIPTION =
-  "心理的な構成概念どうしのつながりを示す知識グラフ。睡眠不足から認知機能の低下を経て抑うつ傾向にいたる経路が強調されています。";
+const CHAIN_TEXT =
+  `${TRACE[0].label}から` +
+  TRACE.slice(1, -1)
+    .map((n) => `${n.label}を経て`)
+    .join("") +
+  `${TRACE[TRACE.length - 1].label}にいたる経路`;
+const DESCRIPTION = `心理的な構成概念どうしのつながりを示す知識グラフ。${CHAIN_TEXT}が強調されています。`;
+
+/**
+ * The 3D labels' colour, by domain, as class names. It was an inline style
+ * once; the layout's noscript rule forces every element with a style
+ * attribute visible, which would have matched these too. Literal strings so
+ * Tailwind can see them, keyed on the same domains DOMAINS colours by.
+ */
+const LABEL_COLOR: Record<Domain, string> = {
+  physical: "text-mark-3",
+  cognitive: "text-mark-1",
+  affective: "text-mark-2",
+};
 
 /* -------------------------------------------------------------------------- */
 /* Caption                                                                    */
@@ -74,9 +98,11 @@ function Caption() {
   return (
     <figcaption className="mt-5 text-[0.8rem] leading-relaxed text-muted">
       {/*
-        The legend wraps to as many rows as the narrower column needs, and
-        the scale caveat sits on its own line below it — in the flex row it
-        used to share, it read as a sixth swatch label.
+        The legend wraps to as many rows as the narrower column needs. There
+        is no line about the real graph's size under it any more: "far
+        larger" overstated a seed of three subgraphs and forty nodes against
+        the twelve drawn here (docs/claims.md §4), and the section's copy
+        already says what the graph covers.
       */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         {/*
@@ -106,7 +132,6 @@ function Caption() {
           情緒・対人
         </span>
       </div>
-      <p className="mt-2">実際のグラフはこれよりはるかに大規模です。</p>
     </figcaption>
   );
 }
@@ -122,7 +147,10 @@ function Caption() {
 const H = 34;
 
 export function StaticGraph() {
-  const reduce = useReducedMotion();
+  // Server-rendered and hydrated now, so the reduced branch has to agree
+  // with the server's until hydration is done — it decides whether the
+  // trace head exists at all.
+  const reduce = usePrefersReducedMotion();
   const ref = useRef<HTMLElement>(null);
 
   /*
@@ -172,12 +200,27 @@ export function StaticGraph() {
         instead, which it does on phones and inside the narrowest desktop
         measure of the two-column block.
       */}
-      <div className="overflow-x-auto">
+      {/*
+        Without JavaScript this is the figure a reader gets, and motion has
+        already written its "hidden" frame into it as SVG attributes —
+        opacity 0 and a zero-length dash — which the layout's noscript rule
+        cannot reach, because it only matches style attributes. The
+        html:not([data-js]) classes below put the resting frame back with
+        CSS, which outranks a presentation attribute; the pre-paint script
+        sets data-js whenever a script runs, so they never apply on a page
+        that will animate.
+      */}
+      {/*
+        The same box as the 3D panel — 4:3 with a 20rem floor, 26rem from lg
+        — so when hydration swaps this figure for that one, nothing below it
+        moves. The SVG fits inside at its own aspect.
+      */}
+      <div className="aspect-[4/3] min-h-[20rem] w-full overflow-x-auto lg:min-h-[26rem]">
         <motion.svg
           viewBox="0 0 560 440"
           role="img"
           aria-label={DESCRIPTION}
-          className="h-auto w-full min-w-[30rem] font-sans"
+          className="h-full w-full min-w-[30rem] font-sans"
           initial="hidden"
           whileInView="show"
           viewport={VIEWPORT}
@@ -208,6 +251,11 @@ export function StaticGraph() {
                   strokeWidth={lit ? 2.5 : 1}
                   strokeLinecap="round"
                   opacity={lit ? 1 : 0.4}
+                  className={
+                    lit
+                      ? "[html:not([data-js])_&]:[stroke-dasharray:none]"
+                      : "[html:not([data-js])_&]:[stroke-dasharray:none] [html:not([data-js])_&]:opacity-40"
+                  }
                   filter={lit ? "url(#og-glow)" : undefined}
                   style={
                     lit && !reduce
@@ -242,6 +290,7 @@ export function StaticGraph() {
           {!reduce && (
             <motion.circle
               r={5}
+              className="[html:not([data-js])_&]:hidden"
               fill="var(--mark-1)"
               filter="url(#og-glow)"
               style={{ cx: headX, cy: headY, opacity: headOpacity }}
@@ -252,6 +301,7 @@ export function StaticGraph() {
             {NODES.map((n) => (
               <motion.g
                 key={n.id}
+                className="[html:not([data-js])_&]:opacity-100"
                 variants={{
                   hidden: { opacity: 0 },
                   show: {
@@ -492,6 +542,15 @@ function readPalette(el: HTMLElement): Palette {
  * larger on its own; the shader adds the other half of the depth cue by
  * fading the far ones toward the panel ground, so they recede rather than
  * turn grey.
+ *
+ * The quad is drawn twice, in two passes either side of the edges. The core
+ * pass draws the solid disc and writes depth; the halo pass draws only the
+ * glow, testing depth but not writing it. That is what lets a near edge
+ * cross in front of a far disc — with depth off, whichever mesh was drawn
+ * second covered the other everywhere, so a far disc always sat on top of
+ * a near line. The depth a disc writes is the front of a ball of its own
+ * radius rather than its centre, so the edges that end at it still tuck
+ * under it instead of piercing it.
  */
 const NODE_VERTEX = /* glsl */ `
   attribute vec2 position;
@@ -518,6 +577,8 @@ const NODE_VERTEX = /* glsl */ `
     float extent = iSize * (1.0 + iHalo * 1.4) * 1.15;
     mv.xy += position * 2.0 * extent;
     gl_Position = projectionMatrix * mv;
+    vec4 front = projectionMatrix * vec4(mv.xy, mv.z + iSize, 1.0);
+    gl_Position.z = front.z / front.w * gl_Position.w;
     vUv = position;
     vColor = iColor;
     vAlpha = iAlpha;
@@ -532,6 +593,8 @@ const NODE_VERTEX = /* glsl */ `
 const NODE_FRAGMENT = /* glsl */ `
   precision highp float;
   uniform vec3 uGround;
+  // 0 for the core pass, 1 for the halo pass.
+  uniform float uHaloPass;
   varying vec2 vUv;
   varying vec3 vColor;
   varying float vAlpha;
@@ -544,8 +607,22 @@ const NODE_FRAGMENT = /* glsl */ `
     float aa = 1.2 / max(vRadiusPx, 1.0);
     float core = 1.0 - smoothstep(1.0 - aa, 1.0 + aa, d);
     float halo = vHalo * (1.0 - smoothstep(1.0, 2.4, d)) * 0.22;
-    vec3 color = mix(uGround, vColor, mix(0.45, 1.0, vDepth));
-    float alpha = (core + halo * (1.0 - core)) * vAlpha;
+    vec3 base = mix(uGround, vColor, mix(0.45, 1.0, vDepth));
+    vec3 color;
+    float alpha;
+    if (uHaloPass < 0.5) {
+      // The core writes depth, so it has to be opaque wherever it is drawn:
+      // a 30%-alpha disc that wrote depth would cut a hole in every edge
+      // behind it. Dimming is carried in the colour instead — toward the
+      // panel, the same way the depth cue fades a far node — and a disc
+      // that is fully faded out is not drawn at all.
+      if (vAlpha < 0.02) discard;
+      color = mix(uGround, base, vAlpha);
+      alpha = core;
+    } else {
+      color = base;
+      alpha = halo * (1.0 - core) * vAlpha;
+    }
     if (alpha < 0.003) discard;
     gl_FragColor = vec4(color * alpha, alpha);
   }
@@ -676,8 +753,15 @@ const HEAD = N;
 type SceneOptions = {
   /** The figure's scroll progress, 0 → 1 across the window it is readable. */
   getProgress: () => number;
-  onContextLost: () => void;
+  /**
+   * The scene cannot go on — the context was lost, or a frame threw. The
+   * loop has already stopped; the figure swaps to the flat one.
+   */
+  onUnavailable: () => void;
 };
+
+/** How close an eased value has to be to its target to count as there. */
+const SETTLED = 1e-3;
 
 type ScreenNode = { x: number; y: number; r: number; front: boolean };
 
@@ -691,6 +775,7 @@ class GraphScene {
   private pitchNode = new Transform();
   private yawNode = new Transform();
   private nodeProgram: Program;
+  private haloProgram: Program;
   private edgeProgram: Program;
   private nodeGeometry: Geometry;
   private edgeGeometry: Geometry;
@@ -748,6 +833,15 @@ class GraphScene {
   private reduced: boolean;
   private finePointer: boolean;
   private raf = 0;
+  /**
+   * Something the frame depends on changed outside the eased values: a
+   * resize (which also clears the canvas), the palette, the hover, the
+   * motion preference. Under reduced motion nothing else moves the picture,
+   * so a frame with this unset and every value at its target is skipped.
+   */
+  private dirty = true;
+  private failed = false;
+  private dprQuery: MediaQueryList | null = null;
   private resizeObserver: ResizeObserver;
   private intersectionObserver: IntersectionObserver;
   private motionQuery: MediaQueryList;
@@ -765,6 +859,7 @@ class GraphScene {
     this.onPointerLeave = this.onPointerLeave.bind(this);
     this.onMotionChange = this.onMotionChange.bind(this);
     this.onContextLost = this.onContextLost.bind(this);
+    this.onDprChange = this.onDprChange.bind(this);
 
     /*
      * The context is asked for here, with the attributes ogl will ask for,
@@ -796,11 +891,6 @@ class GraphScene {
     });
     this.gl = this.renderer.gl;
     this.gl.clearColor(0, 0, 0, 0);
-    // No min-width and no intrinsic size of its own: the host decides.
-    canvas.className = "absolute inset-0 block";
-    canvas.addEventListener("webglcontextlost", this.onContextLost);
-    // Under the labels, which are the host's other child.
-    host.insertBefore(canvas, host.firstChild);
 
     this.camera = new Camera(this.gl, { fov: FOV, near: 0.1, far: 20 });
 
@@ -811,20 +901,24 @@ class GraphScene {
 
     const dynamic = this.gl.DYNAMIC_DRAW;
 
-    this.nodeProgram = new Program(this.gl, {
-      vertex: NODE_VERTEX,
-      fragment: NODE_FRAGMENT,
-      uniforms: {
-        uViewport: { value: [1, 1] },
-        uCamDist: { value: this.camDist },
-        uShell: { value: SHELL },
-        uGround: { value: [...DARK_FALLBACK.ground] },
-      },
-      transparent: true,
-      depthTest: false,
-      depthWrite: false,
-      cullFace: false,
-    });
+    const nodePass = (halo: boolean) =>
+      new Program(this.gl, {
+        vertex: NODE_VERTEX,
+        fragment: NODE_FRAGMENT,
+        uniforms: {
+          uViewport: { value: [1, 1] },
+          uCamDist: { value: this.camDist },
+          uShell: { value: SHELL },
+          uGround: { value: [...DARK_FALLBACK.ground] },
+          uHaloPass: { value: halo ? 1 : 0 },
+        },
+        transparent: true,
+        depthTest: true,
+        depthWrite: !halo,
+        cullFace: false,
+      });
+    this.nodeProgram = nodePass(false);
+    this.haloProgram = nodePass(true);
     this.nodeGeometry = new Geometry(this.gl, {
       position: {
         size: 2,
@@ -837,6 +931,8 @@ class GraphScene {
       iAlpha: { instanced: 1, size: 1, data: this.instAlpha, usage: dynamic },
       iHalo: { instanced: 1, size: 1, data: this.instHalo, usage: dynamic },
     });
+    // Cores, then edges, then halos; see NODE_VERTEX for why it is split.
+    // No renderOrder is 0, which ogl would take as "sort me by depth".
     const nodes = new Mesh(this.gl, {
       geometry: this.nodeGeometry,
       program: this.nodeProgram,
@@ -844,6 +940,13 @@ class GraphScene {
       renderOrder: 1,
     });
     nodes.setParent(this.yawNode);
+    const halos = new Mesh(this.gl, {
+      geometry: this.nodeGeometry,
+      program: this.haloProgram,
+      frustumCulled: false,
+      renderOrder: 3,
+    });
+    halos.setParent(this.yawNode);
 
     const count = LINKS.length;
     const starts = new Float32Array(count * 12);
@@ -883,7 +986,7 @@ class GraphScene {
         uLegs: { value: [0, 0] },
       },
       transparent: true,
-      depthTest: false,
+      depthTest: true,
       depthWrite: false,
       cullFace: false,
     });
@@ -899,14 +1002,41 @@ class GraphScene {
       geometry: this.edgeGeometry,
       program: this.edgeProgram,
       frustumCulled: false,
-      renderOrder: 0,
+      renderOrder: 2,
     });
     edges.setParent(this.yawNode);
 
+    const programs = [this.nodeProgram, this.haloProgram, this.edgeProgram];
     // The premultiplied "over" operator, for colour and alpha alike.
-    for (const program of [this.nodeProgram, this.edgeProgram]) {
+    for (const program of programs) {
       program.setBlendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
     }
+
+    /*
+     * ogl only warns when a shader fails to compile or link, and when
+     * WebGL1 has no instancing it finds out at the first draw — both of
+     * which would happen inside the render loop, where nothing turns them
+     * into the flat figure. Asked here instead, a failure throws out of the
+     * constructor, which the caller already treats as "no WebGL". The
+     * context is handed back first, since nothing else will.
+     */
+    const instancing =
+      this.renderer.isWebgl2 || !!this.renderer.drawElementsInstanced;
+    const linked = programs.every((program) =>
+      this.gl.getProgramParameter(program.program, this.gl.LINK_STATUS),
+    );
+    if (!instancing || !linked) {
+      this.gl.getExtension("WEBGL_lose_context")?.loseContext();
+      throw new Error(
+        instancing ? "WebGL program failed to link" : "WebGL instancing unavailable",
+      );
+    }
+
+    // No min-width and no intrinsic size of its own: the host decides.
+    canvas.className = "absolute inset-0 block";
+    canvas.addEventListener("webglcontextlost", this.onContextLost);
+    // Under the labels, which are the host's other child.
+    host.insertBefore(canvas, host.firstChild);
 
     this.labels = Array.from(labelHost.children) as HTMLElement[];
     this.labelW = this.labels.map(() => 0);
@@ -929,6 +1059,7 @@ class GraphScene {
     this.resizeObserver = new ResizeObserver(this.onResize);
     this.resizeObserver.observe(host);
     this.onResize();
+    this.armDprQuery();
     // The label boxes were measured in whatever face was available at
     // construction; once the web fonts have swapped in they need measuring
     // again, or the clamp and the collision test work from stale widths.
@@ -937,8 +1068,9 @@ class GraphScene {
     // A GPU loop for a figure nobody is looking at is pure battery cost.
     this.intersectionObserver = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !this.raf) {
+        if (entry.isIntersecting && !this.raf && !this.failed) {
           this.last = 0;
+          this.dirty = true;
           this.raf = requestAnimationFrame(this.update);
         } else if (!entry.isIntersecting && this.raf) {
           cancelAnimationFrame(this.raf);
@@ -952,21 +1084,50 @@ class GraphScene {
 
   setPalette(palette: Palette) {
     this.palette = palette;
-    this.nodeProgram.uniforms.uGround.value = [...palette.ground];
-    this.edgeProgram.uniforms.uGround.value = [...palette.ground];
+    for (const program of [this.nodeProgram, this.haloProgram, this.edgeProgram]) {
+      program.uniforms.uGround.value = [...palette.ground];
+    }
     this.edgeProgram.uniforms.uLine.value = [...palette.line];
     this.edgeProgram.uniforms.uTrace.value = [...palette.trace];
+    this.dirty = true;
   }
 
   private onMotionChange() {
     this.reduced = this.motionQuery.matches;
+    this.dirty = true;
   }
 
   private onContextLost(e: Event) {
     e.preventDefault();
+    this.fail();
+  }
+
+  /** Stop for good and hand over to the flat figure. */
+  private fail() {
+    if (this.failed) return;
+    this.failed = true;
     if (this.raf) cancelAnimationFrame(this.raf);
     this.raf = 0;
-    this.opts.onContextLost();
+    this.opts.onUnavailable();
+  }
+
+  /**
+   * A (resolution: Ndppx) query matches only the ratio it was built with,
+   * so it fires once when the window moves to a screen of another density
+   * or the page is zoomed, and then has to be rebuilt for the new ratio.
+   * ResizeObserver does not fire for either: the CSS size is unchanged.
+   */
+  private armDprQuery() {
+    this.dprQuery?.removeEventListener("change", this.onDprChange);
+    this.dprQuery = window.matchMedia(
+      `(resolution: ${window.devicePixelRatio || 1}dppx)`,
+    );
+    this.dprQuery.addEventListener("change", this.onDprChange);
+  }
+
+  private onDprChange() {
+    this.armDprQuery();
+    this.onResize();
   }
 
   private onResize() {
@@ -975,7 +1136,12 @@ class GraphScene {
     if (!width || !height) return;
     this.width = width;
     this.height = height;
+    // Read again every time, not once at construction: a window dragged to
+    // another screen, or a page zoom, changes it.
+    this.renderer.dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.renderer.setSize(width, height);
+    // Resizing the canvas clears it, so there is always something to draw.
+    this.dirty = true;
 
     const aspect = width / height;
     this.camDist = Math.max(
@@ -986,7 +1152,7 @@ class GraphScene {
     this.camera.perspective({ aspect });
 
     const viewport = [width * this.renderer.dpr, height * this.renderer.dpr];
-    for (const program of [this.nodeProgram, this.edgeProgram]) {
+    for (const program of [this.nodeProgram, this.haloProgram, this.edgeProgram]) {
       program.uniforms.uViewport.value = viewport;
       program.uniforms.uCamDist.value = this.camDist;
     }
@@ -1078,6 +1244,11 @@ class GraphScene {
   private setHover(index: number) {
     if (index === this.hovered) return;
     this.hovered = index;
+    this.dirty = true;
+    // The pointed-at label is marked by an underline rather than by dimming
+    // the others: every label on the front of the shell stays at full
+    // opacity, because the domain colours only just clear AA as it is.
+    this.labels.forEach((el, i) => el.classList.toggle("underline", i === index));
     for (let i = 0; i < N; i++) {
       const on = index < 0 || i === index || LINKED[index].has(i);
       this.nodeIntensityTarget[i] = on ? 1 : 0.3;
@@ -1093,9 +1264,63 @@ class GraphScene {
 
   /* ---- frame ------------------------------------------------------------ */
 
+  /**
+   * One tick of the loop. Anything that throws in here — a driver fault, a
+   * draw call the context no longer accepts — would otherwise surface as an
+   * uncaught error once per frame over a frozen canvas, since it happens
+   * outside React and the error boundary never sees it. Caught, it ends the
+   * loop and swaps in the flat figure.
+   */
   private update(now: number) {
+    try {
+      this.frame(now);
+    } catch (error) {
+      console.error("OntologyGraph: render loop failed, using static figure.", error);
+      this.fail();
+      return;
+    }
+    if (!this.failed) this.raf = requestAnimationFrame(this.update);
+  }
+
+  /** Whether every eased value has reached its target. */
+  private settled() {
+    if (
+      Math.abs(this.yawTarget - this.yaw) > SETTLED ||
+      Math.abs(this.pitchTarget - this.pitch) > SETTLED
+    ) {
+      return false;
+    }
+    for (let i = 0; i < N; i++) {
+      if (
+        Math.abs(this.nodeIntensityTarget[i] - this.nodeIntensity[i]) > SETTLED ||
+        Math.abs(this.hoverTarget[i] - this.hoverAmount[i]) > SETTLED
+      ) {
+        return false;
+      }
+    }
+    for (let i = 0; i < LINKS.length; i++) {
+      if (Math.abs(this.linkIntensityTarget[i] - this.linkIntensity[i]) > SETTLED) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private frame(now: number) {
     const dt = this.last ? Math.min((now - this.last) / 1000, 0.05) : 1 / 60;
     this.last = now;
+
+    /*
+     * Under reduced motion there is no sway and the trace is lit whole with
+     * no head, so the scroll position does not reach the picture either:
+     * once everything has landed, the frame would be the last one again.
+     * The loop keeps ticking, but a tick is this check and nothing else — no
+     * buffer upload, no draw, no label layout — until a drag, a hover, a
+     * resize or a theme change gives it something new. With motion on, the
+     * sway moves every frame, so there is never a frame to skip.
+     */
+    if (this.reduced && !this.dirty && this.settled()) return;
+    this.dirty = false;
     this.clock += dt;
 
     // Rotation eases toward its target; under reduced motion it lands
@@ -1196,8 +1421,6 @@ class GraphScene {
 
     this.renderer.render({ scene: this.root, camera: this.camera });
     this.layoutLabels();
-
-    this.raf = requestAnimationFrame(this.update);
   }
 
   /* ---- labels ----------------------------------------------------------- */
@@ -1205,10 +1428,17 @@ class GraphScene {
   /**
    * Labels are HTML, positioned from the projected node each frame — text
    * stays crisp at any zoom and takes the theme's colour for free. A label
-   * fades out as its node turns toward the back of the shell, is clamped
-   * inside the panel at the rim, and yields to a higher-priority neighbour
-   * when the two would collide: the hovered node first, then the trace,
-   * then whichever is nearer.
+   * is clamped inside the panel at the rim, and yields to a higher-priority
+   * neighbour when the two would collide: the hovered node first, then the
+   * trace, then whichever is nearer.
+   *
+   * A label is either there at full strength or not there. It used to fade
+   * with depth and with the hover dim, but the domain colours are text
+   * colours with little to spare — --mark-3 on the light panel is 4.55:1 at
+   * full opacity — so any fade put a readable label below AA. The depth cue
+   * is the discs' and the edges' job; a label only fades across a thin band
+   * at the horizon, so it does not blink as its node turns away, and is
+   * gone once the node is behind.
    */
   private layoutLabels() {
     const { width, height, world, v, screen } = this;
@@ -1241,8 +1471,14 @@ class GraphScene {
       const s = screen[i];
       const w = this.labelW[i];
       const h = this.labelH[i];
-      const depth = clamp01((world[i * 3 + 2] / SHELL + 0.05) / 0.4);
-      let alpha = depth * (0.3 + 0.7 * this.nodeIntensity[i]);
+      /*
+       * On or off, never part-way. mark-3 holds 4.55:1 on the light inset
+       * panel at full strength, so any fraction of it is under AA, and a
+       * fractional alpha can be left standing indefinitely when a drag stops
+       * with a node on the horizon. The span's own 150ms opacity transition
+       * does the fading.
+       */
+      let alpha = s.front ? 1 : 0;
 
       let x0 = Math.round(s.x - w / 2);
       const y0 = Math.round(s.y + s.r + LABEL_GAP);
@@ -1271,6 +1507,7 @@ class GraphScene {
     this.resizeObserver.disconnect();
     this.intersectionObserver.disconnect();
     this.motionQuery.removeEventListener("change", this.onMotionChange);
+    this.dprQuery?.removeEventListener("change", this.onDprChange);
     const { host } = this;
     host.removeEventListener("pointerdown", this.onPointerDown);
     host.removeEventListener("pointermove", this.onPointerMove);
@@ -1326,7 +1563,7 @@ function Graph3D({ onUnavailable }: { onUnavailable: () => void }) {
     try {
       scene = new GraphScene(host, labels, {
         getProgress: () => scrollYProgress.get(),
-        onContextLost: onUnavailable,
+        onUnavailable,
       });
     } catch {
       onUnavailable();
@@ -1379,8 +1616,7 @@ function Graph3D({ onUnavailable }: { onUnavailable: () => void }) {
           {NODES.map((n) => (
             <span
               key={n.id}
-              className="absolute top-0 left-0 whitespace-nowrap text-[11px] leading-none font-medium tracking-[0.01em] opacity-0 transition-opacity duration-150 will-change-transform lg:text-[12px]"
-              style={{ color: DOMAINS[n.domain].color }}
+              className={`absolute top-0 left-0 whitespace-nowrap text-[11px] leading-none font-medium tracking-[0.01em] underline-offset-2 opacity-0 transition-opacity duration-150 will-change-transform lg:text-[12px] ${LABEL_COLOR[n.domain]}`}
             >
               {n.label}
             </span>
@@ -1395,18 +1631,55 @@ function Graph3D({ onUnavailable }: { onUnavailable: () => void }) {
   );
 }
 
+const noSubscription = () => () => {};
+
+/**
+ * False on the server and through hydration, true on every client render
+ * after it. useSyncExternalStore uses the server snapshot while hydrating,
+ * so the two passes agree, and then re-renders with the client one.
+ */
+function useHydrated() {
+  return useSyncExternalStore(
+    noSubscription,
+    () => true,
+    () => false,
+  );
+}
+
 /**
  * The 3D figure, with the flat one behind it for every way it can fail:
  * no WebGL or a reduced-data preference at mount, a context lost later,
  * or anything the WebGL layer throws while rendering.
+ *
+ * The flat one is also what the server sends. The 3D figure is nothing but
+ * an empty box until a script draws into it, so a reader without
+ * JavaScript would get a blank panel; the SVG is a complete picture on its
+ * own. It is swapped for the 3D one once hydration is done.
  */
+const REDUCED_DATA = "(prefers-reduced-data: reduce)";
+
+/** Whether the reader has asked for less data; false on the server. */
+function useReducedData() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mql = window.matchMedia(REDUCED_DATA);
+      mql.addEventListener("change", onChange);
+      return () => mql.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(REDUCED_DATA).matches,
+    () => false,
+  );
+}
+
 export function OntologyGraph() {
+  const hydrated = useHydrated();
+  const reducedData = useReducedData();
   const [mode, setMode] = useState<"webgl" | "static">("webgl");
   const showStatic = useCallback(() => setMode("static"), []);
 
-  if (mode === "static") return <StaticGraph />;
+  if (!hydrated || reducedData || mode === "static") return <StaticGraph />;
   return (
-    <WebGLErrorBoundary fallback={<StaticGraph />}>
+    <WebGLErrorBoundary name="OntologyGraph" fallback={<StaticGraph />}>
       <Graph3D onUnavailable={showStatic} />
     </WebGLErrorBoundary>
   );

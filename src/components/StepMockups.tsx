@@ -2,9 +2,10 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { Logo } from "@/components/Logo";
-import { Chip, Composer, Row, Screen } from "@/components/mock";
+import { Chip, Composer, Screen } from "@/components/mock";
 import { Icon } from "@/components/ui";
 import {
+  BASIS,
   BASELINE,
   CLASS,
   ENTRY,
@@ -35,8 +36,13 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
  * itself says (a button, a title). Students are a class and a roll number.
  *
  * Motion is one beat per screen at most, on view, once, ~0.5s on the expo
- * curve, and under prefers-reduced-motion each one renders its end state.
- * None of them is scroll-linked, on purpose: every card is wrapped in a
+ * curve, and under prefers-reduced-motion each one lands on its end state
+ * without travelling. The starting state is the same either way and only the
+ * transition reads the setting: the starting state is written into the
+ * server HTML, which cannot know the setting, so a reduced-motion start would
+ * disagree with it on hydration. A transition is only read when the beat
+ * fires, after hydration, so motion's useReducedMotion is the right flag for
+ * it here. None of them is scroll-linked, on purpose: every card is wrapped in a
  * <RevealItem>, and an ancestor that is still animating a translate would be
  * measured mid-flight by useScroll.
  */
@@ -64,7 +70,7 @@ export function RosterMock() {
           <motion.span
             key={i}
             className="aspect-square rounded-[3px] bg-mark-1"
-            initial={{ opacity: reduce ? 0.85 : 0.12 }}
+            initial={{ opacity: 0.12 }}
             whileInView={{ opacity: 0.85 }}
             viewport={VIEWPORT}
             transition={
@@ -161,14 +167,16 @@ export function ProbeMock() {
 
         <motion.div
           className="max-w-[92%] rounded-xl rounded-bl-sm bg-accent/10 px-3 py-2.5"
-          initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}
-          whileInView={reduce ? { opacity: 1 } : { opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={VIEWPORT}
-          transition={{
-            duration: reduce ? 0.3 : 0.6,
-            ease: reduce ? "linear" : EXPO_OUT,
-            delay: reduce ? 0 : 0.3,
-          }}
+          /* Reduced motion keeps the fade and drops the rise: the 8px is
+             landed outright while the bubble is still transparent. */
+          transition={
+            reduce
+              ? { duration: 0.3, ease: "linear", y: { duration: 0 } }
+              : { duration: 0.6, ease: EXPO_OUT, delay: 0.3 }
+          }
         >
           {/*
             mark-1, not accent: #85c0ed is a fill colour and measures 1.87:1
@@ -203,27 +211,27 @@ export function ProbeMock() {
  * and must not read as a score: the product draws no levels for a student,
  * and this picture does not either (docs/claims.md §2).
  *
- * The foot is what the teacher receives from the latest entry: a class, a
- * roll number and an observation — the first row of the teacher's screen in
- * プロダクト, imported rather than restated, so the two cannot disagree.
+ * The foot is what the teacher receives from the latest entry: a class and
+ * roll number, a time and surface, an observation and its basis — the first
+ * row of the teacher's screen in プロダクト, imported rather than restated,
+ * so the two cannot disagree.
  */
 export function TrendMock() {
   const reduce = useReducedMotion();
   const latest = ROWS[0];
 
-  const bar = reduce
-    ? {
-        hidden: { opacity: 0 },
-        show: { opacity: 1, transition: { duration: 0.3 } },
-      }
-    : {
-        hidden: { opacity: 0, y: 6 },
-        show: {
-          opacity: 1,
-          y: 0,
-          transition: { duration: 0.5, ease: EXPO_OUT },
-        },
-      };
+  /* The same hidden state either way; reduced motion fades the bars in
+     together and lands the 6px rise outright rather than playing it. */
+  const bar = {
+    hidden: { opacity: 0, y: 6 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: reduce
+        ? { duration: 0.3, y: { duration: 0 } }
+        : { duration: 0.5, ease: EXPO_OUT },
+    },
+  };
 
   return (
     <Screen
@@ -236,11 +244,27 @@ export function TrendMock() {
           exists.
         */
         <div data-thread="analysis" className="w-full min-w-0">
-          <Row klass={latest.klass} no={latest.no} className="w-full">
-            <span className="min-w-0 truncate text-[0.72rem] text-ink">
-              観測: {latest.observation}
+          {/*
+            The same three lines the teacher's row carries — who and when,
+            what was observed, on what basis — because an observation is only
+            shown with its time and its basis (docs/claims.md §2), and a
+            shortened one can say the opposite of the real one: cut at the
+            card's width, 苦痛の表現（危険の明示なし） loses its なし. So the
+            observation wraps instead of truncating; the chart above is
+            flex-1 and gives up the height.
+          */}
+          <p className="flex min-w-0 items-baseline gap-2 text-[0.66rem] tabular-nums text-muted">
+            <span className="shrink-0 text-ink">
+              {latest.klass} {latest.no}
             </span>
-          </Row>
+            <span className="truncate">
+              {latest.at} · {latest.surface}
+            </span>
+          </p>
+          <p className="mt-0.5 text-[0.72rem] leading-snug text-ink">
+            観測: {latest.observation}
+          </p>
+          <p className="mt-0.5 text-[0.62rem] text-muted">└ {BASIS}</p>
         </div>
       }
     >

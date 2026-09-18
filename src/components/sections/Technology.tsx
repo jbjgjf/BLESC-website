@@ -58,9 +58,9 @@ export function Technology() {
             figure beside it; the construct names themselves stay ink, so
             nothing here depends on a colour to be read.
 
-            The label above it is the one new string in this section: the
-            figure's own caption already says the real graph is far larger, so
-            "一例" is what this list honestly is.
+            The label above it is the one new string in this section. The
+            chain is one path through a graph the paragraph below says covers
+            three areas, so "一例" is what this list honestly is.
           */}
           <p className="mt-8 text-[0.8rem] font-medium tracking-[0.02em] text-muted">
             因果連鎖の一例

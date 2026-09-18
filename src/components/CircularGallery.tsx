@@ -593,7 +593,20 @@ class App {
     window.removeEventListener("touchmove", this.onMove);
     window.removeEventListener("touchend", this.onUp);
 
-    const canvas = this.renderer?.gl?.canvas;
+    /*
+     * The context is released outright, not left for the garbage collector.
+     * The scene is rebuilt on every theme toggle, and a browser allows only
+     * a handful of live contexts per page — past that it force-loses the
+     * oldest, which could be the hero's sky or the 3D graph. Unlike
+     * ShaderBackground this does not defer the release for StrictMode's
+     * remount: that component keeps one React-owned canvas and so can
+     * reclaim its context, but every App here makes a fresh canvas through
+     * its own Renderer, so the old context can never be reused and waiting
+     * would only hold it longer.
+     */
+    const gl = this.renderer?.gl;
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    const canvas = gl?.canvas;
     canvas?.parentNode?.removeChild(canvas);
   }
 }
