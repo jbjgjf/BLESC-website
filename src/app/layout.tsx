@@ -182,6 +182,7 @@ export default function RootLayout({
           <style>{`
             main [style], header [style] { opacity: 1 !important; filter: none !important; transform: none !important; }
             footer svg text { stroke-dashoffset: 0 !important; }
+            footer [data-rise] { opacity: 1 !important; transform: none !important; }
           `}</style>
         </noscript>
       </head>

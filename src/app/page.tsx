@@ -81,12 +81,11 @@ export default function Home() {
       */}
       <Faq />
       {/*
-        The closing statement is the last thing in <main>, and the footer
-        opens straight out of it: the statement's sky fades to the page
-        ground, the footer's flower dive opens on that ground (see
-        FlowerDive), and 導入について、お話ししませんか。 follows the dive.
-        The dive is the only thing between the statement and the
-        invitation.
+        The closing statement is the last thing in <main>, and it is also the
+        way out of the page: its flower grows and turns until the screen is
+        the flower's blue, and the footer begins in that blue and fades to the
+        ground as 導入について、お話ししませんか。 rises out of it (see
+        Philosophy and Footer).
       */}
       <Philosophy />
     </>

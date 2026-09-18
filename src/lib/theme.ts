@@ -17,7 +17,7 @@ export const THEME_STORAGE_KEY = "blesc-theme";
  * would hand half of all first impressions to the secondary palette.
  *
  * It also stamps data-js on <html>. The pinned, scroll-driven stages (the
- * closing statement, the footer's flower dive) are only worth their extra
+ * closing statement and its flower's dive into the footer) are only worth their extra
  * screens of scroll when a script is driving them; without JavaScript the
  * attribute is absent and their tracks collapse to one screen in CSS, via the
  * `js:` variant in globals.css. Set here because this is the one script that

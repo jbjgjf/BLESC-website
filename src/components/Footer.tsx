@@ -1,12 +1,14 @@
 "use client";
 
-import { FlowerDive } from "@/components/flourish/FlowerDive";
 import { FooterFlowers } from "@/components/FooterFlowers";
 import { GradientFooter } from "@/components/GradientFooter";
 import { WordmarkReveal } from "@/components/WordmarkReveal";
+import { motion, useScroll, useTransform } from "motion/react";
 import { usePathname } from "next/navigation";
+import { useRef } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { ButtonLink, Container, Icon } from "@/components/ui";
+import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 import { CONTACT_EMAIL, CTA, FOOTER_LINKS, sectionHref } from "@/lib/site";
 
 /**
@@ -54,19 +56,44 @@ const QUIET_LINK =
 export function Footer() {
   const { theme } = useTheme();
   const onHome = usePathname() === "/";
+  const reduce = usePrefersReducedMotion();
+  const content = useRef<HTMLDivElement>(null);
+
+  /*
+   * The invitation rising out of the flower's blue. On the home page the
+   * closing statement's flower grows until the screen is its blue, and the
+   * pin releases straight into this footer; the footer begins in that blue
+   * and fades to the page ground, and its content fades up as it arrives —
+   * from the footer's top entering the viewport to it reaching the upper
+   * third. A plain number when there is no dive to come out of: on
+   * /contact, under reduced motion, and (via the noscript rule) without JS.
+   */
+  const { scrollYProgress } = useScroll({
+    target: content,
+    offset: ["start end", "start 0.3"],
+  });
+  /*
+   * Computed in JavaScript rather than as a range mapping, which motion
+   * would hand to a native scroll timeline for opacity — and on this page
+   * those were measured running at the wrong rate (see Philosophy).
+   */
+  const rise = useTransform(() =>
+    Math.min(1, Math.max(0, (scrollYProgress.get() - 0.25) / 0.75)),
+  );
+  const riseY = useTransform(() => (1 - rise.get()) * 32);
+  const fades = onHome && !reduce;
 
   /*
    * `relative` is the only positioning the footer gets. Nothing else — no
    * transform, filter or overflow — because the glow band inside
    * GradientFooter is position: fixed and any of those on an ancestor would
-   * capture it and pin it to the footer instead of the viewport. The dive
-   * below does use sticky and transforms, but on its own descendants: a
-   * child's transform captures only that child's subtree, never a sibling.
+   * capture it and pin it to the footer instead of the viewport. The
+   * content block below does carry a transform (its rise), but on its own
+   * subtree: a transform captures only its own descendants, and the band
+   * is not one of them.
    *
-   * No border-top and no top padding on the footer itself any more. The
-   * dive is the boundary now — its stage begins on the page ground the
-   * statement band has just faded to — and the padding has moved onto the
-   * Container so the invitation keeps its distance from the dive's end.
+   * No border-top on the footer: on the home page its top edge is the
+   * flower's blue, and a rule across that would cut the hand-over in two.
    */
   return (
     <GradientFooter
@@ -74,23 +101,35 @@ export function Footer() {
       stops={theme === "light" ? LIGHT_STOPS : DARK_STOPS}
     >
       {/*
-        The flower dive: a pinned stage where a flower-shaped window onto
-        the classroom photograph opens, spins, and fills the screen before
-        the invitation follows. First in the footer because it is the
-        footer's top edge.
+        The flower's blue, handing over to the page ground. The closing
+        statement ends with its flower filling the screen in --color-primary,
+        and the footer starts in exactly that colour and fades to the ground
+        over most of a screen, under the content, which fades up through it.
+        Only on the home page, and only when that dive runs — motion allowed
+        and a script running — which is decided in CSS so the server and
+        every visitor's first paint agree: without it, a blue band would
+        start a footer that nothing blue came before.
       */}
-      <FlowerDive />
+      {onHome && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 hidden h-[85svh] bg-linear-to-b from-accent to-transparent motion-safe:js:block"
+        />
+      )}
 
       {/*
-        The content, in a positioned block of its own. FooterFlowers is
-        absolutely positioned a little below the top of its nearest
-        positioned ancestor, and with the dive in front of everything that
-        ancestor can no longer be the footer — it would put the clusters
-        over the dive's stage. position: relative here is safe for the glow
-        band: only transforms, filters and the like capture a fixed
-        descendant, and the band is not inside this block anyway.
+        The content, in a block of its own so it can rise out of the blue as
+        one piece — opacity and a short translate, scroll-linked. Positioned,
+        so FooterFlowers sits against it. data-rise is what the layout's
+        noscript rule uses to show it at rest when no script will animate it:
+        the footer is outside <main>, which the general rule covers.
       */}
-      <div className="relative">
+      <motion.div
+        ref={content}
+        data-rise
+        className="relative"
+        style={{ opacity: fades ? rise : 1, y: fades ? riseY : 0 }}
+      >
         {/*
           First in the block on purpose: it is a z-0 layer and the Container
           after it carries z-10, so the flowers paint above the footer's
@@ -211,7 +250,7 @@ export function Footer() {
         <div className="relative z-0 mt-10 hidden md:block lg:mt-12">
           <WordmarkReveal />
         </div>
-      </div>
+      </motion.div>
     </GradientFooter>
   );
 }
