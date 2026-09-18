@@ -101,19 +101,29 @@ export function Footer() {
       stops={theme === "light" ? LIGHT_STOPS : DARK_STOPS}
     >
       {/*
-        The flower's blue, handing over to the page ground. The closing
-        statement ends with its flower filling the screen in --color-primary,
-        and the footer starts in exactly that colour and fades to the ground
-        over most of a screen, under the content, which fades up through it.
+        The flower's blue, handing over to the page ground — as its own
+        stretch of the page, above the content rather than behind it. The
+        closing statement ends with its flower filling the screen in
+        --color-primary; this lead-in starts in exactly that colour and fades
+        to the ground over most of a screen, and the invitation then rises in
+        on the plain ground below it.
+
+        Above, not behind, because the blue is #85c0ed in both themes: laid
+        under the content it took the dark build's white heading to 2.4:1 and
+        its muted links under 3:1, hid the light build's muted links under
+        4.5:1, swallowed the flower marks and the primary button, and made
+        the focus ring (mark-1, the same blue) vanish. On the ground, every
+        pair is what it is everywhere else.
+
         Only on the home page, and only when that dive runs — motion allowed
-        and a script running — which is decided in CSS so the server and
-        every visitor's first paint agree: without it, a blue band would
-        start a footer that nothing blue came before.
+        and a script running — decided in CSS so the server and every
+        visitor's first paint agree. Elsewhere there is no blue to come out
+        of, and the footer simply starts.
       */}
       {onHome && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 hidden h-[85svh] bg-linear-to-b from-accent to-transparent motion-safe:js:block"
+          className="pointer-events-none hidden h-[65svh] bg-linear-to-b from-accent to-canvas motion-safe:js:block"
         />
       )}
 

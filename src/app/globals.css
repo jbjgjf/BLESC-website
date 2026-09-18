@@ -490,6 +490,17 @@ body {
   }
 }
 
+/*
+ * The footer's content rises into view on scroll, starting transparent. A
+ * keyboard user tabbing out of the page's last section can land on one of
+ * its buttons before the rise has got far — so whenever focus is inside it,
+ * it is simply there. Outranks the inline style motion writes.
+ */
+footer [data-rise]:focus-within {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 /* Japanese paragraph text needs more air than Latin to stay readable. */
 .measure-jp {
   line-height: 1.9;

@@ -179,7 +179,21 @@ export function Philosophy() {
     };
     measure();
     window.addEventListener("resize", measure, { passive: true });
-    return () => window.removeEventListener("resize", measure);
+    /*
+     * The column can change height without the window changing size — the
+     * web fonts swapping in can move the statement between one line and two
+     * on a phone — and the drift to centre is worked out from that height.
+     */
+    const observer = new ResizeObserver(measure);
+    if (flower.current?.parentElement?.parentElement) {
+      observer.observe(flower.current.parentElement.parentElement);
+    }
+    if (stage.current) observer.observe(stage.current);
+    document.fonts?.ready.then(measure, () => undefined);
+    return () => {
+      window.removeEventListener("resize", measure);
+      observer.disconnect();
+    };
   }, [growBy, toCentre]);
 
   return (
@@ -203,9 +217,17 @@ export function Philosophy() {
           sky's canvas and a flower many times the screen's size inside the
           viewport without a scrollbar.
         */}
+        {/*
+          When it pins, the stage is 100lvh, the large viewport: on a phone
+          the toolbar collapses as the page scrolls down, and a 100svh stage
+          then left a strip of the track's own ground under the blue cover —
+          the "one colour" screen had a white band along its foot. lvh is the
+          height the viewport grows to, and overflow-hidden clips the rest
+          while the toolbar is still showing.
+        */}
         <div
           ref={stage}
-          className="sticky top-0 flex min-h-[72svh] items-center justify-center overflow-hidden px-6 md:h-[100svh] md:px-10 motion-safe:js:h-[100svh]"
+          className="sticky top-0 flex min-h-[72svh] items-center justify-center overflow-hidden px-6 md:h-[100svh] md:px-10 motion-safe:js:h-[100lvh]"
         >
           {/*
             The sky, composed exactly as the hero composes it: the static
@@ -308,9 +330,15 @@ export function Philosophy() {
             same colour. Invisible at rest, and absent in effect under reduced
             motion.
           */}
+          {/*
+            hidden unless motion is allowed and a script is running, decided
+            in CSS: the layout's noscript rule forces every inline-styled
+            element in <main> to opacity 1, and it would otherwise raise this
+            cover over the whole statement for a reader with no script.
+          */}
           <motion.div
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-20 bg-accent"
+            className="pointer-events-none absolute inset-0 z-20 hidden bg-accent motion-safe:js:block"
             style={{ opacity: reduce ? 0 : cover }}
           />
         </div>
