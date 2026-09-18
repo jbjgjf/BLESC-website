@@ -25,19 +25,16 @@ import { Container, SectionTitle } from "@/components/ui";
  */
 type NewsItem = {
   date?: string;
-  category: string;
   name: string;
   body: string;
 };
 
 const ITEMS: NewsItem[] = [
   {
-    category: "登壇",
     name: "SusHi Tech Tokyo",
     body: "に登壇し、Blescの取り組みについて発表しました。",
   },
   {
-    category: "受賞",
     name: "IVS",
     body: "YOUTH部門において、優秀賞を受賞しました。",
   },
@@ -82,8 +79,8 @@ const ITEMS: NewsItem[] = [
  * there. It is a background-image, so it composes with DrawnRule's
  * background-color rather than fighting it for the same property.
  *
- * From md each row is three columns — the category stamp turned on its side,
- * the proper noun at display size, and the sentence. The sentence sits last
+ * From md each row is three columns — the brand flower as the row's
+ * marker, the proper noun at display size, and the sentence. The sentence sits last
  * because it is where the eye lands after the name: に登壇し opens with a
  * particle that continues the name, so name → sentence has to run left to
  * right. Below md the three stack in the same reading order.
@@ -134,25 +131,12 @@ export function News() {
               */}
               <Container className="grid gap-y-5 py-10 md:grid-cols-[auto_1fr_minmax(16rem,20rem)] md:gap-x-10 md:py-14 lg:gap-x-14">
                 {/*
-                  The only colour in the section. Turned on its side from md
-                  because a two-character category set horizontally beside a
-                  sixty-pixel name reads as a stray word; upright in the
-                  margin it reads as a stamp. The border takes the same hue
-                  at 35% so the stamp does not outweigh the text it frames.
+                  The brand flower in ink — the same shape the logo draws, set
+                  as the row's marker in the text colour. Decorative; the name
+                  and the sentence beside it are the entry. There is no
+                  category label: the sentence already says what happened.
                 */}
-                <div className="flex items-start gap-3 self-start">
-                  {/*
-                    The brand flower, in ink rather than blue: the same shape
-                    the logo draws, set as a bullet in the text colour so it
-                    marks the entry without taking the one colour the stamp
-                    beside it already carries. Decorative; the stamp is the
-                    label.
-                  */}
-                  <Flower size={22} className="mt-0.5 shrink-0 text-ink md:mt-1" />
-                  <span className="inline-flex w-fit items-center justify-center rounded-md border border-mark-1/35 px-2.5 py-1 text-[0.8rem] font-medium tracking-[0.18em] text-mark-1 md:px-1.5 md:py-3 md:[writing-mode:vertical-rl]">
-                    {item.category}
-                  </span>
-                </div>
+                <Flower size={22} className="mt-0.5 shrink-0 self-start text-ink md:mt-3" />
 
                 {/*
                   Weight 300: the hero's voice, not the section head's. The
