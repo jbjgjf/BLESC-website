@@ -31,11 +31,23 @@ export interface CircularGalleryProps {
   /** Fires with the roster index sitting closest to centre. */
   onActiveChange?: (index: number) => void;
   /**
-   * Hands back a stepper once the scene exists. A drag-only WebGL canvas is
-   * completely inoperable by keyboard, so the section above it wires this to
-   * real buttons.
+   * Hands back the controls once the scene exists. A drag-only WebGL canvas
+   * is completely inoperable by keyboard, so the section above it wires
+   * `step` to real buttons; `nudge` is for turns driven by something other
+   * than the reader's hand, such as the page scroll.
    */
-  onReady?: (api: { step: (delta: number) => void }) => void;
+  onReady?: (api: GalleryApi) => void;
+}
+
+export interface GalleryApi {
+  /** Move by whole cards, snapping to the nearest one first. */
+  step: (delta: number) => void;
+  /**
+   * Move by a fraction of a card, on top of wherever the ring was already
+   * heading, and without snapping. `immediate` lands the move outright
+   * instead of easing towards it.
+   */
+  nudge: (cards: number, immediate?: boolean) => void;
 }
 
 type Scroll = {
@@ -471,6 +483,29 @@ class App {
     this.scroll.target = Math.round(this.scroll.target / width) * width + delta * width;
   }
 
+  /**
+   * Turn the ring by a fraction of a card. Additive, because drag, the wheel
+   * and the arrows all move the same target and a turn coming from elsewhere
+   * must not overwrite theirs; and unsnapped, because the caller is the one
+   * that knows where the sequence of nudges is meant to end.
+   *
+   * `immediate` moves `current` and `last` along with the target. The render
+   * loop is stopped while the canvas is off screen, so a nudge sent then
+   * would only be eased towards once the ring came into view — visibly
+   * setting off in the wrong direction before the turn it was asked for.
+   * Landing it outright while nobody can see the ring is what makes the
+   * first visible frame already the one intended.
+   */
+  nudge(cards: number, immediate = false) {
+    if (!this.medias.length) return;
+    const distance = cards * this.medias[0].width;
+    this.scroll.target += distance;
+    if (immediate) {
+      this.scroll.current += distance;
+      this.scroll.last += distance;
+    }
+  }
+
   private snap() {
     if (!this.medias.length) return;
     const width = this.medias[0].width;
@@ -558,7 +593,20 @@ class App {
     window.removeEventListener("touchmove", this.onMove);
     window.removeEventListener("touchend", this.onUp);
 
-    const canvas = this.renderer?.gl?.canvas;
+    /*
+     * The context is released outright, not left for the garbage collector.
+     * The scene is rebuilt on every theme toggle, and a browser allows only
+     * a handful of live contexts per page — past that it force-loses the
+     * oldest, which could be the hero's sky or the 3D graph. Unlike
+     * ShaderBackground this does not defer the release for StrictMode's
+     * remount: that component keeps one React-owned canvas and so can
+     * reclaim its context, but every App here makes a fresh canvas through
+     * its own Renderer, so the old context can never be reused and waiting
+     * would only hold it longer.
+     */
+    const gl = this.renderer?.gl;
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    const canvas = gl?.canvas;
     canvas?.parentNode?.removeChild(canvas);
   }
 }
@@ -614,7 +662,10 @@ export function CircularGallery({
       onActiveChange: (i) => activeRef.current?.(i),
     });
 
-    readyRef.current?.({ step: (delta) => app.step(delta) });
+    readyRef.current?.({
+      step: (delta) => app.step(delta),
+      nudge: (cards, immediate) => app.nudge(cards, immediate),
+    });
 
     return () => app.destroy();
     /*

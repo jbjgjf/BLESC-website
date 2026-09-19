@@ -4,6 +4,16 @@ import Lenis from "lenis";
 import { useEffect } from "react";
 
 /**
+ * The live instance, for the few places that have to hold the page still —
+ * the member dialog stops it while open. Null before mount, after unmount,
+ * and for the whole visit under prefers-reduced-motion, so callers have to
+ * treat it as optional.
+ */
+let instance: Lenis | null = null;
+
+export const getLenis = () => instance;
+
+/**
  * Lenis smooth scroll. Duration sits at 1.1s — calm, but not sluggish. The
  * easing is a plain exponential decay, so scrolling settles rather than
  * overshooting; rubber-banding at the page ends is suppressed in CSS via
@@ -28,8 +38,12 @@ export function SmoothScroll() {
       // clears the fixed nav — see `scroll-mt-24` on <Section>.
       anchors: true,
     });
+    instance = lenis;
 
-    return () => lenis.destroy();
+    return () => {
+      lenis.destroy();
+      if (instance === lenis) instance = null;
+    };
   }, []);
 
   return null;

@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Fragment } from "react";
+import { Drift } from "@/components/flourish/Drift";
 import { GlassSurface } from "@/components/GlassSurface";
 import { ICON_PATHS, ICON_VIEW_BOX, type IconName } from "@/lib/icons";
 
@@ -126,7 +127,7 @@ export function ButtonLink({
 }: ButtonLinkProps) {
   return (
     <a
-      className={`glass-btn-${variant} group inline-block rounded-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:scale-[1.02] ${className}`}
+      className={`glass-btn-${variant} group inline-block rounded-xl transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform hover:scale-[1.02] ${className}`}
       {...props}
     >
       <GlassSurface
@@ -135,11 +136,20 @@ export function ButtonLink({
         }`}
         style={{
           background: "var(--glass-tint)",
-          borderRadius: 9999,
+          borderRadius: 12,
           padding: SIZES[size].padding,
           transition: "background 300ms cubic-bezier(0.16,1,0.3,1)",
+          /*
+           * The secondary pill is the page ground at 78%, which on the page
+           * ground is nothing: 資料請求 sat on white with no edge to it. Its
+           * edge and its lift are tokens per theme (globals.css), because a
+           * white pill wants a shadow and a dark pill wants a lit rim.
+           */
           ...(variant === "secondary"
-            ? { border: "1px solid rgba(242,241,238,0.16)" }
+            ? {
+                border: "1px solid var(--glass-edge)",
+                boxShadow: "var(--glass-shadow)",
+              }
             : null),
         }}
       >
@@ -170,14 +180,11 @@ export function Container({
 export function Section({
   id,
   children,
-  alt = false,
   className = "",
   backdrop,
 }: {
   id?: string;
   children: ReactNode;
-  /** Alternating section background. */
-  alt?: boolean;
   className?: string;
   /**
    * Painted behind the content, outside the Container so it can run the
@@ -189,9 +196,7 @@ export function Section({
   return (
     <section
       id={id}
-      className={`scroll-mt-24 py-16 md:py-24 ${
-        alt ? "bg-canvas-alt" : "bg-canvas"
-      } ${className}`}
+      className={`scroll-mt-24 bg-canvas py-[clamp(5rem,10vw,9rem)] ${className}`}
     >
       {backdrop}
       <Container className="relative">{children}</Container>
@@ -202,29 +207,23 @@ export function Section({
 /**
  * Section title.
  *
- * Was a 0.78rem uppercase label, which read as a caption rather than the
- * name of the section. Now the second-largest type on the page after the
- * hero headline — clamp tops out at 3.25rem against the hero's 4.25rem — as
- * a real <h2>, with a short accent bar carrying the colour so the heading
- * itself can stay full-strength ink.
- *
- * `accent` takes a complete class name rather than a fragment: Tailwind
- * scans source text, so a interpolated `bg-${x}` would never be generated.
+ * The accent bar that used to sit above it is gone. On a single white
+ * ground the heading does not need a coloured tab to announce a boundary —
+ * the air above it does that — and six of them down the page read as
+ * decoration rather than structure.
  */
-export function SectionTitle({
-  children,
-  accent = "bg-mark-1",
-}: {
-  children: ReactNode;
-  accent?: string;
-}) {
+export function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <div className="mb-8 md:mb-10">
-      <span aria-hidden className={`block h-1 w-14 rounded-full ${accent}`} />
-      <h2 className="mt-6 text-[clamp(2rem,5vw,3.25rem)] font-semibold leading-[1.15] tracking-[-0.03em] text-ink">
-        {children}
-      </h2>
-    </div>
+    /*
+     * Every section head floats a few pixels against the scroll. It is the
+     * one depth cue the page repeats, so it lives here rather than in each
+     * section: a heading that lags the copy under it by ten pixels across a
+     * screen of travel is felt more than seen, which is the right amount.
+     * The h2 keeps its own margin, so the wrapper changes no layout.
+     */
+    <Drift amount={10}>
+      <h2 className="type-head mb-10 text-ink md:mb-12">{children}</h2>
+    </Drift>
   );
 }
 

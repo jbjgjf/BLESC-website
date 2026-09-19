@@ -1,105 +1,182 @@
-import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
+import { DrawnRule } from "@/components/DrawnRule";
 import { Flower } from "@/components/Flower";
-import { SectionTitle, Icon, Section } from "@/components/ui";
+import { RevealItem, Reveal, Stagger } from "@/components/Reveal";
+import { Container, SectionTitle } from "@/components/ui";
 
 /**
- * Real entries. The invented placeholder list that used to sit here — the
- * Kyoto University study, the Hatapro tie-up, the pilot schools, the
- * conference — has been removed rather than kept alongside, because a press
- * list that mixes the two is worse than one that is short.
+ * Real entries only. The invented placeholder list that used to sit here —
+ * the Kyoto University study, the Hatapro tie-up, the pilot schools, the
+ * conference — was removed rather than kept alongside, because a press list
+ * that mixes the two is worse than one that is short.
+ *
+ * `name` is split out of the sentence so the proper noun can be set at
+ * display size: read `name` and `body` together and they are the entry
+ * exactly as the company wrote it, minus the 「」 that the large type now
+ * does the work of.
  *
  * `date` is optional and both entries are currently without one: the events
  * happened, but inventing a date for something the company actually did is
  * the same failure as inventing the entry. Fill them in and they render.
  *
- * `href` is intentionally absent too: there are no article pages yet, and a
- * headline that looks clickable but goes nowhere is worse than one that
- * plainly doesn't. Add the field and the entry becomes a link.
+ * There is no `href` field at all. There are no article pages, and a
+ * headline styled to look clickable that goes nowhere is worse than one that
+ * plainly doesn't — so nothing here carries a link affordance, a hover state
+ * or an arrow.
  */
 type NewsItem = {
   date?: string;
-  category: string;
-  title: string;
-  href?: string;
+  name: string;
+  body: string;
 };
 
 const ITEMS: NewsItem[] = [
   {
-    category: "登壇",
-    title: "「SusHi Tech Tokyo」に登壇し、Blescの取り組みについて発表しました。",
+    name: "SusHi Tech Tokyo",
+    body: "に登壇し、Blescの取り組みについて発表しました。",
   },
   {
-    category: "受賞",
-    title: "「IVS」YOUTH部門において、優秀賞を受賞しました。",
+    name: "IVS",
+    body: "YOUTH部門において、優秀賞を受賞しました。",
   },
 ];
 
-/** Category tints, cycled so the list carries colour rather than grey rows. */
-const MARKS = ["text-mark-1", "text-mark-2", "text-mark-3"] as const;
+/**
+ * Two entries as a ledger.
+ *
+ * The pair used to sit side by side, so that neither half of the measure was
+ * left empty beside an eleven-character sentence. The ledger answers the same
+ * problem from the other direction: each entry is a full-width row whose
+ * rules run edge to edge of the viewport — wider than the page measure — so a
+ * row reads as a line in a register rather than as a block waiting for a
+ * neighbour. Inside the rules the content keeps to the ordinary 68rem
+ * Container, which is what ties the rows back to the rest of the page.
+ *
+ * That is why this is a hand-rolled <section> and not <Section>. Section
+ * wraps everything it is given in the Container, and a rule drawn inside the
+ * Container stops at the measure. The section classes are copied from it so
+ * the rhythm down the page does not change, scroll-mt-24 included: the nav
+ * scroll-spy and the Lenis anchors both depend on that offset and on the id.
+ *
+ * This is the one place the page's ground shifts. The register sits on
+ * bg-canvas-alt — #f5f7fa on the white build, #121417 on the dark — which is
+ * the second surface the palette has always had and the page has never used
+ * as a ground. It is a change of light rather than a band: a 6rem fade from
+ * the canvas colour at the top and another at the bottom, so there is no
+ * edge to the section, only a slightly different air. The fades sit at -z-10
+ * inside the section's own stacking context (isolate), which puts them
+ * above the section's fill and under everything in flow — the title cannot
+ * be tinted by them, with or without JS. Both are aria-hidden and take no
+ * pointer.
+ *
+ * Every pair was measured on the alt ground. Secondary copy 5.83:1 light and
+ * 11.38:1 dark; the mark-1 stamp 5.07:1 and 9.45:1; ink 18.11:1 and 18.45:1.
+ * The rules were the one thing that slipped: line-strong is 3.46:1 on the
+ * light alt ground but 2.95:1 on the dark one, under the 3:1 a structural
+ * line needs. The fix is theme-neutral — a flat layer of the text colour at
+ * 4% laid over the rule's own fill, which pulls a light rule darker and a
+ * dark rule lighter — and it returns the rules to the weight they have on
+ * the plain canvas: 3.70:1 light and 3.25:1 dark against 3.72:1 and 3.15:1
+ * there. It is a background-image, so it composes with DrawnRule's
+ * background-color rather than fighting it for the same property.
+ *
+ * From md each row is three columns — the brand flower as the row's
+ * marker, the proper noun at display size, and the sentence. The sentence sits last
+ * because it is where the eye lands after the name: に登壇し opens with a
+ * particle that continues the name, so name → sentence has to run left to
+ * right. Below md the three stack in the same reading order.
+ */
+const LEDGER_RULE =
+  "bg-[linear-gradient(color-mix(in_srgb,var(--color-text)_4%,transparent),color-mix(in_srgb,var(--color-text)_4%,transparent))]";
 
 export function News() {
   return (
-    <Section id="news">
-      <Reveal>
-        <SectionTitle accent="bg-mark-3">ニュース</SectionTitle>
-      </Reveal>
+    <section
+      id="news"
+      className="relative isolate scroll-mt-24 bg-canvas-alt py-[clamp(5rem,10vw,9rem)]"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-24 bg-linear-to-b from-canvas to-transparent"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-24 bg-linear-to-t from-canvas to-transparent"
+      />
 
-      <Reveal className="max-w-3xl">
-        <p className="flex items-center gap-3 text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.4] tracking-[-0.02em] text-ink">
-          Blescの最新の動き。
-          <Flower size={34} rotate={14} opacity={0.9} className="shrink-0 text-mark-3" />
-        </p>
-      </Reveal>
+      <Container>
+        <Reveal>
+          <SectionTitle>ニュース</SectionTitle>
+        </Reveal>
+      </Container>
 
-      <Stagger className="mt-10" stagger={0.09}>
-        {ITEMS.map((item, i) => {
-          const mark = MARKS[i % MARKS.length];
+      {/*
+        The opening rule lives beside the list rather than in it: an <ol> may
+        hold nothing but <li>, and the point of rendering a real list is that
+        it stays a valid one. It draws almost at once, since there is nothing
+        above it to wait for; the rule that closes each row keeps DrawnRule's
+        default hold so the words arrive before the line under them does.
+      */}
+      <div className="relative">
+        <DrawnRule className={`top-0 ${LEDGER_RULE}`} delay={0.1} />
 
-          const body = (
-            <div className="flex flex-col gap-2 border-t border-line py-6 md:flex-row md:items-baseline md:gap-8 md:py-7">
-              <div className="flex shrink-0 items-center gap-4">
-                {item.date && (
-                  <time className="text-[0.85rem] tabular-nums text-muted">
-                    {item.date}
-                  </time>
-                )}
-                <span
-                  className={`text-[0.75rem] font-medium tracking-[0.08em] ${mark}`}
-                >
-                  {item.category}
-                </span>
-              </div>
+        <Stagger as="ol" stagger={0.1}>
+          {ITEMS.map((item) => (
+            <RevealItem as="li" key={item.name} className="relative">
+              {/*
+                The sentence column is minmax rather than a fraction so that
+                the name, not the sentence, absorbs whatever width the
+                viewport adds: the sentence is two lines of reading-size
+                Japanese at any width in that range, and the name is the
+                thing that wants the room.
+              */}
+              <Container className="grid gap-y-5 py-10 md:grid-cols-[auto_1fr_minmax(16rem,20rem)] md:gap-x-10 md:py-14 lg:gap-x-14">
+                {/*
+                  The brand flower in ink — the same shape the logo draws, set
+                  as the row's marker in the text colour. Decorative; the name
+                  and the sentence beside it are the entry. There is no
+                  category label: the sentence already says what happened.
+                */}
+                <Flower size={22} className="mt-0.5 shrink-0 self-start text-ink md:mt-3" />
 
-              <p className="text-[1rem] leading-relaxed text-ink md:text-[1.05rem]">
-                {item.title}
-              </p>
+                {/*
+                  Weight 300: the hero's voice, not the section head's. The
+                  size is capped at 3.75rem instead of riding 5vw up to the
+                  measure because past that "SusHi Tech Tokyo" stops holding
+                  one line — the name has about 540px at the full measure
+                  beside a 20rem sentence column, and at 64px it wants
+                  500–530px depending on whether Helvetica Neue or Inter is
+                  serving the Latin. At 60px it fits either way with room to
+                  spare; at 768px it takes two lines, which is fine.
+                */}
+                <p className="font-light text-[clamp(2.5rem,5vw,3.75rem)] leading-[1.05] tracking-[-0.02em] text-ink [font-feature-settings:'palt'_1]">
+                  {item.name}
+                </p>
 
-              {item.href && (
-                <Icon
-                  name="arrow_outward"
-                  size={18}
-                  className="ml-auto hidden shrink-0 text-muted md:block"
-                />
-              )}
-            </div>
-          );
+                {/*
+                  pt-1 at md puts the first line's ink within a couple of
+                  pixels of the name's cap height whether or not a date sits
+                  above it. At 60px/1.05 the name's cap top is about 11px
+                  below the row; a kanji at 17px/1.9 starts about 8.5px below
+                  its own line box, and a tabular digit at 0.85rem about 6px,
+                  so 4px is the one value that lands both within reach.
+                */}
+                <div className="md:pt-1">
+                  {item.date && (
+                    <time className="mb-1 block text-[0.85rem] tabular-nums text-muted">
+                      {item.date}
+                    </time>
+                  )}
+                  <p className="measure-jp text-[1.0625rem] text-muted">
+                    {item.body}
+                  </p>
+                </div>
+              </Container>
 
-          return (
-            <RevealItem key={item.title}>
-              {item.href ? (
-                <a
-                  href={item.href}
-                  className="group block transition-opacity duration-300 hover:opacity-80"
-                >
-                  {body}
-                </a>
-              ) : (
-                body
-              )}
+              <DrawnRule className={`bottom-0 ${LEDGER_RULE}`} />
             </RevealItem>
-          );
-        })}
-      </Stagger>
-    </Section>
+          ))}
+        </Stagger>
+      </div>
+    </section>
   );
 }

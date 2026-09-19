@@ -1,10 +1,17 @@
+import { FLOWER_PATH, FLOWER_VIEWBOX } from "@/lib/flower";
+
 /**
- * A small five-petal flower, drawn as inline SVG.
+ * The brand flower, as supplied.
  *
- * Five petals and a pale eye is roughly a nemophila — "baby blue eyes" —
- * which is the flower #85c0ed already looks like, so the ornament borrows the
- * palette rather than adding to it. Petals take `currentColor`, so a flower
- * picks up whatever text colour it sits in.
+ * The path is the company's own artwork, lifted out of public/logo/flower.svg
+ * and inlined so it can take `currentColor` — the mark appears at 22px in a
+ * footer and at 700px as a background wash, in two themes, and an <img> would
+ * be stuck at the one blue it was exported in.
+ *
+ * The source file draws the mark on the full lockup's 999x241 canvas, with the
+ * flower itself occupying only the left quarter; the viewBox here is cropped to
+ * the mark so `size` means the size of the flower rather than the size of the
+ * empty space around it.
  *
  * Purely decorative: aria-hidden everywhere, never carries meaning.
  */
@@ -25,60 +32,11 @@ export function Flower({
       focusable="false"
       width={size}
       height={size}
-      viewBox="0 0 100 100"
+      viewBox={FLOWER_VIEWBOX}
       className={className}
       style={{ transform: `rotate(${rotate}deg)`, opacity }}
     >
-      <g fill="currentColor">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <ellipse
-            key={i}
-            cx="50"
-            cy="27"
-            rx="14"
-            ry="23"
-            transform={`rotate(${i * 72} 50 50)`}
-          />
-        ))}
-      </g>
-      {/* The eye sits on the page ground so the petals read as separate. */}
-      <circle cx="50" cy="50" r="9.5" fill="var(--color-bg)" />
-      <circle cx="50" cy="50" r="5" fill="currentColor" opacity="0.55" />
+      <path d={FLOWER_PATH} fill="currentColor" fillRule="evenodd" />
     </svg>
-  );
-}
-
-type Scatter = {
-  /** Percentage offsets within the parent, so they scale with the box. */
-  top: string;
-  left?: string;
-  right?: string;
-  size: number;
-  rotate: number;
-  opacity: number;
-  className: string;
-};
-
-/**
- * A few flowers placed in a section's margins.
- *
- * Absolutely positioned and pointer-events-none, so nothing here can shift
- * layout or intercept a click. Kept sparse on purpose — this is a page about
- * student distress, and a dense scatter would read as decoration for its own
- * sake.
- */
-export function FlowerScatter({ items }: { items: Scatter[] }) {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0">
-      {items.map((f, i) => (
-        <span
-          key={i}
-          className={`absolute ${f.className}`}
-          style={{ top: f.top, left: f.left, right: f.right }}
-        >
-          <Flower size={f.size} rotate={f.rotate} opacity={f.opacity} />
-        </span>
-      ))}
-    </div>
   );
 }

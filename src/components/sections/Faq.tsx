@@ -17,13 +17,14 @@ import { FAQ } from "@/lib/seo";
 export function Faq() {
   return (
     /*
-      Not `alt`: Philosophy immediately above is already a canvas-alt band,
-      and two in a row merge into one grey block two screens tall. The rules
-      between the questions carry the separation from News below.
+      Not `alt`: ニュース immediately above is already the page's one
+      canvas-alt band, and two in a row would merge into one grey block. The
+      rules between the questions carry the separation from the closing
+      statement below.
     */
     <Section id="faq">
       <Reveal>
-        <SectionTitle accent="bg-mark-1">よくあるご質問</SectionTitle>
+        <SectionTitle>よくあるご質問</SectionTitle>
       </Reveal>
 
       <Reveal className="max-w-3xl">
@@ -36,16 +37,16 @@ export function Faq() {
         {FAQ.map(({ q, a }) => (
           <RevealItem key={q}>
             <details className="group border-t border-line">
-              <summary className="flex cursor-pointer list-none items-baseline gap-4 py-6 text-[1.05rem] font-medium leading-snug tracking-[-0.01em] text-ink transition-opacity duration-300 hover:opacity-70 md:text-[1.15rem]">
+              <summary className="flex cursor-pointer list-none items-baseline gap-4 py-6 text-[1.05rem] font-medium leading-snug tracking-[-0.01em] text-ink transition-opacity duration-300 hover:opacity-70 motion-reduce:transition-none md:text-[1.15rem]">
                 <span className="flex-1">{q}</span>
                 {/*
-                  A rotating rule rather than an icon glyph: the icon font is
-                  loaded for the rest of the site, but a summary marker that
-                  depends on a webfont shows a stray ligature name mid-load.
+                  A rotating rule rather than an icon: two hairlines that
+                  cross into a plus and fold into a minus as the answer opens,
+                  which needs nothing loaded and nothing but CSS.
                 */}
                 <span
                   aria-hidden
-                  className="relative mt-2 h-[1px] w-4 shrink-0 bg-mark-2 before:absolute before:inset-0 before:bg-mark-2 before:transition-transform before:duration-300 before:content-[''] before:[transform:rotate(90deg)] group-open:before:[transform:rotate(0deg)]"
+                  className="relative mt-2 h-[1px] w-4 shrink-0 bg-mark-2 before:absolute before:inset-0 before:bg-mark-2 before:transition-transform before:duration-300 motion-reduce:before:transition-none before:content-[''] before:[transform:rotate(90deg)] group-open:before:[transform:rotate(0deg)]"
                 />
               </summary>
               <p className="measure-jp pb-7 pr-8 text-[0.95rem] leading-relaxed text-muted">

@@ -1,274 +1,372 @@
 "use client";
 
-import { motion, useInView, useReducedMotion } from "motion/react";
-import Image from "next/image";
-import { Fragment, useRef } from "react";
-import { FlowerScatter } from "@/components/Flower";
-import { Reveal } from "@/components/Reveal";
-import { Container, Icon } from "@/components/ui";
+import {
+  motion,
+  useInView,
+  useMotionValue,
+  useScroll,
+  useTransform,
+} from "motion/react";
+import { useLayoutEffect, useRef } from "react";
+import { usePinCapable } from "@/components/hero/usePinCapable";
+import { ShaderBackground } from "@/components/ShaderBackground";
+import { useTheme } from "@/components/ThemeProvider";
+import { WebGLFallback } from "@/components/webgl/WebGLErrorBoundary";
+import { FLOWER_NOTCH, FLOWER_PATH, FLOWER_SPIN_VIEWBOX } from "@/lib/flower";
+import { usePrefersReducedMotion } from "@/lib/reducedMotion";
+import { DARK_PALETTE, LIGHT_PALETTE } from "@/lib/sky";
 
-/**
- * Set this to show a real photograph in the right-hand slot; the dashed
- * well renders until then. Kept null rather than pointed at stock imagery.
+/*
+ * The pinned stretch, in fractions of its own scroll. The line grows first,
+ * holds, and then the flower above it takes over: it drifts to the centre of
+ * the screen, grows and turns once, and the statement fades as the petals
+ * pass over it. The flower's blue fills the screen, and then the whole stage
+ * fades away over the footer, which has been sitting underneath it the
+ * whole time — so the pin ends on the footer, with nothing left to scroll.
  */
-const PHOTO: { src: string; alt: string } | null = {
-  src: "/photos/philosophy.png",
-  alt: "",
-};
+const LINE = [0, 0.18] as const;
+const DIVE = [0.3, 0.82] as const;
+const LINE_OUT = [0.4, 0.52] as const;
+/*
+ * The flower stops growing at 2.6 viewport diagonals — by then every petal
+ * is off the screen and only the notches between them still show the sky —
+ * and the last stretch fills the screen with the flower's own blue, which
+ * reads as the flower finishing its opening. The notch arithmetic alone would
+ * ask for about eight diagonals, a shape over 13,000px across on a laptop.
+ */
+const COVER = [0.68, 0.82] as const;
+/*
+ * The blue dissolving into the footer beneath. It ends a little before the
+ * pin does, so the last stretch of scroll is the footer, uncovered and
+ * still, rather than the tail of a fade.
+ */
+const REVEAL = [0.84, 0.96] as const;
+const MAX_DIAGONALS = 2.6;
+/** Growth follows a power curve, so the rush comes at the end of the dive. */
+const DIVE_POWER = 2.3;
+
+/** Where p sits in [from, to], clamped to 0–1. */
+const window01 = (p: number, [from, to]: readonly [number, number]) =>
+  Math.min(1, Math.max(0, (p - from) / (to - from)));
 
 /**
- * Square inset that overhangs the main photograph's top-right corner.
+ * The closing statement, as the page's second sky — and the way out of it.
  *
- * Set it to show; null leaves the main image alone rather than reserving a
- * hole. It carries a ring in the page ground colour so the two read as two
- * photographs rather than one collaged edge.
- */
-const PHOTO_ACCENT: { src: string; alt: string } | null = {
-  src: "/photos/philosophy-2.png",
-  alt: "",
-};
-
-/**
- * Same words, lit as you read them.
+ * The hero opens the page under the aurora and this closes it under the
+ * same one, drawn from the same palettes, so the two bookend everything
+ * between them. Above the line the brand flower breathes: the app's own
+ * greeting-screen composition, mark above words. The heading is the only
+ * text.
  *
- * The boxes this replaces were the wrong instrument — they fenced the two
- * key lines off rather than drawing the eye to them, and two bordered
- * panels inside a passage of prose just read as clutter. Instead the copy
- * starts dim and comes up to full strength line by line as it reaches the
- * upper part of the viewport, and inside the two lines that matter a single
- * phrase carries the accent and an underline. The eye lands on the phrase,
- * not on a container.
+ * Then the flower is the transition. The band pins; the line grows to fill
+ * the width and holds; and the flower drifts to the centre of the screen,
+ * turns once and grows until its blue is all there is — and then the blue
+ * fades away, and the footer is already there underneath it: the footer is
+ * pulled up under this section's last pinned screen (see Footer), so the
+ * pin ends on it and there is nothing left to scroll.
  *
- * `[[…]]` marks that phrase.
- *
- * The prose was condensed to roughly 70% of its original length on request
- * — 221 characters down to 160. Each paragraph keeps its own claim and its
- * order in the argument; what went was qualification, not substance. The
- * pull line and the closing statement are untouched.
- */
-type Block = { text: string; kind: "body" | "pull" | "close" };
-
-const BLOCKS: Block[] = [
-  {
-    kind: "body",
-    text: `テクノロジーに囲まれながら、
-人とのつながりは希薄になっています。`,
-  },
-  {
-    kind: "body",
-    text: `身近な友人の苦しみに誰も気づけないまま、
-手遅れになるのを見てきました。`,
-  },
-  { kind: "pull", text: `[[サイン]]は、確かにそこにあったはずでした。` },
-  {
-    kind: "body",
-    text: `気づけるのが「何かが起きた後」だけ。
-その現実を、受け入れられませんでした。`,
-  },
-  {
-    kind: "body",
-    text: `学校生活のなかで消えていく小さなSOS。
-Blescは、その声を聴き逃さない仕組みです。`,
-  },
-  {
-    kind: "close",
-    text: `誰かが孤立する前に、[[見えないものを可視化する]]。
-それが、私たちがBlescをつくる理由です。`,
-  },
-];
-
-/**
- * The closing statement leaves the text column and runs the full width
- * below the grid. The photographs stop above it, so the right-hand side is
- * empty there — and the line that says why any of this exists should not be
- * the one squeezed into a 2xl measure.
- */
-const CLOSE = BLOCKS[BLOCKS.length - 1];
-const BODY = BLOCKS.slice(0, -1);
-
-const SPLIT = /(\[\[.*?\]\])/g;
-
-function Rich({ text, className }: { text: string; className?: string }) {
-  return (
-    <p className={className}>
-      {text
-        .trim()
-        .split("\n")
-        .map((line, i, lines) => (
-          <Fragment key={i}>
-            {line.split(SPLIT).map((part, j) =>
-              part.startsWith("[[") ? (
-                <em
-                  key={j}
-                  className="font-medium not-italic text-mark-1 underline decoration-mark-1/35 decoration-2 underline-offset-[0.4em]"
-                >
-                  {part.slice(2, -2)}
-                </em>
-              ) : (
-                <Fragment key={j}>{part}</Fragment>
-              ),
-            )}
-            {i < lines.length - 1 && <br className="br-wide" />}
-          </Fragment>
-        ))}
-    </p>
-  );
-}
-
-const STYLE = {
-  body: "measure-jp text-muted",
-  pull: "text-[clamp(1.35rem,3vw,1.95rem)] font-medium leading-[1.6] tracking-[-0.02em] text-ink",
-  /*
-   * Runs the full container width. Capped at 2.75rem rather than 3.25 so
-   * 誰かが孤立する前に、見えないものを可視化する。 holds one line inside the
-   * 68rem measure — 22 characters at the old size ran about 140px past it
-   * and wrapped.
-   */
-  close:
-    "text-[clamp(1.45rem,3.9vw,2.75rem)] font-medium leading-[1.45] tracking-[-0.03em] text-ink",
-} as const;
-
-/**
- * Comes up from dim to full as it reaches the upper part of the viewport,
- * and stays there — dimming again on the way past would fight the reading
- * rather than support it.
- */
-function LitBlock({ block }: { block: Block }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-  const lit = useInView(ref, { margin: "0px 0px -35% 0px", once: true });
-
-  return (
-    <motion.div
-      ref={ref}
-      animate={{ opacity: reduce || lit ? 1 : 0.32 }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <Rich text={block.text} className={STYLE[block.kind]} />
-    </motion.div>
-  );
-}
-
-/**
- * Deliberately slows the page down: more vertical air, a narrower measure,
- * and a longer stagger than anywhere else on the site.
+ * Reduced motion, or a page without JavaScript, gets one still screen: the
+ * sky, the flower and the line at rest, and a footer that simply follows.
+ * The line only grows on a fine-pointer screen from md, where the statement
+ * sits on one line; the flower's dive runs on every pointer, because the
+ * dive is the point.
  */
 export function Philosophy() {
+  const track = useRef<HTMLDivElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const flower = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
+
+  /*
+   * The hydration-safe hook, not motion's: these flags pick ranges and
+   * style values below, so they have to read the same on the server and in
+   * the hydration pass. Both answer "moving" there, and the real values
+   * arrive on the render after.
+   */
+  const reduce = usePrefersReducedMotion();
+  const pins = usePinCapable();
+  const lineStill = reduce || !pins;
+
+  /*
+   * Layer promises only while the band is near the viewport: a permanent
+   * will-change on an 88vw line of display type, or on a flower that grows
+   * to fill the screen, would hold both rasterised for the whole visit.
+   */
+  const near = useInView(track, { margin: "25% 0px 25% 0px" });
+  const moving = !reduce && near;
+
+  /*
+   * Progress over the pinned stretch only: 0 as the track's top reaches the
+   * top of the viewport, which is when the stage sticks, and 1 as its foot
+   * reaches the viewport's foot, the last frame before it releases.
+   * Measured against the track, not the stage — the stage stops moving
+   * while pinned, so its own scroll window would read a flat line.
+   */
+  const { scrollYProgress } = useScroll({
+    target: track,
+    offset: ["start start", "end end"],
+  });
+
+  const lineScale = useTransform(
+    scrollYProgress,
+    [...LINE],
+    lineStill ? [1, 1] : [0.7, 1],
+    { clamp: true },
+  );
+  /*
+   * The opacities are computed in JavaScript on purpose. Given a range
+   * mapping straight off a target scroll, motion hands opacity to the
+   * browser as a native ViewTimeline animation, and on this pinned track
+   * that ran at about half the intended progress — measured: at 97% of the
+   * pin the blue cover sat at 0.50 and the statement at 0.93, so the line
+   * showed through the notches of a flower that should have hidden it. The
+   * function form of useTransform is never accelerated, so these follow
+   * scrollYProgress exactly. They also take a plain number when still,
+   * which is the other reason not to let a native animation own them.
+   */
+  const lineOpacity = useTransform(() => 1 - window01(scrollYProgress.get(), LINE_OUT));
+  const cover = useTransform(() => window01(scrollYProgress.get(), COVER));
+  const stageOpacity = useTransform(
+    () => 1 - window01(scrollYProgress.get(), REVEAL),
+  );
+
+  /*
+   * The dive's geometry, from the viewport: how far the flower has to move
+   * to reach the stage's centre, and how large it has to grow. Motion
+   * values rather than state, so a resize rewrites the transform without
+   * re-rendering the section. They start at "no movement", which is also
+   * the reduced and the server state.
+   */
+  const toCentre = useMotionValue(0);
+  const growBy = useMotionValue(0);
+
+  const dive = useTransform(() => {
+    const t = window01(scrollYProgress.get(), DIVE);
+    return reduce ? 0 : t;
+  });
+  const flowerScale = useTransform(
+    () => 1 + Math.pow(dive.get(), DIVE_POWER) * growBy.get(),
+  );
+  /*
+   * The drift to the centre finishes early in the dive, while the flower is
+   * still small enough for the move to read as a move rather than as the
+   * whole screen sliding.
+   */
+  const flowerY = useTransform(
+    () => Math.min(1, dive.get() / 0.35) * toCentre.get(),
+  );
+  const flowerRotate = useTransform(() => dive.get() * 360);
+
+  /*
+   * Measured after the transforms above exist, so their subscriptions hear
+   * the first set(). The flower is measured at rest — its own transforms
+   * are identity until the dive starts, and the breathing is a few pixels
+   * on an outer wrapper this measurement ignores.
+   */
+  useLayoutEffect(() => {
+    const measure = () => {
+      const s = stage.current;
+      const f = flower.current;
+      if (!s || !f) return;
+      const size = f.offsetWidth || 1;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const diagonal = Math.hypot(w, h);
+      /*
+       * The flower covers the screen once its notches are further from its
+       * centre than the viewport's corners are, whatever angle it has turned
+       * to — capped at MAX_DIAGONALS, with the blue cover doing the rest.
+       */
+      const end = Math.min(diagonal / 2 / FLOWER_NOTCH, diagonal * MAX_DIAGONALS);
+      growBy.set(end / size - 1);
+      // The stage is 100svh and pinned at the top, so its centre is h / 2.
+      let top = 0;
+      let node: HTMLElement | null = f;
+      while (node && node !== s) {
+        top += node.offsetTop;
+        node = node.offsetParent as HTMLElement | null;
+      }
+      toCentre.set(s.offsetHeight / 2 - (top + size / 2));
+    };
+    measure();
+    window.addEventListener("resize", measure, { passive: true });
+    /*
+     * The column can change height without the window changing size — the
+     * web fonts swapping in can move the statement between one line and two
+     * on a phone — and the drift to centre is worked out from that height.
+     */
+    const observer = new ResizeObserver(measure);
+    if (flower.current?.parentElement?.parentElement) {
+      observer.observe(flower.current.parentElement.parentElement);
+    }
+    if (stage.current) observer.observe(stage.current);
+    document.fonts?.ready.then(measure, () => undefined);
+    return () => {
+      window.removeEventListener("resize", measure);
+      observer.disconnect();
+    };
+  }, [growBy, toCentre]);
+
   return (
-    <section className="relative overflow-hidden bg-canvas-alt py-16 md:py-24">
+    /*
+     * overflow-x-clip, never overflow-hidden: hidden on any ancestor is
+     * what switches `position: sticky` off.
+     */
+    /*
+     * z-10, and no background of its own. The footer is pulled up under this
+     * section's last pinned screen (see Footer), so the section has to paint
+     * above it, and has to be see-through wherever the stage is not — the
+     * stage paints its own sky, and it covers the whole section at every
+     * scroll position, pinned or not.
+     */
+    <section className="relative z-10 overflow-x-clip">
       {/*
-        The copy here sits in a 2xl column inside a much wider container, so
-        the margins are the emptiest space on the page. Shown from lg up only —
-        below that the margins collapse and the flowers would crowd the text.
+        The track is only tall — and so the stage only pins — when motion is
+        allowed and a script is running to drive it, decided in CSS so the
+        server, the stylesheet and the JS above agree before hydration.
+        Everywhere else it is exactly the stage's height: one still screen,
+        where a page with no script would otherwise scroll three screens past
+        a picture that never moves.
       */}
-      <FlowerScatter
-        items={[
-          /*
-            xl only, and inside 4% of the edge. The copy column sits at the
-            container's padding — roughly 136px in at 1280 — so the wider
-            placements these had were landing on top of the text once this
-            section moved and its measure changed.
-          */
-          { top: "13%", left: "2%", size: 58, rotate: 12, opacity: 0.5, className: "hidden text-mark-1 xl:block" },
-          { top: "38%", left: "4%", size: 40, rotate: -22, opacity: 0.44, className: "hidden text-mark-3 xl:block" },
-          { top: "62%", left: "1.5%", size: 36, rotate: 38, opacity: 0.42, className: "hidden text-mark-2 xl:block" },
-          { top: "82%", left: "3.5%", size: 50, rotate: -8, opacity: 0.48, className: "hidden text-mark-1 xl:block" },
-        ]}
-      />
-
-      <Container>
-        <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-16">
-          <div className="max-w-2xl">
-            <Reveal>
-              <h2 className="text-[clamp(1.625rem,4vw,2.5rem)] font-medium leading-[1.5] tracking-[-0.02em] text-ink">
-                声にならないSOSに、
-                <br className="br-wide" />
-                気づける社会へ。
-              </h2>
-            </Reveal>
-
-            <div className="mt-8 space-y-6 md:space-y-7">
-              {BODY.map((block, i) => (
-                <LitBlock key={i} block={block} />
-              ))}
+      <div ref={track} className="relative motion-safe:js:h-[330svh]">
+        {/*
+          The one place overflow-hidden is allowed: this is the sticky
+          element itself, not an ancestor of one, and it is what keeps the
+          sky's canvas and a flower many times the screen's size inside the
+          viewport without a scrollbar.
+        */}
+        {/*
+          When it pins, the stage is 100lvh, the large viewport: on a phone
+          the toolbar collapses as the page scrolls down, and a 100svh stage
+          then left a strip of the track's own ground under the blue cover —
+          the "one colour" screen had a white band along its foot. lvh is the
+          height the viewport grows to, and overflow-hidden clips the rest
+          while the toolbar is still showing.
+        */}
+        {/*
+          pointer-events-none: nothing in the stage is interactive, and at
+          the end of the pin it is a transparent layer over the footer's
+          buttons, which have to take the click.
+        */}
+        <motion.div
+          ref={stage}
+          className="pointer-events-none sticky top-0 flex min-h-[72svh] items-center justify-center overflow-hidden px-6 md:h-[100svh] md:px-10 motion-safe:js:h-[100lvh]"
+          style={{ opacity: reduce ? 1 : stageOpacity }}
+        >
+          {/*
+            The sky, composed exactly as the hero composes it: the static
+            gradient sits underneath permanently so that if WebGL never
+            initialises the canvas stays transparent and this shows through.
+            ShaderBackground pauses itself off-screen and freezes under
+            reduced motion.
+          */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden>
+            <WebGLFallback className="absolute inset-0" />
+            <div className="absolute inset-0">
+              <ShaderBackground
+                colors={theme === "light" ? LIGHT_PALETTE : DARK_PALETTE}
+              />
             </div>
+            {/*
+              Fades the sky in from the section above and out at the foot,
+              as the hero does at its own. The middle is left open, which is
+              where the type sits.
+            */}
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--scrim-strong)_0%,var(--scrim-soft)_28%,var(--scrim-soft)_72%,var(--scrim-strong)_100%)]" />
+            {/*
+              The type's own ground: a wide, flat-topped ellipse behind the
+              line. --band-scrim is a token, set per theme in globals.css
+              from pixels read back off the canvas: a 0.7 page-ground wash
+              on the dark build, nothing at all on the light one.
+            */}
+            <div className="absolute inset-0 bg-[radial-gradient(120%_60%_at_50%_50%,var(--band-scrim)_0%,var(--band-scrim)_55%,transparent_100%)]" />
+          </div>
+
+          <div className="relative flex flex-col items-center text-center">
+            {/*
+              The flower, in three layers so no two transforms share an
+              element: the outer one breathes (a few pixels of y, not
+              scaled), the middle one carries the dive (the drift to centre,
+              the growth, the turn), and the SVG inside is drawn in a square
+              box centred on the flower itself, so it turns in place rather
+              than swinging about the artwork's off-centre box. It sits above
+              the line, so the petals pass over the statement as it grows.
+            */}
+            <motion.div
+              aria-hidden
+              className="relative z-10"
+              animate={moving ? { y: [0, -7, 0] } : { y: 0 }}
+              transition={
+                moving
+                  ? { duration: 4.5, repeat: Infinity, ease: "easeInOut" }
+                  : { duration: 0.4 }
+              }
+            >
+              <motion.div
+                ref={flower}
+                className="size-14 text-accent md:size-22"
+                /*
+                  No will-change here, deliberately. A promised layer is
+                  rasterised once at the flower's resting size and then
+                  scaled, and at forty-odd times that size its edges were a
+                  soft blur; without the promise the browser redraws the
+                  vector at each size, which for one path is cheap.
+                */
+                style={{
+                  y: flowerY,
+                  scale: flowerScale,
+                  rotate: flowerRotate,
+                }}
+              >
+                <svg
+                  viewBox={FLOWER_SPIN_VIEWBOX}
+                  className="block h-full w-full"
+                  focusable="false"
+                >
+                  <path d={FLOWER_PATH} fill="currentColor" fillRule="evenodd" />
+                </svg>
+              </motion.div>
+            </motion.div>
+
+            {/*
+              The hero's voice: weight 300, 1.05 leading, −0.02em tracking
+              and palt. From md the statement is one line set in vw — 15.86em
+              in Helvetica Neue Light and Hiragino Sans W3, so 5.55vw lands it
+              at 88vw — and below md it breaks at the comma into two lines.
+            */}
+            <motion.h2
+              style={{
+                scale: lineScale,
+                opacity: reduce ? 1 : lineOpacity,
+                willChange: moving && !lineStill ? "transform" : undefined,
+              }}
+              className="mt-8 text-[clamp(1.9rem,9.2vw,3.25rem)] font-light leading-[1.05] tracking-[-0.02em] text-ink [font-feature-settings:'palt'_1] md:mt-10 md:text-[5.55vw] md:whitespace-nowrap"
+            >
+              <span className="block md:inline">声にならないSOSに、</span>
+              <span className="block md:inline">気づける社会へ。</span>
+            </motion.h2>
           </div>
 
           {/*
-            Image slot. Sticky so it tracks the copy rather than sitting at
-            the top of a very tall column with nothing beneath it. Drop a file
-            in /public and set PHOTO below; the well shows until then.
+            The flower's own blue, over everything, at the end of the dive:
+            it fills the notches between the petals so the screen is one
+            colour when the pin releases into the footer, which starts in the
+            same colour. Invisible at rest, and absent in effect under reduced
+            motion.
           */}
           {/*
-            `relative` is what the inset anchors to. It has to survive the
-            sticky switch at lg, and it does — a sticky box is still a
-            containing block for absolutely positioned descendants.
-
-            Extra top margin from lg only: the inset hangs 48px above the main
-            frame, and without it the overhang would collide with the heading
-            in the column alongside.
+            hidden unless motion is allowed and a script is running, decided
+            in CSS: the layout's noscript rule forces every inline-styled
+            element in <main> to opacity 1, and it would otherwise raise this
+            cover over the whole statement for a reader with no script.
           */}
-          <Reveal className="relative lg:sticky lg:top-28 lg:mt-12 lg:self-start">
-            {PHOTO ? (
-              <div className="relative aspect-[2/3] w-full overflow-hidden rounded-2xl border border-line">
-                <Image
-                  src={PHOTO.src}
-                  alt={PHOTO.alt}
-                  fill
-                  sizes="(min-width: 1024px) 23rem, 100vw"
-                  className="object-cover"
-                />
-              </div>
-            ) : (
-              <div className="flex aspect-[3/4] w-full flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-line bg-canvas-alt px-6 text-center">
-                <Icon
-                  name="add_photo_alternate"
-                  size={30}
-                  className="text-mark-1"
-                />
-                <p className="text-[0.8rem] text-muted">写真 — 3:4</p>
-              </div>
-            )}
-
-            {/*
-              Overhangs the corner rather than sitting inside it. It stays
-              within the column on small screens, where there is no page
-              margin to spill into, and only breaks the right edge from lg.
-            */}
-            <div className="absolute -top-8 right-2 aspect-square w-[46%] overflow-hidden rounded-2xl border border-line ring-4 ring-canvas lg:-right-10 lg:-top-12 lg:w-[58%]">
-              {PHOTO_ACCENT ? (
-                <Image
-                  src={PHOTO_ACCENT.src}
-                  alt={PHOTO_ACCENT.alt}
-                  fill
-                  sizes="(min-width: 1024px) 13rem, 45vw"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-2 border border-dashed border-line bg-canvas-alt px-4 text-center">
-                  <Icon
-                    name="add_photo_alternate"
-                    size={24}
-                    className="text-mark-3"
-                  />
-                  <p className="text-[0.7rem] leading-tight text-muted">
-                    写真 — 1:1
-                  </p>
-                </div>
-              )}
-            </div>
-          </Reveal>
-        </div>
-
-        {/*
-          Sits directly under the photograph now. It used to clear the copy
-          column, which ran 264px past the image, so the closing line landed
-          in open space with nothing near it.
-        */}
-        <div className="mt-8 md:mt-10">
-          <LitBlock block={CLOSE} />
-        </div>
-      </Container>
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-20 hidden bg-accent motion-safe:js:block"
+            style={{ opacity: reduce ? 0 : cover }}
+          />
+        </motion.div>
+      </div>
     </section>
   );
 }

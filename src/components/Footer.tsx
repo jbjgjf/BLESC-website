@@ -1,17 +1,14 @@
 "use client";
 
+import { FooterFlowers } from "@/components/FooterFlowers";
 import { GradientFooter } from "@/components/GradientFooter";
+import { getLenis } from "@/components/SmoothScroll";
 import { WordmarkReveal } from "@/components/WordmarkReveal";
 import { usePathname } from "next/navigation";
+import { useRef } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { ButtonLink, Container, Icon } from "@/components/ui";
-import {
-  CONTACT_EMAIL,
-  CONTACT_PATH,
-  CTA,
-  FOOTER_LINKS,
-  sectionHref,
-} from "@/lib/site";
+import { CONTACT_EMAIL, CTA, FOOTER_LINKS, sectionHref } from "@/lib/site";
 
 /**
  * Glow ramp per theme. Dark rises toward light at the core; light deepens
@@ -30,7 +27,7 @@ const DARK_STOPS = [
 ];
 
 const LIGHT_STOPS = [
-  { offset: 0, color: "#DCE9F5" },
+  { offset: 0, color: "#EDF1F8" },
   { offset: 0.1827, color: "#A8CDEA" },
   { offset: 0.2837, color: "#85C0ED" },
   { offset: 0.4135, color: "#6FB0E2" },
@@ -40,106 +37,209 @@ const LIGHT_STOPS = [
   { offset: 1, color: "#85C0ED00" },
 ];
 
+/**
+ * One treatment for every link in the utility line — the section links and
+ * the mail address — so that row reads as a single line of type rather than
+ * as two columns with headings of their own.
+ *
+ * muted holds 6.25:1 on the light ground and 12.1:1 on the dark one, so the
+ * resting state already passes AA; hover only raises it to ink.
+ *
+ * Tailwind v4 wraps `hover:` in `@media (hover: hover)` on its own. The
+ * arbitrary variant adds `(pointer: fine)` as well, so the colour change
+ * cannot be left stuck on by a touch that the browser reports as a hover.
+ */
+const QUIET_LINK =
+  "text-[0.9rem] text-muted transition-colors duration-300 [@media(hover:hover)_and_(pointer:fine)]:hover:text-ink";
+
 export function Footer() {
   const { theme } = useTheme();
   const onHome = usePathname() === "/";
+  /*
+   * On the home page the footer is already there when the closing
+   * statement's flower finishes: it is pulled up by one pinned screen and
+   * sits underneath the statement's last frame, and that frame — the
+   * flower's blue — fades away to leave it in place (see Philosophy). The
+   * pull-up is CSS-gated like the pin itself (motion allowed and a script
+   * running), so /contact, reduced motion and no-JS get a footer that simply
+   * follows.
+   *
+   * The one thing CSS cannot arrange is focus. A keyboard user tabbing out
+   * of the page's last section lands on a footer button that, until the
+   * pin has run to its end, is still underneath the statement. So focus
+   * arriving in the footer from above takes the page to the end of the pin,
+   * where the footer is uncovered.
+   */
+  const footerRef = useRef<HTMLElement>(null);
+  const onFocusIn = () => {
+    const footer = footerRef.current;
+    if (!onHome || !footer) return;
+    if (parseFloat(getComputedStyle(footer).marginTop) >= 0) return;
+    const top = footer.getBoundingClientRect().top + window.scrollY;
+    if (window.scrollY >= top - 1) return;
+    const lenis = getLenis();
+    if (lenis) lenis.scrollTo(top, { immediate: true });
+    else window.scrollTo({ top });
+  };
 
+  /*
+   * `relative` is the only positioning the footer gets. Nothing else — no
+   * transform, filter or overflow — because the glow band inside
+   * GradientFooter is position: fixed and any of those on an ancestor would
+   * capture it and pin it to the footer instead of the viewport. The
+   * negative margin that pulls it under the statement is only a margin.
+   *
+   * `isolate` gives the footer a stacking context of its own, and it has to:
+   * the statement above paints at z-10 so that it covers the footer while
+   * the flower runs, and without one the Container's own z-10 in here would
+   * compete with it in the page's stacking context — and, coming later in
+   * the document, win, printing the invitation over the flower's blue before
+   * the blue had faded. isolation creates no containing block, so the glow
+   * band's position: fixed is unaffected.
+   *
+   * No border-top on the footer: on the home page it is revealed rather than
+   * scrolled to, and a rule across its top would be the first thing seen.
+   */
   return (
     <GradientFooter
-      className="border-t border-line bg-canvas pt-16"
+      ref={footerRef}
+      onFocusCapture={onFocusIn}
+      className={`relative isolate bg-canvas ${onHome ? "motion-safe:js:-mt-[100lvh]" : ""}`}
       stops={theme === "light" ? LIGHT_STOPS : DARK_STOPS}
     >
-      <Container className="relative z-10">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-          {/* 導入について, folded in from the old standalone CTA section. */}
-          <div className="lg:col-span-2">
-            <h2 className="text-[clamp(1.5rem,3.4vw,2rem)] font-medium leading-[1.35] tracking-[-0.02em] text-ink">
-              導入について、お話ししませんか。
-            </h2>
-            <p className="measure-jp mt-4 max-w-sm text-[0.95rem] text-muted">
-              資料のご請求、導入のご相談を承っております。
-              お問い合わせフォームよりご連絡ください。
-            </p>
+      {/*
+        The content, in a positioned block of its own, which FooterFlowers
+        sits against.
+      */}
+      <div className="relative">
+        {/*
+          First in the block on purpose: it is a z-0 layer and the Container
+          after it carries z-10, so the flowers paint above the footer's
+          white and below every line of type. Placed later they would still
+          sit under the Container, but the point of the ordering is that
+          nothing here depends on a negative z-index, which the footer's own
+          background would paint over.
+        */}
+        <FooterFlowers />
 
-            {/*
-              The email field that used to sit here is now the first field of
-              the real form at /contact. One place to enquire, not two that
-              collect different amounts of information.
-            */}
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink variant="secondary" href={CTA.document.href}>
-                {CTA.document.label}
-              </ButtonLink>
-              <ButtonLink variant="primary" href={CTA.consult.href}>
-                {CTA.consult.label}
-              </ButtonLink>
-            </div>
+        {/*
+          Three bands, each with one type treatment and each centred: the
+          invitation, a quiet utility line, then the copyright with the
+          wordmark breaking through it. What used to be here was a
+          four-column grid — a CTA block, a サイトマップ column and an
+          お問い合わせ column, each with its own heading — which made the
+          quietest part of the page the busiest. Centring is what makes the
+          gutters either side of the heading a place the flowers can float,
+          rather than dead space to the right of a left-aligned block.
+        */}
+        {/*
+          On the home page the footer is revealed with its top at the top of
+          the screen, under the fixed nav, so the invitation starts lower
+          there — far enough that the heading, the buttons and the links all
+          sit in that first screen, clear of the nav.
+        */}
+        <Container
+          className={`relative z-10 pt-16 ${onHome ? "motion-safe:js:pt-[26svh]" : ""}`}
+        >
+          {/*
+            導入について, folded in from the old standalone CTA section.
+
+            The supporting paragraph under this is gone. It said 資料のご請求、
+            導入のご相談を承っております, which is the two button labels below
+            read back, and then お問い合わせフォームよりご連絡ください, which is
+            where both buttons already go. With the heading no longer sharing a
+            half-width grid cell it also sets on one line at desktop.
+
+            max-w-3xl is the measure the flower clusters are laid out against:
+            768px centred leaves 128px of gutter at 1024 and FooterFlowers
+            reasons from exactly that figure, so widening this would need the
+            clusters re-checked.
+          */}
+          <h2 className="mx-auto max-w-3xl text-center text-[clamp(1.625rem,3.6vw,2.375rem)] font-medium leading-[1.3] tracking-[-0.025em] text-ink [font-feature-settings:'palt'_1]">
+            導入について、お話ししませんか。
+          </h2>
+
+          {/*
+            The only route to the form the footer now needs: both hrefs are
+            CONTACT_PATH with the enquiry pre-selected, so the separate
+            お問い合わせフォーム text link was a third door onto the same page.
+
+            items-center keeps the stacked buttons at their own width and
+            centred on a phone, rather than stretched to the column.
+          */}
+          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <ButtonLink variant="secondary" href={CTA.document.href}>
+              {CTA.document.label}
+            </ButtonLink>
+            <ButtonLink variant="primary" href={CTA.consult.href}>
+              {CTA.consult.label}
+            </ButtonLink>
           </div>
 
-          <div>
-            <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.15em] text-mark-1">
-              サイトマップ
-            </h3>
-            <nav aria-label="フッターナビゲーション" className="mt-5">
-              <ul className="flex flex-col gap-3">
+          {/*
+            The link row and the address stack, centred, at every width. They
+            used to share one line at md with the address pushed to the far
+            end, which only made sense under a left-aligned heading; centred,
+            an address hanging off the right of a centred row of links reads
+            as a mistake.
+          */}
+          <div className="mt-14 flex flex-col items-center gap-5">
+            {/*
+              Kept, but laid down as one wrapping line instead of a titled
+              column. The nav hides its own link list below md with no menu
+              behind it, so these are the only links to the sections on a
+              phone — six items on two lines rather than six stacked rows.
+            */}
+            <nav aria-label="フッターナビゲーション">
+              <ul className="flex flex-wrap items-baseline justify-center gap-x-6 gap-y-3">
                 {FOOTER_LINKS.map(({ id, label }) => (
                   <li key={id}>
-                    <a
-                      href={sectionHref(id, onHome)}
-                      className="text-[0.9rem] text-muted transition-colors duration-300 hover:text-ink"
-                    >
+                    <a href={sectionHref(id, onHome)} className={QUIET_LINK}>
                       {label}
                     </a>
                   </li>
                 ))}
               </ul>
             </nav>
+
+            {/*
+              The mail route, on its own line under the links. It keeps its
+              icon now that it is the only one left down here: without it, an
+              address sitting in the same size and colour as the links reads
+              as a seventh nav item.
+
+              It stays in this band rather than joining the copyright, because
+              the copyright row is the one the wordmark reads through and a
+              second line of type over those letters would crowd them.
+            */}
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className={`inline-flex items-center gap-2 ${QUIET_LINK}`}
+            >
+              <Icon name="mail" size={18} className="shrink-0" />
+              {CONTACT_EMAIL}
+            </a>
           </div>
 
-          <div>
-            <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.15em] text-mark-1">
-              お問い合わせ
-            </h3>
-            <ul className="mt-5 flex flex-col gap-3">
-              <li>
-                <a
-                  href={CONTACT_PATH}
-                  className="inline-flex items-start gap-2 text-[0.9rem] text-muted transition-colors duration-300 hover:text-ink"
-                >
-                  <Icon name="edit_note" size={18} className="shrink-0" />
-                  お問い合わせフォーム
-                </a>
-              </li>
-              <li>
-                <a
-                  href={`mailto:${CONTACT_EMAIL}`}
-                  className="inline-flex items-start gap-2 text-[0.9rem] text-muted transition-colors duration-300 hover:text-ink"
-                >
-                  <Icon name="mail" size={18} className="shrink-0" />
-                  {CONTACT_EMAIL}
-                </a>
-              </li>
-            </ul>
+          {/*
+            The rule and the copyright close the content, and nothing else
+            shares their space. They used to sit across the wordmark's capitals
+            — the letters read through them by design — and what that looked
+            like was a line and a copyright printed over a logo.
+          */}
+          <div className="mt-16 border-t border-line pt-8 md:mt-20">
+            <p className="text-center text-[0.78rem] text-muted">© 2026 Blesc</p>
           </div>
+        </Container>
+
+        {/*
+          The wordmark, on its own below everything, dissolving downward into
+          the glow (its own mask does that). Hidden below md: it is a wide
+          wordmark, and at phone widths it shrinks to nothing.
+        */}
+        <div className="relative z-0 mt-10 hidden md:block lg:mt-12">
+          <WordmarkReveal />
         </div>
-
-        <div className="mt-16 border-t border-line pt-8">
-          <p className="text-[0.78rem] text-muted">© 2026 Blesc</p>
-        </div>
-      </Container>
-
-      {/*
-        Pulled up far enough that the capitals break above the rule over the
-        copyright, and pushed behind it — the footer's own Container carries
-        z-10 — so the line and the copyright read across the letters rather
-        than being covered by them.
-
-        Hidden below md: it is a wide wordmark, and at phone widths it either
-        shrinks to nothing or collides with the copyright it is meant to sit
-        behind.
-      */}
-      <div className="relative z-0 -mt-[6.25rem] hidden md:block lg:-mt-[7.25rem]">
-        <WordmarkReveal />
       </div>
     </GradientFooter>
   );

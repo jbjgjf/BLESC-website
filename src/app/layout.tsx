@@ -138,10 +138,11 @@ export const viewport: Viewport = {
   /*
    * One per scheme. A single light value painted the browser chrome
    * near-white behind a near-black page for every dark-mode visitor, which
-   * is both an eyesore and a (small) engagement signal.
+   * is both an eyesore and a (small) engagement signal. The light value is
+   * the page ground, #ffffff, since the ground moved off the old cream.
    */
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafaf8" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#0a0b0d" },
   ],
   colorScheme: "light dark",
@@ -180,6 +181,7 @@ export default function RootLayout({
         <noscript>
           <style>{`
             main [style], header [style] { opacity: 1 !important; filter: none !important; transform: none !important; }
+            footer svg text { stroke-dashoffset: 0 !important; }
           `}</style>
         </noscript>
       </head>

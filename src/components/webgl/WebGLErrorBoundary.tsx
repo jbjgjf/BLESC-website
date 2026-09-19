@@ -27,7 +27,16 @@ export function WebGLFallback({ className = "" }: { className?: string }) {
   );
 }
 
-type Props = { children: ReactNode; fallback: ReactNode };
+type Props = {
+  children: ReactNode;
+  fallback: ReactNode;
+  /**
+   * Which layer this boundary guards, for the log line. More than one
+   * WebGL figure sits behind one of these, and a failure reported under
+   * the wrong name sends whoever reads the console to the wrong file.
+   */
+  name?: string;
+};
 
 /**
  * Catches render-time failures from the WebGL layer so a driver or context
@@ -41,7 +50,8 @@ export class WebGLErrorBoundary extends Component<Props, { failed: boolean }> {
   }
 
   componentDidCatch(error: unknown) {
-    console.error("SilkAurora: WebGL layer failed, using static fallback.", error);
+    const name = this.props.name ?? "WebGL";
+    console.error(`${name}: WebGL layer failed, using static fallback.`, error);
   }
 
   render() {

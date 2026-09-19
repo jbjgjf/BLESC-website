@@ -1,174 +1,315 @@
 "use client";
 
-import { motion } from "motion/react";
-import { VIEWPORT } from "@/lib/motion";
+import { motion, useReducedMotion } from "motion/react";
+import { Logo } from "@/components/Logo";
+import { Chip, Composer, Screen } from "@/components/mock";
 import { Icon } from "@/components/ui";
+import {
+  BASIS,
+  BASELINE,
+  CLASS,
+  ENTRY,
+  ENTRY_LENGTH,
+  ENTRY_TAIL,
+  ROWS,
+  STUDENT_BAR,
+  TREND,
+  TREND_TITLE,
+} from "@/lib/sample";
+import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
 
 /**
- * One small screen per step, so 仕組み shows the same thing プロダクト does —
- * what the stage actually looks like — rather than only describing it.
+ * One screen per step of 仕組み.
  *
- * These are deliberately reductions, not copies of the product mockups: a
- * single idea each, at a size that reads inside a card. Every figure is
- * sample data and every student is a class-and-number, exactly as the real
- * report is.
+ * Each of these is a *window*, not a diagram: a title bar, one idea, a foot,
+ * drawn with the <Screen> primitives so four of them read as four views of
+ * one product. What they replaced was half-figure, half-caption — a bar chart
+ * with the sentence's own words printed beside it, a survey control with its
+ * controls labelled — which reads as explanation rather than as software.
+ *
+ * So there is nothing annotated here. No arrows, no legends, no labels pasted
+ * over a picture to say what it means: the <Caption> under each panel carries
+ * the claim in real text, which is also the only way the claim reaches a
+ * screen reader, since every <Frame> is aria-hidden.
+ *
+ * Every string is sample data from @/lib/sample or a word the interface
+ * itself says (a button, a title). Students are a class and a roll number.
+ *
+ * Motion is one beat per screen at most, on view, once, ~0.5s on the expo
+ * curve, and under prefers-reduced-motion each one lands on its end state
+ * without travelling. The starting state is the same either way and only the
+ * transition reads the setting: the starting state is written into the
+ * server HTML, which cannot know the setting, so a reduced-motion start would
+ * disagree with it on hydration. A transition is only read when the beat
+ * fires, after hydration, so motion's useReducedMotion is the right flag for
+ * it here. None of them is scroll-linked, on purpose: every card is wrapped in a
+ * <RevealItem>, and an ancestor that is still animating a translate would be
+ * measured mid-flight by useScroll.
  */
-const EASE = [0.16, 1, 0.3, 1] as const;
 
-const grow = (width: string, i: number) => ({
-  initial: { width: 0 },
-  whileInView: { width },
-  viewport: VIEWPORT,
-  transition: { duration: 0.9, ease: EASE, delay: 0.15 + i * 0.12 },
-});
+/* -------------------------------------------------------------------------- */
+/* 01 — the class is the unit                                                 */
+/* -------------------------------------------------------------------------- */
 
-/** 01 — every student, not a self-selecting few. */
+/**
+ * One cell per student, filling in together.
+ *
+ * A roster is the obvious screen for 全生徒が対象, and a roster is a list of
+ * names — which this site does not have and will not invent. A class-shaped
+ * grid says the same thing with nothing in it: forty identical cells, no
+ * ordering, no state, nothing that could be read as a measurement of any
+ * student.
+ */
 export function RosterMock() {
+  const reduce = useReducedMotion();
+
   return (
-    <div className="flex h-full flex-col gap-3 p-4">
-      <div className="flex items-baseline justify-between text-[0.7rem]">
-        <span className="text-ink">3年2組</span>
-        <span className="tabular-nums text-muted">全40名</span>
-      </div>
-      <div aria-hidden className="grid flex-1 grid-cols-10 content-center gap-1.5">
-        {Array.from({ length: 40 }, (_, i) => (
+    <Screen title={CLASS.label} trailing={<Chip>{CLASS.size}</Chip>}>
+      <div className="my-auto grid grid-cols-10 gap-1 sm:gap-1.5">
+        {Array.from({ length: CLASS.count }, (_, i) => (
           <motion.span
             key={i}
             className="aspect-square rounded-[3px] bg-mark-1"
-            initial={{ opacity: 0.15 }}
+            initial={{ opacity: 0.12 }}
             whileInView={{ opacity: 0.85 }}
             viewport={VIEWPORT}
-            transition={{ duration: 0.4, ease: EASE, delay: i * 0.012 }}
+            transition={
+              reduce
+                ? { duration: 0 }
+                : { duration: 0.4, ease: EXPO_OUT, delay: i * 0.012 }
+            }
           />
         ))}
       </div>
-    </div>
+    </Screen>
   );
 }
 
-/** 02 — the writing surface, mid-sentence. */
-export function DiaryMock() {
-  return (
-    <div className="flex h-full flex-col gap-2 p-4">
-      <p className="text-[0.65rem] tabular-nums text-muted">8月20日（木）</p>
-      <p className="text-[0.75rem] font-medium text-ink">今日はどんな一日だった？</p>
-      <div className="flex flex-1 flex-col rounded-lg bg-inset/70 p-3">
-        <p className="text-[0.7rem] leading-[1.8] text-ink">
-          部活がきつくて、最近あんまり眠れてない。
-          <motion.span
-            aria-hidden
-            className="ml-0.5 inline-block h-[0.85em] w-px translate-y-[0.1em] bg-mark-1"
-            animate={{ opacity: [1, 1, 0, 0] }}
-            transition={{ duration: 1.1, repeat: Infinity, times: [0, 0.5, 0.5, 1] }}
-          />
-        </p>
-        <span className="mt-auto pt-2 text-right text-[0.6rem] tabular-nums text-muted">
-          48字
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/** 03 — one question back, not a conversation. */
-export function ProbeMock() {
-  return (
-    <div className="flex h-full flex-col justify-center gap-2.5 p-4">
-      <div className="ml-auto max-w-[85%] rounded-lg rounded-br-sm bg-inset/70 px-3 py-2 text-[0.7rem] leading-relaxed text-muted">
-        …たぶん大丈夫。
-      </div>
-      <motion.div
-        className="max-w-[92%] rounded-lg rounded-bl-sm bg-mark-1/10 px-3 py-2.5"
-        initial={{ opacity: 0, y: 8 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={VIEWPORT}
-        transition={{ duration: 0.6, ease: EASE, delay: 0.35 }}
-      >
-        <p className="flex items-center gap-1.5 text-[0.6rem] font-medium tracking-[0.06em] text-mark-1">
-          <Icon name="auto_awesome" size={11} className="shrink-0" />
-          AIからの問いかけ
-        </p>
-        <p className="mt-1.5 text-[0.7rem] leading-relaxed text-ink">
-          「あんまり眠れてない」のは、いつごろから？
-        </p>
-      </motion.div>
-    </div>
-  );
-}
-
-/** 04 — the signals the model actually weighs. */
-const SIGNALS = [
-  { label: "言葉のニュアンス", width: "78%" },
-  { label: "書きためらいの間", width: "54%" },
-  { label: "日々の書きぶりの変化", width: "88%" },
-];
-
-export function SignalMock() {
-  return (
-    <div className="flex h-full flex-col justify-center gap-3.5 p-4">
-      {SIGNALS.map((sig, i) => (
-        <div key={sig.label}>
-          <p className="mb-1.5 text-[0.65rem] text-muted">{sig.label}</p>
-          <span className="block h-1.5 overflow-hidden rounded-full bg-inset">
-            <motion.span
-              className="block h-full rounded-full bg-mark-1"
-              {...grow(sig.width, i)}
-            />
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
+/* -------------------------------------------------------------------------- */
+/* 02 — the diary                                                             */
+/* -------------------------------------------------------------------------- */
 
 /**
- * 05 — the whole of what a teacher receives.
+ * The writing screen, mid-entry.
  *
- * The band this used to show (高/中/低, with a bar whose width encoded a
- * score) is the same claim `educator_display_policy.md` removed from the
- * product on 2026-08-06, and the same one the LP was already corrected for
- * once — see ④ in `lp_claim_alignment.md`. It came back here because this
- * mock lives outside プロダクト and was missed. It now shows what the educator
- * surface actually renders: the matched observation, when, and its basis.
+ * The caret at the end of the text is what says "being written" — it is true
+ * at rest, so nothing has to animate to make the point, and there is no
+ * blinking loop on the page. The counter is derived from the entry itself, so
+ * the number on screen is always the number of characters above it.
  *
- * Currently unrendered — 仕組み stops at 04 — but kept in step with the
- * policy rather than left as a compliant-looking place to paste a band back
- * into.
+ * The foot is the whole reason a student writes honestly, which is why it is
+ * in the mockup rather than only in the prose: their text does not leave, and
+ * they are the one who presses submit.
  */
-const ROWS = [
-  { id: "3年2組 #14", observation: "苦痛の表現（危険の明示なし）", at: "8/20 21:47" },
-  { id: "3年1組 #08", observation: "離脱を示唆する曖昧な表現", at: "8/19 22:03" },
-  { id: "3年3組 #03", observation: "別の画面での開示を引き継ぎ", at: "8/18 20:15" },
-];
-
-export function ReportMock() {
+export function DiaryMock() {
   return (
-    <div className="flex h-full flex-col gap-3 p-4">
-      <div className="flex items-center justify-between">
-        <span className="text-[0.7rem] font-medium text-ink">要確認の観測</span>
-        <span className="rounded-full bg-inset px-2 py-0.5 text-[0.6rem] font-medium text-muted">
-          新しい順
+    <Screen
+      title={<Logo className="h-3 w-auto shrink-0" />}
+      trailing={
+        <span className="shrink-0 text-[0.7rem] tabular-nums text-muted">
+          {ENTRY.date}
+        </span>
+      }
+      footer={<Composer note={STUDENT_BAR.note} action={STUDENT_BAR.action} />}
+    >
+      <p className="text-[0.78rem] font-medium tracking-[-0.01em] text-ink lg:text-[0.85rem]">
+        {ENTRY.prompt}
+      </p>
+
+      {/* The writing surface takes whatever height is left: a diary is mostly
+          the space to write in. */}
+      <div className="mt-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg bg-inset p-2.5">
+        <p className="text-[0.78rem] leading-[1.85] text-ink lg:text-[0.85rem]">
+          {ENTRY.body}
+          {/* Static, and the only thing here that is not type: the insertion
+              point where the student stopped. */}
+          <span className="ml-px inline-block h-[0.9em] w-px translate-y-[0.1em] bg-mark-1" />
+        </p>
+        <span className="mt-auto pt-1.5 text-right text-[0.66rem] tabular-nums text-muted">
+          {ENTRY_LENGTH}字
         </span>
       </div>
+    </Screen>
+  );
+}
 
-      <div className="flex flex-1 flex-col justify-center gap-2.5">
-        {ROWS.map((row) => (
-          <div key={row.id}>
-            <p className="flex items-baseline gap-2 text-[0.62rem] tabular-nums text-muted">
-              <span className="text-ink">{row.id}</span>
-              <span>{row.at}</span>
-            </p>
-            <p className="mt-0.5 text-[0.65rem] leading-snug text-ink">
-              観測: {row.observation}
-            </p>
-          </div>
-        ))}
+/* -------------------------------------------------------------------------- */
+/* 03 — one question back                                                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The last line of the entry, and the single question it gets back.
+ *
+ * Same chrome as the diary, because it is the same screen a moment later
+ * rather than a second product — and only two bubbles in it, because one
+ * question back is the whole of what the AI sends. A thread of four would be
+ * a chat app, which is the one thing this is not.
+ *
+ * The question arriving is the one beat in this section worth animating, so it
+ * is the only screen here that moves on its own.
+ */
+export function ProbeMock() {
+  const reduce = useReducedMotion();
+
+  return (
+    <Screen
+      title={<Logo className="h-3 w-auto shrink-0" />}
+      trailing={
+        <span className="shrink-0 text-[0.7rem] tabular-nums text-muted">
+          {ENTRY.date}
+        </span>
+      }
+    >
+      <div className="my-auto flex flex-col gap-2.5">
+        <span className="ml-auto w-fit max-w-[78%] rounded-xl rounded-br-sm bg-inset px-3 py-2 text-[0.78rem] leading-relaxed text-muted lg:text-[0.85rem]">
+          {ENTRY_TAIL}
+        </span>
+
+        <motion.div
+          className="max-w-[92%] rounded-xl rounded-bl-sm bg-accent/10 px-3 py-2.5"
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={VIEWPORT}
+          /* Reduced motion keeps the fade and drops the rise: the 8px is
+             landed outright while the bubble is still transparent. */
+          transition={
+            reduce
+              ? { duration: 0.3, ease: "linear", y: { duration: 0 } }
+              : { duration: 0.6, ease: EXPO_OUT, delay: 0.3 }
+          }
+        >
+          {/*
+            mark-1, not accent: #85c0ed is a fill colour and measures 1.87:1
+            as text on the light ground, while mark-1 flips with the theme.
+          */}
+          <p className="flex items-center gap-1 text-[0.66rem] font-medium tracking-[0.06em] text-mark-1">
+            <Icon name="auto_awesome" size={12} className="shrink-0" />
+            AIからの問いかけ
+          </p>
+          <p className="mt-1.5 text-[0.8rem] leading-relaxed text-ink lg:text-[0.9rem]">
+            {ENTRY.followUp}
+          </p>
+        </motion.div>
       </div>
+    </Screen>
+  );
+}
 
-      <p className="flex items-start gap-1.5 text-[0.6rem] leading-snug text-muted">
-        <Icon name="lock" size={11} className="mt-px shrink-0" />
-        診断は行いません。日記の本文も共有されません。
-      </p>
-    </div>
+/* -------------------------------------------------------------------------- */
+/* 04 — a bad day against a run of them                                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The student's writing over time, and the one line that comes out of it.
+ *
+ * Time is the thing a single screen cannot assert, and it is what the step
+ * describes: 書き重ねられるからこそ、一日の落ち込みなのか、続いている変化なのか
+ * を見分ける手がかりになります。So the chart is an axis of entries against the
+ * student's own usual range — the band — with one tall day that returns to
+ * it and a recent run that stays outside. It is drawn in the one blue, with
+ * no numbers and no labels, because it is not a measurement of anything real
+ * and must not read as a score: the product draws no levels for a student,
+ * and this picture does not either (docs/claims.md §2).
+ *
+ * The foot is what the teacher receives from the latest entry: a class and
+ * roll number, a time and surface, an observation and its basis — the first
+ * row of the teacher's screen in プロダクト, imported rather than restated,
+ * so the two cannot disagree.
+ */
+export function TrendMock() {
+  const reduce = useReducedMotion();
+  const latest = ROWS[0];
+
+  /* The same hidden state either way; reduced motion fades the bars in
+     together and lands the 6px rise outright rather than playing it. */
+  const bar = {
+    hidden: { opacity: 0, y: 6 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: reduce
+        ? { duration: 0.3, y: { duration: 0 } }
+        : { duration: 0.5, ease: EXPO_OUT },
+    },
+  };
+
+  return (
+    <Screen
+      title={TREND_TITLE}
+      footer={
+        /*
+          data-thread marks this row as the point the signal thread leaves
+          from on its way to the teacher's screen: the page's thread layer
+          finds it by this attribute and nothing else here knows the thread
+          exists.
+        */
+        <div data-thread="analysis" className="w-full min-w-0">
+          {/*
+            The same three lines the teacher's row carries — who and when,
+            what was observed, on what basis — because an observation is only
+            shown with its time and its basis (docs/claims.md §2), and a
+            shortened one can say the opposite of the real one: cut at the
+            card's width, 苦痛の表現（危険の明示なし） loses its なし. So the
+            observation wraps instead of truncating; the chart above is
+            flex-1 and gives up the height.
+          */}
+          <p className="flex min-w-0 items-baseline gap-2 text-[0.66rem] tabular-nums text-muted">
+            <span className="shrink-0 text-ink">
+              {latest.klass} {latest.no}
+            </span>
+            <span className="truncate">
+              {latest.at} · {latest.surface}
+            </span>
+          </p>
+          <p className="mt-0.5 text-[0.72rem] leading-snug text-ink">
+            観測: {latest.observation}
+          </p>
+          <p className="mt-0.5 text-[0.62rem] text-muted">└ {BASIS}</p>
+        </div>
+      }
+    >
+      <div className="relative flex min-h-0 flex-1 pt-1">
+        {/*
+          The student's usual range. A band rather than a line: a range is
+          what "usual" is, and a single threshold would read as a cut-off
+          that a student is above or below — a level by another name.
+        */}
+        <span
+          className="absolute inset-x-0 rounded-sm bg-accent/15"
+          style={{
+            bottom: `${BASELINE.from}%`,
+            height: `${BASELINE.to - BASELINE.from}%`,
+          }}
+        />
+        {/*
+          One column per entry, bottom-aligned. The heights are styles, not
+          animations: the bars arrive with a fade and a small rise rather than
+          growing, so no frame animates a height.
+        */}
+        <motion.div
+          className="relative flex min-h-0 flex-1 items-end gap-[2px] sm:gap-[3px]"
+          initial="hidden"
+          whileInView="show"
+          viewport={VIEWPORT}
+          variants={{
+            show: { transition: { staggerChildren: reduce ? 0 : 0.03 } },
+          }}
+        >
+          {TREND.map((day, i) => (
+            <motion.span
+              key={i}
+              variants={bar}
+              /* flex-1 rather than a grid track: a flex item's percentage
+                 height resolves against this row's own definite height, where
+                 an auto-sized grid row would collapse every bar to nothing. */
+              className={`block min-w-0 flex-1 rounded-t-[2px] ${
+                day.recent ? "bg-mark-1" : "bg-mark-1/35"
+              }`}
+              style={{ height: `${day.h}%` }}
+            />
+          ))}
+        </motion.div>
+      </div>
+    </Screen>
   );
 }

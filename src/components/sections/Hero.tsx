@@ -1,37 +1,14 @@
 "use client";
 
+import { AppMock } from "@/components/hero/AppMock";
+import { DeviceScroll } from "@/components/hero/DeviceScroll";
 import { IntroFade, WordReveal } from "@/components/Reveal";
-import {
-  ShaderBackground,
-  type ShaderColor,
-} from "@/components/ShaderBackground";
+import { ShaderBackground } from "@/components/ShaderBackground";
 import { useTheme } from "@/components/ThemeProvider";
 import { WebGLFallback } from "@/components/webgl/WebGLErrorBoundary";
 import { ButtonLink, Container } from "@/components/ui";
 import { CTA } from "@/lib/site";
-
-/*
- * Palettes, ground colour first. The shipped preset ran a cyan ramp
- * (#031C26 → #1B6CA8 → #5AD2F4 → #EAF9FF); these are the same shape walked
- * through the site's own tokens so the hero introduces no new hue.
- *
- * Light works here because `shade()` averages the palette rather than adding
- * light to a base — the previous aurora clamped to white on a pale ground,
- * which is why it was dark-only.
- */
-const DARK_PALETTE: ShaderColor[] = [
-  [0.0392, 0.0431, 0.051], // #0a0b0d  --color-bg
-  [0.0706, 0.2353, 0.3686], // #123c5e  deep blue
-  [0.5216, 0.7529, 0.9294], // #85c0ed  --color-primary
-  [1, 1, 1], // #ffffff  --color-text
-];
-
-const LIGHT_PALETTE: ShaderColor[] = [
-  [0.9804, 0.9804, 0.9725], // #fafaf8  --color-bg
-  [0.7216, 0.851, 0.9451], // #b8d9f1  pale blue
-  [0.498, 0.7216, 0.8902], // #7fb8e3  mid blue
-  [1, 1, 1], // #ffffff
-];
+import { DARK_PALETTE, LIGHT_PALETTE } from "@/lib/sky";
 
 const HEADLINE_LINES = [
   "Hearing the unspoken.",
@@ -66,21 +43,19 @@ export function Hero() {
   const { theme } = useTheme();
 
   return (
-    <section
-      id="top"
-      className="relative flex min-h-[88svh] items-center overflow-hidden bg-canvas pt-28 pb-16 md:min-h-screen"
-    >
+    <section id="top" className="relative overflow-x-clip bg-canvas">
       {/*
         The static gradient sits underneath permanently: if WebGL is
         unavailable the canvas simply never draws and this shows through, so
         there is no error state to track and no flash.
       */}
-      <WebGLFallback className="pointer-events-none absolute inset-0" />
-      <div className="pointer-events-none absolute inset-0">
-        <ShaderBackground
-          colors={theme === "light" ? LIGHT_PALETTE : DARK_PALETTE}
-        />
-      </div>
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[128svh]">
+        <WebGLFallback className="absolute inset-0" />
+        <div className="absolute inset-0">
+          <ShaderBackground
+            colors={theme === "light" ? LIGHT_PALETTE : DARK_PALETTE}
+          />
+        </div>
 
       {/*
         Readability scrim. The shader can clamp to near-white where its three
@@ -89,22 +64,32 @@ export function Hero() {
         keeps the muted subheadline at 4.6:1 and the headline above 11:1 even
         against a hypothetical pure-white aurora.
       */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,var(--scrim-strong)_0%,var(--scrim-mid)_58%,var(--scrim-soft)_100%)]"
-      />
+      {/*
+        Vertical now that the copy is centred: the sky stays open across the
+        full width, and the wash only builds at the very top and bottom,
+        where the nav and the first section meet it.
+      */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[linear-gradient(180deg,var(--scrim-mid)_0%,var(--scrim-soft)_34%,var(--scrim-soft)_58%,var(--scrim-strong)_100%)]"
+        />
+      </div>
 
-      <Container className="relative z-10">
-        <div className="max-w-3xl">
+      <Container className="relative z-10 flex min-h-[72svh] flex-col justify-center pt-28 pb-4 md:min-h-[76svh]">
+        <div className="mx-auto max-w-4xl text-center">
           {/*
+            Helvetica Neue Light at display size: the one place on the page
+            where the type, rather than a picture of the product, carries the
+            weight.
+
             The Japanese line is inside the h1, not in a <p> after it.
-            Visually identical — it keeps its own size, weight and colour —
-            but the page's single most weighted heading now states what Blesc
-            does in the language its visitors search in, instead of an
-            English couplet no one queries for. Rendered as a span so the
-            heading still contains only phrasing content.
+            Visually it keeps its own size, weight and colour, but the page's
+            most weighted heading then states what Blesc does in the language
+            its visitors search in, instead of an English couplet no one
+            queries for. It is a span so the heading still contains only
+            phrasing content.
           */}
-          <h1 className="text-[clamp(2.25rem,6.4vw,4.25rem)] font-medium leading-[1.1] tracking-[-0.03em] text-ink">
+          <h1 className="type-hero text-ink">
             {HEADLINE_LINES.map((line, i) => (
               <span key={line} className="block">
                 <WordReveal
@@ -120,14 +105,14 @@ export function Hero() {
             <IntroFade
               as="span"
               delay={AFTER_HEADLINE}
-              className="mt-8 block text-lg font-normal leading-normal tracking-normal text-muted md:text-xl"
+              className="mt-7 block text-lg font-normal leading-normal tracking-normal text-muted md:text-xl"
             >
               生徒のSOSを可視化する。
             </IntroFade>
           </h1>
 
           <IntroFade delay={AFTER_HEADLINE + 0.08}>
-            <div className="mt-12 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-11 flex flex-col gap-4 sm:flex-row sm:justify-center">
               <ButtonLink variant="secondary" href={CTA.document.href}>
                 {CTA.document.label}
               </ButtonLink>
@@ -138,6 +123,20 @@ export function Hero() {
           </IntroFade>
         </div>
       </Container>
+
+      {/*
+        The product, arriving as you scroll rather than sitting there from
+        the first frame. It is a picture of software, so the figure is
+        decorative and the caption is the only part a screen reader hears.
+      */}
+      <figure className="relative z-10 m-0">
+        <DeviceScroll>
+          <AppMock />
+        </DeviceScroll>
+        <figcaption className="sr-only">
+          Blescアプリの画面イメージ。
+        </figcaption>
+      </figure>
     </section>
   );
 }

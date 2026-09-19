@@ -60,6 +60,25 @@ export const LOGO = {
 
 export const CONTACT_EMAIL = "blesc.official@gmail.com";
 
+/**
+ * Web3Forms access key: the contact form posts to Web3Forms, which forwards
+ * each enquiry to the inbox this key was issued for.
+ *
+ * It lives here rather than in an environment variable on purpose. The key
+ * is public by design — Web3Forms' own FAQ says it does not need hiding, and
+ * all it can do is deliver mail to that one inbox — and a constant in the
+ * repo deploys without anyone needing access to the hosting dashboard.
+ *
+ * Empty means not set up yet, and the form falls back to opening the
+ * visitor's mail client. It never pretends to send.
+ *
+ * Typed `string` on purpose. Left to inference, the empty literal types as
+ * "" and a pasted key as that exact key, and the form's `!== ""` check then
+ * compares two types that cannot overlap — a type error that fails
+ * `next build` at the very moment the form is switched on.
+ */
+export const WEB3FORMS_ACCESS_KEY: string = "";
+
 export const CONTACT_PATH = "/contact";
 
 /**

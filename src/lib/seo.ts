@@ -57,7 +57,7 @@ export const TAGLINE_EN = "Hearing the unspoken. Preventing the unseen.";
  * does, and the two negated clauses are wording docs/claims.md asks for.
  */
 export const DESCRIPTION =
-  "Blescは、生徒が毎日5分綴る日記から書きぶりの変化を捉えて可視化する学校向けメンタルヘルスプラットフォーム。日記の本文が教員に公開されることはなく、心理的リスクの判定も行いません。";
+  "Blescは、生徒が自分のタイミングで綴る日記から書きぶりの変化を捉えて可視化する学校向けメンタルヘルスプラットフォーム。日記の本文が教員に公開されることはなく、心理的リスクの判定も行いません。";
 
 /** Shorter variant for social cards, where the card itself truncates hard. */
 export const DESCRIPTION_SHORT =
@@ -78,8 +78,6 @@ export const KEYWORDS = [
   "生徒 メンタルヘルス",
   "学校 メンタルヘルス",
   "SOS 可視化",
-  "いじめ 早期発見",
-  "不登校 予防",
   "AI 日記",
   "学校向け AI",
   "教育DX",
@@ -187,7 +185,7 @@ export function siteJsonLd() {
          * listed because `writing_dynamics.py` genuinely implements it.
          */
         featureList: [
-          "毎日5分の日記による全生徒のセルフレポート",
+          "自分のタイミングで綴る日記による全生徒のセルフレポート",
           "独自AIによる一問一答の深掘り",
           "入力のためらいや書き直しといった書きぶりの計測",
           "公開されている医学的ガイドラインをもとに構造化したオントロジー知識グラフによる記述の整理",
@@ -232,10 +230,17 @@ export function breadcrumbJsonLd(trail: { name: string; path: string }[]) {
  * risk, not a win — and this same array renders the visible <FAQ> section, so
  * the markup and the structured data cannot diverge.
  */
+/*
+ * The diary is written in the student's own time — not a fixed five minutes,
+ * and not in homeroom. The team corrected that description (2026-09), and the
+ * page's own copy (仕組み 01–02) now says 自分のタイミングで and 内容も長さも自由,
+ * so the answers below say the same: an FAQ answer that the page does not
+ * support is the mismatch this comment block above warns against.
+ */
 export const FAQ: { q: string; a: string }[] = [
   {
     q: "Blescとは何ですか？",
-    a: "Blescは、生徒が毎日5分で綴る日記を独自のAIが深掘りし、言葉づかいや書きぶりの変化を捉えて可視化する学校向けのメンタルヘルスプラットフォームです。心理的リスクの判定や、心身の状態の診断は行いません。",
+    a: "Blescは、生徒が自分のタイミングで綴る日記を独自のAIが深掘りし、言葉づかいや書きぶりの変化を捉えて可視化する学校向けのメンタルヘルスプラットフォームです。心理的リスクの判定や、心身の状態の診断は行いません。",
   },
   {
     q: "生徒が書いた日記の内容は、先生に読まれますか？",
@@ -243,7 +248,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "生徒の負担はどのくらいですか？",
-    a: "毎日5分、ホームルームの時間に実施します。対象は希望者ではなく全生徒で、新しい習慣も専用の準備も必要ありません。",
+    a: "日記は生徒が自分のタイミングで書くもので、内容も長さも自由です。対象は希望者ではなく全生徒で、新しい習慣も専用の準備も必要ありません。",
   },
   {
     q: "汎用のAIチャットとは何が違うのですか？",
@@ -251,7 +256,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "一日の落ち込みと、続いている変化は見分けられますか？",
-    a: "言葉のニュアンス、書くことをためらった間、日々の書きぶりの変化といった微細なシグナルを積み重ねて捉えます。毎日書かれるからこそ、一日の落ち込みなのか、続いている変化なのかを見分ける手がかりになります。判断そのものは、記録を受け取った教員が行います。",
+    a: "言葉のニュアンス、書くことをためらった間、日々の書きぶりの変化といった微細なシグナルを積み重ねて捉えます。書き重ねられるからこそ、一日の落ち込みなのか、続いている変化なのかを見分ける手がかりになります。判断そのものは、記録を受け取った教員が行います。",
   },
   {
     q: "技術的な裏づけはありますか？",

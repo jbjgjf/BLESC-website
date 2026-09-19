@@ -142,9 +142,15 @@ export function WordmarkReveal({
         stroke="var(--mark-1)"
         strokeWidth="0.4"
         strokeOpacity={0.55}
-        initial={reduce ? false : { strokeDashoffset: 1000, strokeDasharray: 1000 }}
+        /*
+          One initial state for everyone, so the server and the hydration
+          pass write the same dash attributes; reduced motion only changes
+          how long the draw takes — none — which is read when it starts.
+          Without JavaScript the layout's noscript rule draws the outline.
+        */
+        initial={{ strokeDashoffset: 1000, strokeDasharray: 1000 }}
         animate={inView ? { strokeDashoffset: 0, strokeDasharray: 1000 } : undefined}
-        transition={{ duration: 2.4, ease: "easeInOut" }}
+        transition={reduce ? { duration: 0 } : { duration: 2.4, ease: "easeInOut" }}
       >
         {text}
       </motion.text>

@@ -67,6 +67,13 @@ export function Stagger({
   return (
     <Tag
       className={className}
+      /*
+       * The preflight removes list markers, and WebKit then drops an
+       * unmarked list out of the accessibility tree as a list — VoiceOver
+       * reads the items as loose paragraphs. An explicit role puts the
+       * "list, N items" back.
+       */
+      role={as === "ol" ? "list" : undefined}
       initial="hidden"
       whileInView="show"
       viewport={VIEWPORT}
@@ -74,35 +81,6 @@ export function Stagger({
     >
       {children}
     </Tag>
-  );
-}
-
-/**
- * Enters horizontally rather than from below.
- *
- * Kept separate from Reveal because the direction is the point here: two
- * figures arriving from opposite edges read as a pair being compared, which
- * a shared upward fade does not.
- */
-export function SlideIn({
-  children,
-  className,
-  from,
-  delay = 0,
-}: RevealProps & { from: "left" | "right" }) {
-  const reduce = useReducedMotion();
-  const offset = from === "left" ? -64 : 64;
-
-  return (
-    <motion.div
-      className={className}
-      initial={reduce ? { opacity: 0 } : { opacity: 0, x: offset }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={VIEWPORT}
-      transition={{ duration: reduce ? 0.3 : 0.85, ease: EXPO_OUT, delay }}
-    >
-      {children}
-    </motion.div>
   );
 }
 
