@@ -48,6 +48,15 @@ export const TAGLINE_EN = "Hearing the unspoken. Preventing the unseen.";
  * "Blesc" stays in the text deliberately: every impression the site currently
  * gets is the query "blesc", and Google bolds a matched term in the snippet.
  *
+ * 毎日5分 became 自分のタイミングで when the page copy was corrected, which
+ * cost 5.5 and put this back over budget — it was clipping mid-word at
+ * 「…判定も行いま…」, which reads worse than the clause being absent. 捉えて
+ * was dropped to pay for it: 可視化する carries the same meaning and is the
+ * verb docs/claims.md §1 approves, so nothing about the claim changed.
+ *
+ * If this copy changes again, re-measure. The budget is ~92 full-width, not
+ * a character count — ASCII runs like "Blesc" and "AI" count half.
+ *
  * This string is not only page copy. `siteJsonLd()` puts it on the
  * Organization, WebSite *and* SoftwareApplication nodes, so whatever it says
  * ships to search engines and LLMs as machine-readable structured data. It
@@ -57,7 +66,7 @@ export const TAGLINE_EN = "Hearing the unspoken. Preventing the unseen.";
  * does, and the two negated clauses are wording docs/claims.md asks for.
  */
 export const DESCRIPTION =
-  "Blescは、生徒が自分のタイミングで綴る日記から書きぶりの変化を捉えて可視化する学校向けメンタルヘルスプラットフォーム。日記の本文が教員に公開されることはなく、心理的リスクの判定も行いません。";
+  "Blescは、生徒が自分のタイミングで綴る日記から書きぶりの変化を可視化する学校向けメンタルヘルスプラットフォーム。日記の本文が教員に公開されることはなく、心理的リスクの判定も行いません。";
 
 /** Shorter variant for social cards, where the card itself truncates hard. */
 export const DESCRIPTION_SHORT =
