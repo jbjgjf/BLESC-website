@@ -108,9 +108,17 @@ const ENTRIES: NewsEntry[] = [
     kind: "news",
     date: "2026-07-10",
     name: "Teenage Business Contest Japan 2026",
-    body: "で、ファイナリストとして本選に出場しました。",
+    body: "で、優秀賞を受賞しました。",
+    photo: {
+      src: "/news/tbcj-2026.jpg",
+      width: 828,
+      height: 1104,
+      alt: "Teenage Business Contest Japanの優秀賞の賞状とポスターを手にしたBlescのメンバー2人",
+    },
     // The page below is the '26 finalist list. The final's date is on
-    // https://www.tbcj.net/timeline ("Final Contest: July 10th").
+    // https://www.tbcj.net/timeline ("Final Contest: July 10th"). The prize
+    // is on the team's own photo: the certificate reads EXCELLENCE PRIZE,
+    // awarded to Ryu Matsumoto & Uryu Den.
     source: "https://www.tbcj.net/about-3",
   },
   {
@@ -118,7 +126,14 @@ const ENTRIES: NewsEntry[] = [
     date: "2026-07-17",
     name: "Startup World Cup 2026 Tokyo予選",
     body: "のユースピッチにファイナリストとして登壇しました。",
-    // The release gives the Tokyo qualifier as 2026年7月17日. Its photo
+    photo: {
+      src: "/news/startup-world-cup-2026.jpg",
+      width: 1206,
+      height: 1608,
+      alt: "Startup World Cupのパネルの前で、トロフィーを持つBlescのメンバー2人",
+    },
+    // Every youth finalist was handed a trophy, so the photo shows the
+    // finalist's trophy, not a placing. The release gives the Tokyo qualifier as 2026年7月17日. Its photo
     // caption spells the team 「Blessed」, so search for that when checking.
     source: "https://prtimes.jp/main/html/rd/p/000000217.000044738.html",
   },
@@ -126,12 +141,17 @@ const ENTRIES: NewsEntry[] = [
     kind: "news",
     date: "2026-09",
     name: "ANOBAKA",
-    body: "U-25 AI Accelerator 第2期に採択されました。",
+    body: "U-25 AI Accelerator 第2期に採択され、支援金10万円を受けました。",
+    photo: {
+      src: "/news/anobaka-u25-2026.jpg",
+      width: 1206,
+      height: 904,
+      alt: "ANOBAKA U-25 AI Acceleratorのボードを持つBlescのメンバー",
+    },
     // The release is the call for 第2期 applications, published before
     // selection, so it names no teams. 2026-09 is the programme's start
-    // (実施期間 2026年9月1日〜). The amount of the grant is left off until
-    // the team confirms it: they said ¥100k, ANOBAKA's 第2期 material
-    // says 100万円 at incorporation.
+    // (実施期間 2026年9月1日〜). 10万円 is the amount the team received,
+    // confirmed by the team on 2026-09-30.
     source: "https://prtimes.jp/main/html/rd/p/000000065.000056016.html",
   },
   {
@@ -141,8 +161,19 @@ const ENTRIES: NewsEntry[] = [
   },
   {
     kind: "news",
+    date: "2026-07-03",
     name: "IVS",
     body: "YOUTH部門において、優秀賞を受賞しました。",
+    photo: {
+      src: "/news/ivs-2026.jpg",
+      width: 1206,
+      height: 904,
+      alt: "IVS2026の会場前で、花束を手にしたBlescのメンバー2人",
+    },
+    // The team's photo is a front-camera selfie, stored un-mirrored so the
+    // banner and the lanyards read IVS2026. IVS2026 ran 2026年7月1日〜3日,
+    // and IVS Youth was held on 7月3日 (the release below).
+    source: "https://prtimes.jp/main/html/rd/p/000000231.000059319.html",
   },
 ];
 

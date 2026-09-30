@@ -100,8 +100,8 @@ export function News() {
           The list used to be one Stagger — a single whileInView on the whole
           <ol>, at 20% visibility. That is fine for two rows and broken for a
           register that grows: an element more than five viewports tall can
-          never be 20% visible, so it never reveals. Six rows would pass that
-          on a landscape phone once their photos arrive, and 活動様子 will add
+          never be 20% visible, so it never reveals. Six rows, four of them
+          with photos, pass that on a landscape phone, and 活動様子 will add
           more.
           The stagger now runs inside each row instead — marker, name, then
           sentence — and every row starts when it arrives, however long the
