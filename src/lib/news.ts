@@ -1,0 +1,198 @@
+/**
+ * The ニュース register — the entries, and the two small rules (date display
+ * and order) the section needs to render them.
+ *
+ * Real entries only. The placeholder list that used to sit in the section was
+ * removed rather than kept alongside, because a press list that mixes
+ * placeholders with real entries is worse than one that is short. Every entry
+ * below is something the company did, and every date is the organiser's own —
+ * the entry's comment says where on the organiser's pages it was checked.
+ *
+ * Institution names follow docs/claims.md §3. Kyoto University's support is
+ * stated in the backing section (Backing.tsx) and nowhere else, so it has no
+ * row here.
+ *
+ * The entries live here rather than in the component so that adding one — or
+ * adding the photo to one — is a data edit, not a layout edit.
+ */
+
+/**
+ * `YYYY-MM-DD`, or `YYYY-MM` when only the month is public. The type catches
+ * the obvious slips (a slash, a missing part) at compile time;
+ * `formatNewsDate` checks the digits and fails the build on anything else.
+ */
+export type NewsDate = `${number}-${number}` | `${number}-${number}-${number}`;
+
+/**
+ * A photograph of the event itself, supplied by the company.
+ *
+ * Only the company's own pictures go here. A free stock photo of a stage or a
+ * trophy standing in for an event the company actually attended would be the
+ * same failure as an invented entry, just harder to spot — an entry without a
+ * photo is complete as it is.
+ */
+export type NewsPhoto = {
+  /** A path under public/, e.g. "/news/tongali-2026.jpg". */
+  src: string;
+  /**
+   * The file's own pixel size. The frame is always 3:2 whatever the file is;
+   * next/image still needs the real numbers to build its srcset.
+   */
+  width: number;
+  height: number;
+  /**
+   * What is in the picture — who, and which moment — written from the photo
+   * itself. The photo is part of the entry, not decoration, so it is not
+   * aria-hidden and this is not optional.
+   */
+  alt: string;
+  /**
+   * Which part of the picture survives the 3:2 crop. A portrait phone shot of
+   * a group on a stage loses its heads at "center"; "top" keeps them.
+   */
+  position?: "top" | "center" | "bottom";
+};
+
+export type NewsEntry = {
+  /**
+   * "news" is something that happened to Blesc out in the world — an award,
+   * a selection, a talk. "activity" is 活動様子: the team at work, a school
+   * visit, progress. Both render as the same row today; the field exists so
+   * that activity can be filtered or split into its own list later without
+   * re-reading every entry to decide which is which.
+   */
+  kind: "news" | "activity";
+  /**
+   * Optional, and never guessed: an event the company attended but cannot
+   * date publicly goes in undated rather than with an approximate day.
+   */
+  date?: NewsDate;
+  /**
+   * The proper noun, set at display size. Read `name` and `body` together and
+   * they are the entry as the company wrote it, minus the 「」 that the large
+   * type now does the work of — which is why several bodies open with a
+   * particle.
+   *
+   * Breaks in the name fall only at spaces (the section sets it keep-all), so
+   * a long Japanese compound needs a break opportunity written in: `\u200B`,
+   * a zero-width space, between two phrases. Without it
+   * 「ビジネスプランコンテスト」 at 60px breaks wherever the line runs out.
+   * Write it as the escape, never as the character itself: pasted in, it is
+   * invisible in the editor, and the next person to retype the name drops it
+   * without knowing.
+   */
+  name: string;
+  /** One sentence. */
+  body: string;
+  photo?: NewsPhoto;
+  /**
+   * Where the fact and the date were checked. Provenance for whoever edits
+   * this next — never rendered. There are no article pages, and a headline
+   * styled to look clickable that goes nowhere is worse than one that plainly
+   * doesn't, so the section gives entries no link, hover state or arrow.
+   */
+  source?: string;
+};
+
+const ENTRIES: NewsEntry[] = [
+  {
+    kind: "news",
+    date: "2026-06-20",
+    name: "Tongali ビジネスプラン\u200Bコンテスト2026",
+    body: "で、Blescのメンバーによる「チームBeacon」が、NICT賞・JR東海賞・Beyond Next Ventures賞・Tongali賞5位を受賞しました。",
+    // The final's date is on the page below; the prizes are in the results
+    // PDF it links to.
+    source: "https://tongali.net/news/contest/30376/",
+  },
+  {
+    kind: "news",
+    date: "2026-07-10",
+    name: "Teenage Business Contest Japan 2026",
+    body: "で、ファイナリストとして本選に出場しました。",
+    // The page below is the '26 finalist list. The final's date is on
+    // https://www.tbcj.net/timeline ("Final Contest: July 10th").
+    source: "https://www.tbcj.net/about-3",
+  },
+  {
+    kind: "news",
+    date: "2026-07-17",
+    name: "Startup World Cup 2026 Tokyo予選",
+    body: "のユースピッチにファイナリストとして登壇しました。",
+    // The release gives the Tokyo qualifier as 2026年7月17日. Its photo
+    // caption spells the team 「Blessed」, so search for that when checking.
+    source: "https://prtimes.jp/main/html/rd/p/000000217.000044738.html",
+  },
+  {
+    kind: "news",
+    date: "2026-09",
+    name: "ANOBAKA",
+    body: "U-25 AI Accelerator 第2期に採択されました。",
+    // The release is the call for 第2期 applications, published before
+    // selection, so it names no teams. 2026-09 is the programme's start
+    // (実施期間 2026年9月1日〜). The amount of the grant is left off until
+    // the team confirms it: they said ¥100k, ANOBAKA's 第2期 material
+    // says 100万円 at incorporation.
+    source: "https://prtimes.jp/main/html/rd/p/000000065.000056016.html",
+  },
+  {
+    kind: "news",
+    name: "SusHi Tech Tokyo",
+    body: "に登壇し、Blescの取り組みについて発表しました。",
+  },
+  {
+    kind: "news",
+    name: "IVS",
+    body: "YOUTH部門において、優秀賞を受賞しました。",
+  },
+];
+
+const ISO_DATE = /^(\d{4})-(\d{2})(?:-(\d{2}))?$/;
+
+/**
+ * 2026-06-20 → 2026年6月20日, 2026-09 → 2026年9月.
+ *
+ * Done on the string rather than through Date: a date-only ISO string is
+ * parsed as UTC midnight, and read back in any timezone west of Greenwich it
+ * is the day before. The page is prerendered, so a malformed date throws at
+ * build time instead of reaching the page as "NaN年".
+ *
+ * The shape alone would pass 2026-17-06, the day and month swapped, and print
+ * 2026年17月6日; so the month and day are range-checked too. Date.UTC is only
+ * the calendar here — it rolls 2026-02-30 over into March, and a day that
+ * comes back different is one the month does not have.
+ */
+export function formatNewsDate(date: NewsDate): string {
+  const match = ISO_DATE.exec(date);
+  if (!match) {
+    throw new Error(`News date "${date}" is not YYYY-MM or YYYY-MM-DD.`);
+  }
+  const [, year, month, day] = match;
+  const m = Number(month);
+  const d = day ? Number(day) : 1;
+  if (
+    m < 1 ||
+    m > 12 ||
+    new Date(Date.UTC(Number(year), m - 1, d)).getUTCDate() !== d
+  ) {
+    throw new Error(`News date "${date}" is not a real date.`);
+  }
+  return `${year}年${m}月${day ? `${d}日` : ""}`;
+}
+
+/**
+ * Newest first, undated after dated.
+ *
+ * ISO dates sort as plain strings, which is why they are stored that way. A
+ * month-only date is a prefix of every day in its month, so it lands after
+ * that month's dated entries — "sometime in September" reads naturally below
+ * the 15th. The sort is stable, so undated entries, and entries sharing a
+ * date, keep the order they are written in above.
+ */
+function byDateDesc(a: NewsEntry, b: NewsEntry): number {
+  if (a.date && b.date) return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
+  if (a.date) return -1;
+  if (b.date) return 1;
+  return 0;
+}
+
+export const NEWS: readonly NewsEntry[] = [...ENTRIES].sort(byDateDesc);
