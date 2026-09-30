@@ -32,7 +32,7 @@ export type NewsDate = `${number}-${number}` | `${number}-${number}-${number}`;
  * photo is complete as it is.
  */
 export type NewsPhoto = {
-  /** A path under public/, e.g. "/news/tongali-2026.jpg". */
+  /** A path under public/, e.g. "/news/ivs-2026.jpg". */
   src: string;
   /**
    * The file's own pixel size. The frame is always 3:2 whatever the file is;
@@ -43,7 +43,9 @@ export type NewsPhoto = {
   /**
    * What is in the picture — who, and which moment — written from the photo
    * itself. The photo is part of the entry, not decoration, so it is not
-   * aria-hidden and this is not optional.
+   * aria-hidden and this is not optional. (The copy that follows the pointer
+   * over a closed row is the one exception: it repeats this photo, so it is
+   * hidden and the one in the opened row carries the alt.)
    */
   alt: string;
   /**
@@ -75,7 +77,7 @@ export type NewsEntry = {
    *
    * Breaks in the name fall only at spaces (the section sets it keep-all), so
    * a long Japanese compound needs a break opportunity written in: `\u200B`,
-   * a zero-width space, between two phrases. Without it
+   * a zero-width space, between two phrases. Without one, a compound such as
    * 「ビジネスプランコンテスト」 at 60px breaks wherever the line runs out.
    * Write it as the escape, never as the character itself: pasted in, it is
    * invisible in the editor, and the next person to retype the name drops it
@@ -87,23 +89,15 @@ export type NewsEntry = {
   photo?: NewsPhoto;
   /**
    * Where the fact and the date were checked. Provenance for whoever edits
-   * this next — never rendered. There are no article pages, and a headline
-   * styled to look clickable that goes nowhere is worse than one that plainly
-   * doesn't, so the section gives entries no link, hover state or arrow.
+   * this next — never rendered. There are no article pages, so an entry
+   * links nowhere and carries no arrow: a headline that looks like a link to
+   * a page that does not exist is worse than one that plainly isn't one. The
+   * one thing a row does is open, in place, to its own sentence and photo.
    */
   source?: string;
 };
 
 const ENTRIES: NewsEntry[] = [
-  {
-    kind: "news",
-    date: "2026-06-20",
-    name: "Tongali ビジネスプラン\u200Bコンテスト2026",
-    body: "で、Blescのメンバーによる「チームBeacon」が、NICT賞・JR東海賞・Beyond Next Ventures賞・Tongali賞5位を受賞しました。",
-    // The final's date is on the page below; the prizes are in the results
-    // PDF it links to.
-    source: "https://tongali.net/news/contest/30376/",
-  },
   {
     kind: "news",
     date: "2026-07-10",
