@@ -259,9 +259,24 @@ export const FAQ: { q: string; a: string }[] = [
     q: "生徒の負担はどのくらいですか？",
     a: "日記は生徒が自分のタイミングで書くもので、内容も長さも自由です。対象は希望者ではなく全生徒で、新しい習慣も専用の準備も必要ありません。",
   },
+  /*
+   * The two ontology answers below say what テクノロジー says, in the same
+   * words, and no more (docs/claims.md §4; lp_claim_alignment.md ③ converts
+   * to "describe it as it is" on 2026-10-01). Not "AIに実装" and not "言葉を
+   * 予測するだけの汎用AIではありません": both present the curated graph as
+   * what drives the product's analysis, which is the open claim. Association,
+   * not cause, because that is the most the seed records for any relation —
+   * and worded as what the seed RECORDS (「出典として関連を記録」), never as
+   * what WHO or NICE "reports": a spot check found the WHO fact sheet silent
+   * on two relations the seed cites it for (header of lib/ontologySeed.ts).
+   *
+   * The counts are typed here, not imported, and have to match COUNTS in
+   * src/lib/ontologySeed.ts: 42 relations, 15 recorded as "association",
+   * 27 not. If the seed is regenerated, change them with it.
+   */
   {
     q: "汎用のAIチャットとは何が違うのですか？",
-    a: "「睡眠不足 → 認知機能の低下 → 抑うつ傾向」といった心理のつながりを、WHOやNICEなど公開されている医学的ガイドラインをもとに構造化したオントロジー知識グラフをAIに実装しています。言葉を予測するだけの汎用AIではありません。現在は睡眠・社会的ひきこもり・学業上の負荷の3領域を整備しており、出典を示せない関係はその旨を明示しています。",
+    a: "Blescは会話を続けるチャットではなく、日記に短い問いをひとつだけ返します。また、睡眠・社会的ひきこもり・学業上の負荷の3領域について、気分や行動、学校での出来事などの概念どうしのつながりを、WHOやNICEなどの公開資料に照らして知識グラフ（オントロジー）として整理しています。つながりの一本ずつに、裏付けとなる公開資料があるかどうかを記録しています。",
   },
   {
     q: "一日の落ち込みと、続いている変化は見分けられますか？",
@@ -269,7 +284,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "技術的な裏づけはありますか？",
-    a: "オントロジー知識グラフは、WHOの思春期メンタルヘルス指針、NICEガイドライン、文部科学省の生徒指導提要といった公開文献をもとに、社内でキュレーションしています。各ノードと関係には出典を紐づけ、出典を示せないものは専門家の判断であることを明記しています。臨床の専門家によるレビューは準備中で、完了しだいこの欄を更新します。",
+    a: "知識グラフは、WHOのファクトシート「Mental health of adolescents」、NICEガイドライン NG134、WHOの mhGAP Intervention Guide、文部科学省の生徒指導提要を参照して、社内でまとめています。42のつながりのうち、公開資料を出典として関連を記録しているのは15で、残る27は公開資料の裏付けがなく、社内の判断であることを明記しています。出典のあるつながりも関連として記録したもので、どちらが原因かを示すものではありません。掲載の各機関は、Blescを推奨・承認するものではありません。臨床の専門家によるレビューを準備しています。",
   },
   {
     q: "導入について相談するにはどうすればよいですか？",

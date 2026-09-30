@@ -1,8 +1,67 @@
 import { OntologyGraph } from "@/components/OntologyGraph";
-import { DOMAINS, TRACE } from "@/components/product/ontology";
 import { Reveal } from "@/components/Reveal";
-import { SectionTitle, Section } from "@/components/ui";
+import { Section, SectionTitle } from "@/components/ui";
+import {
+  COUNTS,
+  EDGES,
+  EXAMPLE_PATH,
+  NODE_BY_ID,
+  SOURCES,
+  SUBGRAPHS,
+  SUBGRAPH_ORDER,
+  conceptsIn,
+  publishedRefs,
+  type Relation,
+  type SeedEdge,
+} from "@/lib/ontologySeed";
 
+/**
+ * テクノロジー: what Blesc's ontology is, what it rests on, and where it
+ * rests on nothing.
+ *
+ * The section was a claim without a footing — "WHOやNICEなどの医学的
+ * ガイドラインをもとに構造化したオントロジー知識グラフをAIに実装しています"
+ * beside an illustrated graph whose nodes were mostly not in the real one.
+ * The reviewer's note was that it looked vibecoded, with zero validation,
+ * and asked for WHO or NICE logos. Logos are the one thing this does not
+ * do: neither organisation endorses Blesc, both restrict use of their
+ * emblems, and a logo row is precisely what reads as endorsement. What it
+ * does instead is the checkable version of the same thing — the sources by
+ * name, publisher, year and link, the real graph drawn from the seed, and
+ * the seed's own count of how much of it those sources support.
+ *
+ * What the copy may say is bounded by the company's decision record
+ * (lp_claim_alignment.md, claims ①③, converting to option A on 2026-10-01)
+ * and docs/claims.md §4:
+ *   - It describes the graph as it is: three curated areas, the concepts
+ *     and relations counted from src/lib/ontologySeed.ts, never typed here.
+ *   - It does not say the graph gives the analysis a rigorous or scientific
+ *     basis, or that it is "implemented in the AI" — the seed exists and is
+ *     sourced; how far it steers the product is claim ③, which is open.
+ *   - It says association, not cause. Every sourced relation in the seed is
+ *     `association`; the old "因果連鎖" and "因果リンク" wording claimed more
+ *     than any of its sources do.
+ *   - It says what the seed RECORDS about a source (「出典として関連を記録」,
+ *     「出典：」), never that WHO or NICE "reports" a relation. Whether a
+ *     source bears a relation out is the curator's reading, and a spot check
+ *     found the WHO fact sheet silent on two relations the seed cites it for
+ *     (see the header of lib/ontologySeed.ts).
+ *   - It says the unsourced relations are marked as having no published
+ *     source — which is how upstream's registry defines expert_judgement —
+ *     rather than calling them "専門家の判断", which suggested a reviewer
+ *     who has not yet been named.
+ *   - It does not call every concept psychological: the graph also holds
+ *     school events and an administrative category (不登校, which upstream
+ *     is explicit is not a clinical construct), so the copy says 心と生活,
+ *     and 気分や行動、学校での出来事.
+ *   - The opening line it used to lead with, 「Blescは、言葉を予測するだけの
+ *     汎用AIではありません。」, went: set over this graph it said the graph
+ *     is what makes the product more than a language model, which is claim
+ *     ③ again.
+ *   - No collaborating institution is named here. docs/claims.md §3 keeps
+ *     the one that may be named to its own section, and not beside this
+ *     one, where it would read as having built or checked the graph.
+ */
 export function Technology() {
   return (
     <Section id="technology">
@@ -11,128 +70,144 @@ export function Technology() {
       </Reveal>
 
       {/*
-        One block rather than the four stacked ones this was: the copy reads
-        down five columns while the graph holds the other seven, which is
-        what makes the section short. Both columns are shorter than the old
-        stack's graph alone.
+        Copy in five columns, the figure in seven, as before. items-start
+        now rather than items-center: the copy column grew a list of counts
+        and a sourced path and is about the panel's height, and top-aligned
+        the two start on the same line.
 
-        items-center because the text runs shorter than the panel — aligning
-        to the top would leave an obvious hole under the credits, and the two
-        halves read as a pair when their centres line up.
-
-        Stacking order is the source order, text then graph: the lead line
-        has to arrive before the picture it introduces, and on a phone the
-        graph is the part you scroll past.
+        Stacking order is the source order, text then figure: the numbers
+        and the path are the claim, and the figure is the picture of it.
       */}
-      <div className="grid items-center gap-10 lg:grid-cols-[5fr_7fr] lg:gap-12">
+      <div className="grid items-start gap-10 lg:grid-cols-[5fr_7fr] lg:gap-12">
         <Reveal>
+          {/*
+            「公開資料に照らして」, not 「公開資料から」: most of the relations
+            are not from a published source (the count two paragraphs down
+            says how many), but every one was checked against the source
+            registry and recorded as supported or not.
+          */}
           <p className="text-[clamp(1.125rem,2vw,1.5rem)] font-medium leading-[1.55] tracking-[-0.015em] text-ink">
-            Blescは、言葉を予測するだけの汎用AIではありません。
+            心と生活のつながりを、公開資料に照らして整理しています。
           </p>
 
-          {/*
-            One paragraph, left to rewrap. The authored line break this had
-            was set for a full-width measure; in a five-column column it
-            would break the sentence a third of the way into its own line.
-          */}
           <p className="measure-jp mt-5 text-[1rem] text-muted">
-            心理のつながりを、WHOやNICEなど公開されている医学的ガイドラインをもとに構造化したオントロジー知識グラフをAIに実装しています。
+            睡眠・社会的ひきこもり・学業上の負荷の3領域について、気分や行動、学校での出来事などの概念どうしのつながりを知識グラフ（オントロジー）にまとめています。つながりの一本ずつに、裏付けとなる公開資料があるかどうかを記録しています。
           </p>
 
           {/*
-            The chain, as text.
+            The size of the graph, counted from the seed. These are the
+            distinct counts — the "40 nodes / 50 edges" in older notes adds
+            up the three files with their shared entries counted in each
+            file (see the header of lib/ontologySeed.ts). The list under the
+            section prints those totals and the overlap between them.
 
-            The claim this section makes is that a path through the structure
-            is what the model follows, and the only place that path existed as
-            words was a legend under the figure — so the copy column was two
-            paragraphs and a credit list, i.e. the thing it is arguing against
-            was the only thing on the page with a shape. Setting the chain
-            here gives the column something to land on, puts the example
-            before the picture that highlights it, and makes the path readable
-            to a screen reader as an ordered list of three constructs rather
-            than as one sentence inside an image label.
-
-            Same three nodes as the lit trace, imported from the graph's own
-            data: they cannot come to disagree. The dots repeat each
-            construct's domain colour, which is what keys the list to the
-            figure beside it; the construct names themselves stay ink, so
-            nothing here depends on a colour to be read.
-
-            The label above it is the one new string in this section. The
-            chain is one path through a graph the paragraph below says covers
-            three areas, so "一例" is what this list honestly is.
+            dt before dd in the markup, so a screen reader hears "領域 3";
+            flex-col-reverse puts the figure on top for everyone else.
+            Helvetica Neue Light for the figures, the site's display face.
           */}
-          <p className="mt-8 text-[0.8rem] font-medium tracking-[0.02em] text-muted">
-            因果連鎖の一例
+          <dl className="mt-8 grid grid-cols-3 gap-4 border-t border-line pt-6">
+            {(
+              [
+                ["領域", COUNTS.subgraphs],
+                ["概念", COUNTS.concepts],
+                ["つながり", COUNTS.relations],
+              ] as const
+            ).map(([label, n]) => (
+              <div key={label} className="flex flex-col-reverse gap-1.5">
+                <dt className="text-[0.8rem] text-muted">{label}</dt>
+                <dd className="text-[clamp(1.75rem,3.2vw,2.5rem)] font-light leading-none tracking-[-0.02em] tabular-nums text-ink">
+                  {n}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          {/*
+            The number that makes the rest believable. "Supported" is
+            evidence_strength "association" — the seed records a cited
+            source as reporting the two together — and nothing weaker: four
+            of the unsupported relations cite a guideline they were checked
+            against, and they are counted as unsupported, because the
+            guideline does not state them. Worded as what the seed records,
+            not as what the source says (see the header above).
+
+            It leads with the sourced count and says in words that the rest
+            are the company's own judgement, rather than printing the
+            unsupported count as the headline of the paragraph: the section
+            exists because the old one read as having no validation at all,
+            and the exact split for every relation is one click below, in
+            the full list.
+          */}
+          <p className="measure-jp mt-5 text-[0.9rem] text-muted">
+            このうち{COUNTS.supported}
+            のつながりは、公開資料を出典として記録しています。出典のないつながりは社内の判断として区別して明記し、臨床の専門家によるレビューを準備しています。
           </p>
+
+          {/*
+            The example path, as text, with the source for each step.
+
+            Read off EXAMPLE_PATH, which resolves both legs against the seed
+            and fails the build if either leaves it — so the path named here
+            is always a path the graph contains, and the one the figure
+            lights. Each step names the source the seed cites for it, by the
+            short name the list below uses in full; the sr-only clause says
+            which two concepts the citation is for, which the vertical rule
+            says to a sighted reader.
+
+            The dots repeat the figure's path marker — ink in a ring of the
+            logo's blue — which is what ties the list to the picture; the
+            names stay ink, so nothing depends on the colour.
+          */}
+          <h3 className="mt-9 text-[0.8rem] font-medium tracking-[0.02em] text-muted">
+            つながりの一例
+          </h3>
           {/* role="list": see Stagger — WebKit drops unmarked lists. */}
           <ol className="mt-4" role="list">
-            {TRACE.map((node, i) => (
-              <li key={node.id} className="flex gap-3.5">
-                <span aria-hidden className="flex flex-col items-center pt-[0.5rem]">
-                  <span
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ background: DOMAINS[node.domain].color }}
-                  />
-                  {i < TRACE.length - 1 && (
-                    <span className="mt-1 w-px flex-1 bg-line-strong" />
-                  )}
-                </span>
-                <span
-                  className={`text-[0.95rem] font-medium text-ink ${
-                    i < TRACE.length - 1 ? "pb-4" : ""
-                  }`}
-                >
-                  {node.label}
-                </span>
-              </li>
-            ))}
+            {EXAMPLE_PATH.nodes.map((node, i) => {
+              const leg = EXAMPLE_PATH.legs[i];
+              return (
+                <li key={node.id} className="flex gap-3.5">
+                  <span aria-hidden className="flex flex-col items-center pt-[0.45rem]">
+                    <span className="size-2.5 shrink-0 rounded-full bg-ink ring-[3px] ring-accent" />
+                    {leg && <span className="mt-1.5 w-px flex-1 bg-line-strong" />}
+                  </span>
+                  <div className={leg ? "pb-5" : ""}>
+                    <span className="text-[0.95rem] font-medium text-ink">
+                      {node.label_ja}
+                    </span>
+                    {leg && (
+                      <p className="mt-1 text-[0.8rem] text-muted">
+                        <span className="sr-only">
+                          {node.label_ja}と{NODE_BY_ID[leg.to].label_ja}の関連の
+                        </span>
+                        出典：
+                        {publishedRefs(leg.source_refs)
+                          .map((s) => s.short)
+                          .join("・")}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ol>
-
-          {/*
-            What this section may claim is bounded by docs/claims.md, and the
-            bound is written rather than remembered: a named institution goes
-            on this page only once its permission is on file. 京都大学 and
-            株式会社Hatapro were both named here as settled collaborations
-            while the company's own alignment record still had the
-            collaborator line blank — an unagreed use of a university's name
-            in copy aimed at schools and boards of education. They come back
-            the day the permission does.
-
-            What replaces them is the part that is checkable today: curated
-            subgraphs, every node and relation carrying a source, and the ones
-            that carry none saying so.
-          */}
-          <p className="measure-jp mt-8 border-t border-line pt-7 text-[0.9rem] text-muted">
-            グラフは社内でキュレーションしています。ノードと関係のひとつずつに出典を紐づけ、出典を示せないものは専門家の判断であることを明記しています。現在は睡眠・社会的ひきこもり・学業上の負荷の3領域を整備しており、臨床の専門家によるレビューを準備しています。
+          <p className="measure-jp mt-4 text-[0.8rem] text-muted">
+            いずれも関連として記録したもので、どちらが原因かを示すものではありません。
           </p>
         </Reveal>
 
         {/*
-          Deliberately NOT wrapped in <Reveal>: the trace inside is
-          scroll-linked to this element's own position, and an ancestor that
-          is still animating a translate would be measured mid-flight. The
-          graph brings its own on-view reveal for the nodes and edges.
+          Deliberately NOT wrapped in <Reveal>: the figure fades itself in,
+          and a translate on an ancestor would carry its absolutely placed
+          names with it mid-flight.
 
-          The graph is WebGL now, with the flat SVG it replaced kept as its
-          fallback, and both are drawn for this ground. bg-inset rather than
-          bg-surface: the scene reads --surface-inset as the colour its far
-          nodes and edges recede toward, and the fallback's pills are filled
-          with --surface-raised, which on the inset plane read as raised in
-          light and sunken in dark — on a surface-coloured panel the dark
-          build would fill them with exactly the panel colour.
+          A white panel now, not the inset grey it was. The figure tints its
+          own discs, and every contrast in it was measured over white: on
+          --surface-inset the relation lines would drop to 2.91:1 where the
+          three discs overlap, under the 3:1 they hold on white.
 
-          The padding stays at p-5 at every width. Going to p-8 on desktop
-          would take the fallback's frame below the width at which its labels
-          hold 11px, which would put a scrollbar inside a panel that fits.
-
-          min-w-0 is what lets the fallback's own overflow-x-auto do its job
-          on a phone. A grid item's minimum width is its content's, and that
-          figure sets a 30rem floor on its drawing — so without this the
-          column grew to 546px at 375px, the whole page gained a horizontal
-          scroll, and the phone zoomed out to fit it. With it, the panel stays
-          the width of the page and the drawing scrolls inside the panel. The
-          WebGL figure sets no floor at all; it is the width of the panel.
+          min-w-0 so the grid item can be narrower than its content's
+          minimum, which keeps a phone from gaining a horizontal scroll.
 
           data-thread marks the panel as where the signal thread ends: the
           page's thread layer finds it by this attribute, and the section
@@ -140,11 +215,210 @@ export function Technology() {
         */}
         <div
           data-thread="graph"
-          className="min-w-0 rounded-[1.25rem] border border-line bg-inset p-5 shadow-[var(--shadow-card)]"
+          className="min-w-0 rounded-[1.25rem] border border-line bg-surface p-4 shadow-[var(--shadow-card)] sm:p-6"
         >
           <OntologyGraph />
         </div>
       </div>
+
+      <Reveal className="mt-16 border-t border-line pt-10 md:mt-20">
+        <Sources />
+      </Reveal>
     </Section>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Sources                                                                    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The relation types, as labelled arrows, for the full list. The graph's
+ * relations are directed and typed; a bare arrow from 規則的な睡眠 to
+ * 睡眠不足 would read as the one leading to the other, when the relation is
+ * that it eases it. The verb sits on the arrow, between the two concepts,
+ * so it reads subject–verb–object and cannot be taken as describing the
+ * second concept alone. `causes` is the bare arrow — the graph's direction,
+ * which the note under the list says no source establishes — and
+ * `co_occurs` has no head, because it has no direction.
+ *
+ * `mark` is drawn and hidden from assistive tech; `spoken` is what a screen
+ * reader hears in its place, since "罫線 強める 右矢印" is what the drawn
+ * one would be read as.
+ */
+const RELATION: Record<Relation, { mark: string; spoken: string }> = {
+  causes: { mark: "→", spoken: "から" },
+  escalates: { mark: "─強める→", spoken: "は次を強める：" },
+  precedes: { mark: "─先立つ→", spoken: "は次に先立つ：" },
+  buffers: { mark: "─和らげる→", spoken: "は次を和らげる：" },
+  co_occurs: { mark: "─ともに見られる─", spoken: "とともに見られる：" },
+  avoids: { mark: "─遠ざける→", spoken: "は次を遠ざける：" },
+};
+
+const SUPPORTED = EDGES.filter((e) => e.evidence_strength === "association");
+const UNSUPPORTED = EDGES.filter((e) => e.evidence_strength === "expert_judgement");
+
+/** The guidelines the unsupported relations were checked against. */
+const CONSULTED = Array.from(
+  new Set(UNSUPPORTED.flatMap((e) => publishedRefs(e.source_refs).map((s) => s.short))),
+);
+
+/*
+ * Links open in a new tab, and say so to a screen reader: the reader is
+ * checking a claim and should not lose their place on the page to do it.
+ * mark-1 underlined, the site's link style — 5.44:1 on the page ground,
+ * 4.98:1 where ScrollWash's blue is at its densest.
+ */
+function Sources() {
+  return (
+    <div className="grid gap-8 lg:grid-cols-[5fr_7fr] lg:gap-12">
+      <div>
+        <h3 className="text-[1.05rem] font-medium tracking-[-0.01em] text-ink">
+          参照している公開資料
+        </h3>
+        {/*
+          The non-endorsement line, word for word as the company set it. It
+          sits under the heading rather than at the foot of the list so that
+          it is read before the institutions' names are, not after.
+        */}
+        <p className="measure-jp mt-3 text-[0.85rem] text-muted">
+          掲載の各機関は、Blescを推奨・承認するものではありません。
+        </p>
+      </div>
+
+      <div>
+        <ol className="flex flex-col divide-y divide-line border-y border-line" role="list">
+          {SOURCES.map((s) => (
+            <li key={s.id} className="py-4">
+              <a
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[0.95rem] font-medium leading-snug text-mark-1 underline decoration-mark-1/40 underline-offset-2 transition-colors duration-300 hover:decoration-mark-1"
+              >
+                {s.title}
+                <span className="sr-only">（新しいタブで開きます）</span>
+              </a>
+              <p className="mt-1 text-[0.8rem] text-muted">
+                {s.publisher}
+                {s.kind ? `・${s.kind}` : ""}・{s.year}年
+              </p>
+            </li>
+          ))}
+        </ol>
+
+        {/*
+          Every relation, with its direction, its type and what supports it.
+          Collapsed, so the section stays short for the reader who takes the
+          counts on trust; native <details>, so it opens without hydration
+          and a crawler reads it closed. The same open/close mark as the
+          FAQ, in the section's own ink.
+
+          This is also the figure's text equivalent: which area each concept
+          is in (what the discs show), and every relation with what the seed
+          records for it (what the lines show). Every concept in the picture
+          is in both.
+        */}
+        <details className="group mt-6">
+          <summary className="flex cursor-pointer list-none items-baseline gap-4 py-2 text-[0.95rem] font-medium text-ink transition-opacity duration-300 hover:opacity-70 motion-reduce:transition-none">
+            <span className="flex-1">
+              {COUNTS.relations}のつながりと、それぞれの出典
+            </span>
+            <span
+              aria-hidden
+              className="relative mt-2 h-[1px] w-4 shrink-0 bg-ink before:absolute before:inset-0 before:bg-ink before:transition-transform before:duration-300 motion-reduce:before:transition-none before:content-[''] before:[transform:rotate(90deg)] group-open:before:[transform:rotate(0deg)]"
+            />
+          </summary>
+
+          <div className="pt-4 pb-2">
+            {/*
+              Membership first, because it is what the discs draw and the
+              relation rows below do not say. The note under it is where the
+              "40 / 50" of older notes is accounted for: those are these
+              per-area figures added up, and the overlap is the difference.
+            */}
+            <h4 className="text-[0.8rem] font-medium text-ink">領域ごとの概念</h4>
+            <dl className="mt-2 divide-y divide-line">
+              {SUBGRAPH_ORDER.map((s) => {
+                const concepts = conceptsIn(s);
+                return (
+                  <div key={s} className="py-2 text-[0.85rem] leading-snug">
+                    <dt className="font-medium text-ink">
+                      {SUBGRAPHS[s].label}（{concepts.length}）
+                    </dt>
+                    <dd className="mt-0.5 text-muted">
+                      {concepts.map((n) => n.label_ja).join("、")}
+                    </dd>
+                  </div>
+                );
+              })}
+            </dl>
+            {/*
+              No subtraction is implied, on purpose: 40 − 9 is not 28,
+              because three of the nine are in all three areas. The sentence
+              says why the totals differ, not by how much.
+            */}
+            <p className="measure-jp mt-1.5 text-[0.8rem] text-muted">
+              3領域の概念を合わせると延べ{COUNTS.conceptsDeclared}
+              、つながりは延べ{COUNTS.relationsDeclared}
+              です。複数の領域に含まれる概念（{COUNTS.sharedConcepts}
+              ）とつながり（{COUNTS.sharedRelations}
+              ）を領域ごとに数えているためで、重複を除くと概念
+              {COUNTS.concepts}、つながり{COUNTS.relations}です。
+            </p>
+
+            <h4 className="mt-7 text-[0.8rem] font-medium text-ink">
+              公開資料を出典として関連を記録（{COUNTS.supported}）
+            </h4>
+            <RelationList edges={SUPPORTED} />
+
+            <h4 className="mt-7 text-[0.8rem] font-medium text-ink">
+              公開資料の裏付けなし（{COUNTS.unsupported}）
+            </h4>
+            <p className="measure-jp mt-1.5 text-[0.8rem] text-muted">
+              社内の判断によるつながりです。うち{COUNTS.unsupportedCitingSource}
+              件は{CONSULTED.join("・")}
+              を参照していますが、つながりそのものを示す記述ではないため、こちらに含めています。
+            </p>
+            <RelationList edges={UNSUPPORTED} />
+
+            <p className="measure-jp mt-6 text-[0.8rem] text-muted">
+              矢印はグラフ上の向きです。どの出典も、向き（どちらが原因か）までは裏付けていません。
+            </p>
+          </div>
+        </details>
+      </div>
+    </div>
+  );
+}
+
+function RelationList({ edges }: { edges: readonly SeedEdge[] }) {
+  return (
+    <ul className="mt-2 divide-y divide-line" role="list">
+      {edges.map((e) => {
+        const refs = publishedRefs(e.source_refs).map((s) => s.short);
+        const supported = e.evidence_strength === "association";
+        return (
+          <li
+            key={`${e.from}-${e.to}-${e.relation}`}
+            className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2 text-[0.85rem] leading-snug"
+          >
+            <span className="text-ink">
+              {NODE_BY_ID[e.from].label_ja}
+              <span aria-hidden className="mx-1.5 text-muted">
+                {RELATION[e.relation].mark}
+              </span>
+              <span className="sr-only">{RELATION[e.relation].spoken}</span>
+              {NODE_BY_ID[e.to].label_ja}
+            </span>
+            {refs.length > 0 && (
+              <span className="text-[0.8rem] text-muted">
+                {supported ? refs.join("・") : `参照：${refs.join("・")}`}
+              </span>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
