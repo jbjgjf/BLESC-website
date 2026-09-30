@@ -18,8 +18,8 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
  * readable without the bars; the bars are the only decoration, and they are
  * drawn from the same rows as the labels, so the two cannot disagree. Japan
  * takes the one colour that carries meaning on this page; the others are a
- * neutral at 45%, which clears 3:1 as a mark against the card in both
- * builds (3.11:1 light, 4.49:1 dark, computed from the tokens).
+ * neutral at 45%, which clears 3:1 as a mark against the card (3.11:1,
+ * computed from the tokens).
  *
  * The bars grow from the left as the panel arrives — scaleX on a fixed
  * width, so no frame animates a width — staggered so the eye reads down the

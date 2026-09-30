@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { Backing } from "@/components/sections/Backing";
 import { Faq } from "@/components/sections/Faq";
 import { ScrollFlower } from "@/components/flourish/ScrollFlower";
 import { ScrollWash } from "@/components/flourish/ScrollWash";
 import { SignalThread } from "@/components/flourish/SignalThread";
 import { Hero } from "@/components/sections/Hero";
 import { HowItWorks } from "@/components/sections/HowItWorks";
+import { Intro } from "@/components/sections/Intro";
 import { Limitations } from "@/components/sections/Limitations";
 import { News } from "@/components/sections/News";
 import { Philosophy } from "@/components/sections/Philosophy";
@@ -31,6 +33,13 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd()) }}
       />
+      {/*
+        The page opens on the company's line, and its flower is the way in:
+        it grows and turns until the screen is the flower's blue, and the
+        blue then fades to leave the hero, which has been sitting underneath
+        the statement's last screen (see Philosophy and Hero).
+      */}
+      <Philosophy />
       <Hero />
       <Problem />
       {/*
@@ -55,6 +64,13 @@ export default function Home() {
       <ScrollFlower>
         <SignalThread />
         <Limitations />
+        {/*
+          What Blesc is, in three plain sentences, straight before the steps
+          that show how it works: 仕組み reads as a sequence of screens, and
+          without this it was a sequence of screens for a product the page
+          had not yet said it was.
+        */}
+        <Intro />
         <HowItWorks />
       </ScrollFlower>
       {/*
@@ -72,22 +88,19 @@ export default function Home() {
         <Technology />
       </ScrollWash>
       <Team />
+      {/*
+        Who backs the company, straight after who runs it — the people, then
+        the institutions behind them.
+      */}
+      <Backing />
       <News />
       {/*
-        After the argument and the news, before the close: someone convinced
-        enough to still be reading is the one with objections left, and the
-        answers here are also the page's densest block of the plain language
-        people actually search in.
+        After the argument and the news, and last before the footer's
+        invitation: someone convinced enough to still be reading is the one
+        with objections left, and the answers here are also the page's
+        densest block of the plain language people actually search in.
       */}
       <Faq />
-      {/*
-        The closing statement is the last thing in <main>, and it is also the
-        way out of the page: its flower grows and turns until the screen is
-        the flower's blue, and the blue then fades to leave the footer, which
-        has been sitting underneath the statement's last screen (see
-        Philosophy and Footer).
-      */}
-      <Philosophy />
     </>
   );
 }

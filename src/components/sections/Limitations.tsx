@@ -79,12 +79,11 @@ function Row({ item, index }: { item: Limitation; index: number }) {
           {/*
             The row's number again, giant and almost not there, behind the
             copy. Set in the hero's voice — weight 300, tight — at 5% of the
-            text colour, which is #f3f3f3 on the white build and #161719 on
-            the dark one: a watermark, not a figure. Secondary copy over it
-            holds 5.63:1 light and 11.04:1 dark, so the paragraph is unharmed
-            wherever it lands. It drifts 28px slower than the row it belongs
-            to, which is what separates it from the copy in depth rather than
-            just in tone.
+            text colour, which is #f3f3f3 on white: a watermark, not a
+            figure. Secondary copy over it holds 5.63:1, so the paragraph is
+            unharmed wherever it lands. It drifts 28px slower than the row it
+            belongs to, which is what separates it from the copy in depth
+            rather than just in tone.
 
             It hangs off the top-left of the copy column, so on a flipped row
             it follows the column to the other side without knowing it did.

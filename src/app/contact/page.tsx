@@ -59,8 +59,8 @@ export default function ContactPage() {
 
         12% of --mark-1 is the ceiling, not a preference: the sticky column
         above passes over it, and the accented mail link inside that column
-        measures 4.64:1 against this wash in the light build where 14% would
-        drop it to 4.50 and 18% to 4.24. Muted copy holds 5.33:1 and ink
+        measures 4.64:1 against this wash, where 14% would drop it to 4.50
+        and 18% to 4.24. Muted copy holds 5.33:1 and ink
         16.57:1. The blur is small on purpose — enough to soften the edges,
         not enough to stop the petals reading as the mark rather than a haze.
       */}

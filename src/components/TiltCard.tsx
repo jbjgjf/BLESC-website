@@ -48,10 +48,10 @@ export interface TiltCardProps {
 /**
  * Cursor-tracking 3D tilt with a radial glare.
  *
- * Glare runs at the component's shipped 15%. It was held at 12% while
- * --color-text-muted was #868f9a, where 15% dropped card body copy to
- * 4.35:1; at the current brighter muted the same glare leaves it at 5.90:1,
- * so the cap is no longer buying anything.
+ * The glare's colour and strength are tokens, --color-glare and
+ * --glare-opacity in globals.css: a 10% ink wash that deepens the white card
+ * under the pointer, since a light sheen on white reads as nothing. At its
+ * peak it leaves muted card copy at 5.15:1.
  *
  * Still gated on hover: idle cards should not carry a permanent centred
  * wash, and the effect is meant to follow the cursor.

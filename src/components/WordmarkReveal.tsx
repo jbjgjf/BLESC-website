@@ -14,9 +14,11 @@ import { useRef, useState } from "react";
  * with this site.
  *
  * Strokes are tokens. The original hardcodes neutral-200 with a `dark:`
- * variant, and this site does not use Tailwind's dark strategy at all — it
- * switches on [data-theme], so every `dark:` rule in that component would
- * simply never fire.
+ * variant; here the strokes read the palette's own tokens instead of a grey
+ * that matches nothing else on the page, and the `dark:` half is gone rather
+ * than inert — Tailwind v4 wires that variant to prefers-color-scheme out of
+ * the box, so on this light-only site it would repaint the strokes for
+ * every visitor whose OS is set to dark.
  *
  * The draw-in fires when the wordmark is actually reached rather than on
  * mount. It sits at the very bottom of the page, so on mount it animates

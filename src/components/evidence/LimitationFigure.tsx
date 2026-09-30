@@ -61,9 +61,8 @@ const CHOICE = "px-5 py-1.5 text-center text-[0.8rem] font-medium whitespace-now
  * The chosen label is a second copy of the whole answer row, clipped inside the
  * travelling fill and sliding the opposite way by half its own width, so the
  * two copies stay registered to the pixel and the label under the fill is the
- * only one that changes colour. text-canvas, not text-ink: mark-1 is a mid blue
- * in both themes and its label has to be the page ground to clear AA (5.44:1
- * light, 10.09:1 dark).
+ * only one that changes colour. text-canvas, not text-ink: mark-1 is a mid blue,
+ * and its label has to be the white page ground to clear AA (5.44:1).
  */
 function BinaryAnswer({ reduce }: { reduce: boolean }) {
   const fill: Variants = {

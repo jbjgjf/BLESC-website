@@ -9,7 +9,7 @@
  * Adapted from Ruixen's gradient footer. Its stop ramp was a full rainbow
  * (ember → blue → white → yellow → red-orange → magenta); this one is built
  * from the site's own palette so the glow reads as the same light as the hero
- * aurora rather than introducing seven new hues.
+ * sky rather than introducing seven new hues.
  */
 
 import {
@@ -17,9 +17,7 @@ import {
   useId,
   useRef,
   type CSSProperties,
-  type FocusEventHandler,
   type ReactNode,
-  type Ref,
 } from "react";
 
 type Stop = { offset: number; color: string };
@@ -28,19 +26,20 @@ const VBW = 1271;
 const VBH = 599;
 
 /**
- * Floor (0) → top (1). Same rhythm as the original — deep floor, saturated
- * body, bright core, fade to nothing — but walked through --color-primary and
- * --color-text instead of around the colour wheel. The near-white at the peak
- * is the aurora's own sheen colour.
+ * Floor (0) → top (1). Same rhythm as the original — a floor, a saturated
+ * body, a peak, a fade to nothing — but walked through --color-primary's
+ * blues instead of around the colour wheel, and turned for a white page: the
+ * glow deepens toward saturation at its core rather than brightening, since
+ * a glow that rises toward white on a white ground is invisible.
  */
 const BLESC_STOPS: Stop[] = [
-  { offset: 0, color: "#050A10" },
-  { offset: 0.1827, color: "#0B3C6E" },
-  { offset: 0.2837, color: "#2E77B8" },
-  { offset: 0.4135, color: "#85C0ED" },
-  { offset: 0.5866, color: "#F2F1EE" },
-  { offset: 0.6827, color: "#BBD9F1" },
-  { offset: 0.8029, color: "#85C0ED" },
+  { offset: 0, color: "#EDF1F8" },
+  { offset: 0.1827, color: "#A8CDEA" },
+  { offset: 0.2837, color: "#85C0ED" },
+  { offset: 0.4135, color: "#6FB0E2" },
+  { offset: 0.5866, color: "#4E97D4" },
+  { offset: 0.6827, color: "#7FBCE9" },
+  { offset: 0.8029, color: "#A9D3F1" },
   { offset: 1, color: "#85C0ED00" },
 ];
 
@@ -88,9 +87,6 @@ export interface GradientFooterProps {
   stops?: Stop[];
   className?: string;
   style?: CSSProperties;
-  /** The <footer> element itself (a plain prop in React 19). */
-  ref?: Ref<HTMLElement>;
-  onFocusCapture?: FocusEventHandler<HTMLElement>;
 }
 
 export function GradientFooter({
@@ -104,8 +100,6 @@ export function GradientFooter({
   stops = BLESC_STOPS,
   className,
   style,
-  ref,
-  onFocusCapture,
 }: GradientFooterProps) {
   const uid = useId().replace(/:/g, "");
   const bandRef = useRef<HTMLDivElement>(null);
@@ -166,8 +160,6 @@ export function GradientFooter({
     // The glow is pinned to the viewport, so the footer reserves the same
     // height beneath its content for it to land in.
     <footer
-      ref={ref}
-      onFocusCapture={onFocusCapture}
       className={className}
       style={{ paddingBottom: gradientHeight, ...style }}
     >

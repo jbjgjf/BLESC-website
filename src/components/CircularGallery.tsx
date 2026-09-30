@@ -11,7 +11,6 @@ import {
   type OGLRenderingContext,
 } from "ogl";
 import { useEffect, useRef } from "react";
-import { useTheme } from "@/components/ThemeProvider";
 
 export interface GalleryItem {
   image: string;
@@ -595,9 +594,9 @@ class App {
 
     /*
      * The context is released outright, not left for the garbage collector.
-     * The scene is rebuilt on every theme toggle, and a browser allows only
-     * a handful of live contexts per page — past that it force-loses the
-     * oldest, which could be the hero's sky or the 3D graph. Unlike
+     * The scene is rebuilt whenever its props change, and a browser allows
+     * only a handful of live contexts per page — past that it force-loses
+     * the oldest, which could be the hero's sky or the 3D graph. Unlike
      * ShaderBackground this does not defer the release for StrictMode's
      * remount: that component keeps one React-owned canvas and so can
      * reclaim its context, but every App here makes a fresh canvas through
@@ -626,7 +625,6 @@ export function CircularGallery({
   onReady,
 }: CircularGalleryProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { theme } = useTheme();
 
   // Callbacks are read through refs so a new function identity never tears
   // down and rebuilds the whole WebGL scene. Declared first so this effect
@@ -668,13 +666,7 @@ export function CircularGallery({
     });
 
     return () => app.destroy();
-    /*
-     * theme is in the dependency list because the label colour is baked
-     * into a canvas texture at build time, not read live from CSS. Without
-     * it the names keep whatever colour the palette had on first paint —
-     * white, and invisible, once the page is switched to light.
-     */
-  }, [items, bend, borderRadius, scrollSpeed, scrollEase, theme]);
+  }, [items, bend, borderRadius, scrollSpeed, scrollEase]);
 
   return (
     <div

@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Logo } from "@/components/Logo";
 import { ButtonLink } from "@/components/ui";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { CTA, NAV_LINKS, sectionHref } from "@/lib/site";
 
 /**
@@ -19,7 +18,7 @@ import { CTA, NAV_LINKS, sectionHref } from "@/lib/site";
  * The two states are one element. Width, height, padding and radius are CSS
  * transitions on real properties, so the bar draws in rather than cutting;
  * the glass is a separate layer behind the content that fades in, which
- * keeps the links, the toggle and the CTA from remounting at the boundary.
+ * keeps the links and the CTA from remounting at the boundary.
  */
 
 /*
@@ -177,6 +176,17 @@ export function Nav() {
         </a>
 
         <div className="flex items-center gap-4 md:gap-6">
+          {/*
+            Resting links are muted only inside the glass box. At the top
+            the row has no ground, so on the home page it sits straight on
+            the hero's sky, with only the top of its white edge wash (about
+            40% at this height) between them: muted over the deepest blue
+            that reaches the nav falls to about 4.3:1, under AA at this
+            size, where ink holds 13:1. Nothing is current
+            up there anyway — the scroll-spy clears the active link in the
+            hero — so there is no active state for the muted colour to set
+            off, and hover keeps its underline.
+          */}
           <ul className="hidden items-center gap-5 md:flex lg:gap-7">
             {NAV_LINKS.map(({ id, label }) => {
               const isActive = activeId === id;
@@ -186,7 +196,7 @@ export function Nav() {
                     href={sectionHref(id, onHome)}
                     aria-current={isActive ? "true" : undefined}
                     className={`group relative block py-1 text-[0.9rem] whitespace-nowrap transition-colors duration-300 ${
-                      isActive ? "text-ink" : "text-muted hover:text-ink"
+                      isActive || !pill ? "text-ink" : "text-muted hover:text-ink"
                     }`}
                   >
                     {label}
@@ -203,8 +213,6 @@ export function Nav() {
               );
             })}
           </ul>
-
-          <ThemeToggle compact />
 
           {/* Was a hand-rolled copy of ButtonLink's glass markup. */}
           <ButtonLink href={CTA.consult.href} size="sm" className="whitespace-nowrap">

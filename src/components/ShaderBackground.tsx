@@ -9,7 +9,7 @@
  * Unlike the aurora this replaces, `shade()` is a weighted *average* of the
  * palette rather than light added on top of a base, so a light palette
  * produces a light field instead of clamping to white. That is why this one
- * can run in both themes.
+ * can draw a pale sky on a white page.
  */
 
 import { useEffect, useMemo, useRef } from "react";

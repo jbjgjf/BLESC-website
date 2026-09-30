@@ -108,8 +108,14 @@ export function RevealItem({
 }
 
 /**
- * Hero-only intro reveal. Runs on mount rather than on scroll, and animates
- * blur+opacity without any translate for word-level splits.
+ * Hero-only intro reveal. Runs once `play` is true — on mount by default —
+ * rather than on scroll, and animates blur+opacity without any translate for
+ * word-level splits.
+ *
+ * `play` exists because the hero is no longer the first screen: it waits
+ * under the opening statement until the statement's flower dissolves off
+ * it, and an intro that ran on mount would have finished, unseen, long
+ * before then. Until `play` turns true the element holds its initial state.
  */
 export function IntroFade({
   children,
@@ -119,6 +125,7 @@ export function IntroFade({
   duration = 0.9,
   blur = 8,
   as = "div",
+  play = true,
 }: RevealProps & {
   translate?: boolean;
   duration?: number;
@@ -130,6 +137,7 @@ export function IntroFade({
    * is part of the h1 rather than a paragraph after it.
    */
   as?: "div" | "span";
+  play?: boolean;
 }) {
   const reduce = useReducedMotion();
   const Tag = as === "span" ? motion.span : motion.div;
@@ -139,7 +147,7 @@ export function IntroFade({
       <Tag
         className={className}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        animate={{ opacity: play ? 1 : 0 }}
         transition={{ duration: 0.3, delay }}
       >
         {children}
@@ -155,7 +163,7 @@ export function IntroFade({
         y: translate ? 16 : 0,
         filter: `blur(${blur}px)`,
       }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      animate={play ? { opacity: 1, y: 0, filter: "blur(0px)" } : undefined}
       transition={{ duration, ease: EXPO_OUT, delay }}
     >
       {children}
@@ -179,6 +187,7 @@ export function WordReveal({
   stagger = 0.09,
   duration = 1.2,
   blur = 14,
+  play = true,
 }: {
   text: string;
   className?: string;
@@ -186,6 +195,8 @@ export function WordReveal({
   stagger?: number;
   duration?: number;
   blur?: number;
+  /** Holds the words back until true; see IntroFade. */
+  play?: boolean;
 }) {
   const reduce = useReducedMotion();
   const words = text.split(" ");
@@ -195,7 +206,7 @@ export function WordReveal({
       <motion.span
         className={className}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        animate={{ opacity: play ? 1 : 0 }}
         transition={{ duration: 0.3, delay }}
       >
         {text}
@@ -207,7 +218,7 @@ export function WordReveal({
     <motion.span
       className={className}
       initial="hidden"
-      animate="show"
+      animate={play ? "show" : "hidden"}
       variants={staggerVariants(stagger, delay)}
       aria-label={text}
     >

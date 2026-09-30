@@ -3,8 +3,7 @@ import { Inter, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { PREPAINT_SCRIPT } from "@/lib/prepaint";
 import { ScrollProgress } from "@/components/ScrollProgress";
 import { SpotlightPointer } from "@/components/SpotlightPointer";
 import { SmoothScroll } from "@/components/SmoothScroll";
@@ -136,16 +135,20 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   /*
-   * One per scheme. A single light value painted the browser chrome
-   * near-white behind a near-black page for every dark-mode visitor, which
-   * is both an eyesore and a (small) engagement signal. The light value is
-   * the page ground, #ffffff, since the ground moved off the old cream.
+   * The page ground, so the browser chrome runs straight into the page. One
+   * value rather than a light/dark pair: the site is light only, so the
+   * chrome is white whatever the OS is set to — a dark bar over a white page
+   * would only draw a seam across the top of it.
    */
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0b0d" },
-  ],
-  colorScheme: "light dark",
+  themeColor: "#ffffff",
+  /*
+   * Tells the browser, before the stylesheet arrives, that this page only
+   * has a light rendering — so a dark-OS visitor gets light form controls,
+   * scrollbars and overscroll ground from the first frame, and a browser
+   * with a forced-dark mode is asked to leave it alone. Matches the
+   * `color-scheme: only light` in globals.css, which says why `only`.
+   */
+  colorScheme: "only light",
   width: "device-width",
   initialScale: 1,
 };
@@ -156,22 +159,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // suppressHydrationWarning: the head script stamps data-theme on <html>
-    // before React hydrates, so the server's attribute intentionally differs.
+    // suppressHydrationWarning: the head script stamps data-js on <html>
+    // before React hydrates, so the server's attributes intentionally differ.
     <html
       lang="ja"
-      data-theme="light"
       suppressHydrationWarning
       className={`${inter.variable} ${notoSansJp.variable}`}
     >
       <head>
         {/*
-          Blocking, before first paint. Applying the stored theme from an
-          effect instead would flash the wrong palette on every load for
-          anyone whose preference differs from the server default.
+          Blocking, before first paint: it marks the document as scripted,
+          which is what gives the pinned stages their scroll height. See
+          lib/prepaint.ts.
         */}
         <script
-          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+          dangerouslySetInnerHTML={{ __html: PREPAINT_SCRIPT }}
         />
         {/*
           Reveals are server-rendered with their hidden inline styles, so
@@ -196,14 +198,12 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd()) }}
         />
-        <ThemeProvider>
-          <SmoothScroll />
-          <SpotlightPointer />
-          <ScrollProgress />
-          <Nav />
-          <main>{children}</main>
-          <Footer />
-        </ThemeProvider>
+        <SmoothScroll />
+        <SpotlightPointer />
+        <ScrollProgress />
+        <Nav />
+        <main>{children}</main>
+        <Footer />
       </body>
     </html>
   );

@@ -1,14 +1,16 @@
 "use client";
 
+import { useInView } from "motion/react";
+import { useRef } from "react";
 import { AppMock } from "@/components/hero/AppMock";
 import { DeviceScroll } from "@/components/hero/DeviceScroll";
 import { IntroFade, WordReveal } from "@/components/Reveal";
 import { ShaderBackground } from "@/components/ShaderBackground";
-import { useTheme } from "@/components/ThemeProvider";
+import { getLenis } from "@/components/SmoothScroll";
 import { WebGLFallback } from "@/components/webgl/WebGLErrorBoundary";
 import { ButtonLink, Container } from "@/components/ui";
 import { CTA } from "@/lib/site";
-import { DARK_PALETTE, LIGHT_PALETTE } from "@/lib/sky";
+import { LIGHT_PALETTE } from "@/lib/sky";
 
 const HEADLINE_LINES = [
   "Hearing the unspoken.",
@@ -40,10 +42,62 @@ const AFTER_HEADLINE =
   HEADLINE_START + (TOTAL_WORDS - 1) * STAGGER + WORD_DURATION + 0.15;
 
 export function Hero() {
-  const { theme } = useTheme();
+  const section = useRef<HTMLElement>(null);
+  const headline = useRef<HTMLHeadingElement>(null);
+
+  /*
+   * The hero is not the first screen any more. The opening statement sits
+   * above it, and — when motion is allowed and a script is running — the
+   * hero is pulled up under the statement's last pinned screen, so the
+   * statement's flower dissolves to leave it in place (see Philosophy). The
+   * pull-up is CSS-gated like the pin itself, so reduced motion and no-JS
+   * get a hero that simply follows the statement's one still screen.
+   *
+   * The intro therefore waits for the headline to reach the upper half of
+   * the viewport. Under the pin that is partway through the blue's
+   * dissolve, so the words resolve out of it; without the pin it is when
+   * the reader scrolls the headline up into view. A page restored below
+   * the hero (a back button, a deep link) plays it at once instead of
+   * holding the words hidden until the reader scrolls back up to them:
+   * the observed area runs from far above the page down to the viewport's
+   * midline, so a headline already above the screen counts as reached.
+   */
+  const play = useInView(headline, {
+    once: true,
+    margin: "100000px 0px -50% 0px",
+  });
+
+  /*
+   * The one thing CSS cannot arrange is focus. A keyboard user tabbing past
+   * the nav lands on a hero button that, until the pin has run to its end,
+   * is still underneath the statement. So focus arriving in the hero while
+   * it is covered takes the page to the end of the pin, where it is not.
+   */
+  const onFocusIn = () => {
+    const el = section.current;
+    if (!el) return;
+    if (parseFloat(getComputedStyle(el).marginTop) >= 0) return;
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    if (window.scrollY >= top - 1) return;
+    const lenis = getLenis();
+    if (lenis) lenis.scrollTo(top, { immediate: true });
+    else window.scrollTo({ top });
+  };
 
   return (
-    <section id="top" className="relative overflow-x-clip bg-canvas">
+    /*
+     * isolate gives the hero a stacking context of its own, and it has to:
+     * the statement above paints at z-10 so that it covers the hero while
+     * the flower runs, and without one the z-10 Container and figure in here
+     * would compete with it in the page's stacking context — and, coming
+     * later in the document, win, printing the headline over the flower's
+     * blue before the blue had faded.
+     */
+    <section
+      ref={section}
+      onFocusCapture={onFocusIn}
+      className="relative isolate overflow-x-clip bg-canvas motion-safe:js:-mt-[100lvh]"
+    >
       {/*
         The static gradient sits underneath permanently: if WebGL is
         unavailable the canvas simply never draws and this shows through, so
@@ -52,26 +106,29 @@ export function Hero() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[128svh]">
         <WebGLFallback className="absolute inset-0" />
         <div className="absolute inset-0">
-          <ShaderBackground
-            colors={theme === "light" ? LIGHT_PALETTE : DARK_PALETTE}
-          />
+          <ShaderBackground colors={LIGHT_PALETTE} />
         </div>
 
-      {/*
-        Readability scrim. The shader can clamp to near-white where its three
-        ribbons overlap, so the copy cannot rely on the aurora staying dark.
-        Held at 0.90 across the text column and opened up on the right, which
-        keeps the muted subheadline at 4.6:1 and the headline above 11:1 even
-        against a hypothetical pure-white aurora.
-      */}
-      {/*
-        Vertical now that the copy is centred: the sky stays open across the
-        full width, and the wash only builds at the very top and bottom,
-        where the nav and the first section meet it.
-      */}
+        {/*
+          The sky's edge wash, in the page's own white: 72% under the nav,
+          open through the middle where the copy sits, and building to 72%
+          again at the foot, where the sky hands over to the product figure.
+
+          The top edge is as white as the opening statement's. While the
+          statement's blue dissolves, the hero is still rising into place
+          under it with the page's white ground above its top edge, and at
+          the old 45% the hero's first rows were bluer than that ground — a
+          line ran across the screen through the dissolve, about eight
+          levels deep. At 72% the two meet at the same white.
+
+          The copy is not what it protects. The sky is pale — its deepest
+          stop is #90bfed, and shade() always mixes the white ground back in
+          — so ink holds 10:1 over the deepest possible patch of it with no
+          help. That is why every line of the copy below is ink.
+        */}
         <div
           aria-hidden
-          className="absolute inset-0 bg-[linear-gradient(180deg,var(--scrim-mid)_0%,var(--scrim-soft)_34%,var(--scrim-soft)_58%,var(--scrim-strong)_100%)]"
+          className="absolute inset-0 bg-[linear-gradient(180deg,var(--scrim-strong)_0%,var(--scrim-soft)_34%,var(--scrim-soft)_58%,var(--scrim-strong)_100%)]"
         />
       </div>
 
@@ -88,8 +145,14 @@ export function Hero() {
             its visitors search in, instead of an English couplet no one
             queries for. It is a span so the heading still contains only
             phrasing content.
+
+            The Japanese line is ink, not muted: size and weight carry the
+            hierarchy. It sits in the open middle of the sky with no wash
+            behind it, and muted over the sky's deepest blue falls to about
+            4:1 there (3.4:1 against the darkest pixel read back off the
+            canvas, #95c3f0) — under AA for 18–20px type.
           */}
-          <h1 className="type-hero text-ink">
+          <h1 ref={headline} className="type-hero text-ink">
             {HEADLINE_LINES.map((line, i) => (
               <span key={line} className="block">
                 <WordReveal
@@ -98,20 +161,22 @@ export function Hero() {
                   duration={WORD_DURATION}
                   blur={WORD_BLUR}
                   delay={HEADLINE_START + LINE_OFFSETS[i] * STAGGER}
+                  play={play}
                 />
               </span>
             ))}
 
             <IntroFade
               as="span"
+              play={play}
               delay={AFTER_HEADLINE}
-              className="mt-7 block text-lg font-normal leading-normal tracking-normal text-muted md:text-xl"
+              className="mt-7 block text-lg font-normal leading-normal tracking-normal text-ink md:text-xl"
             >
               生徒のSOSを可視化する。
             </IntroFade>
           </h1>
 
-          <IntroFade delay={AFTER_HEADLINE + 0.08}>
+          <IntroFade play={play} delay={AFTER_HEADLINE + 0.08}>
             <div className="mt-11 flex flex-col gap-4 sm:flex-row sm:justify-center">
               <ButtonLink variant="secondary" href={CTA.document.href}>
                 {CTA.document.label}

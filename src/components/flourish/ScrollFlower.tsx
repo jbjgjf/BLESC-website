@@ -146,8 +146,8 @@ export function ScrollFlower({ children }: { children: ReactNode }) {
           {/*
             22% of the logo's own blue (--color-primary, via text-accent)
             under a 22px blur. The ceiling was measured when the wash was the
-            darker --mark-1 — secondary copy over it held 4.60:1 in the light
-            build, and 26% fell to 4.33:1 — and the lighter brand blue only
+            darker --mark-1 — secondary copy over it held 4.60:1 on white,
+            and 26% fell to 4.33:1 — and the lighter brand blue only
             raises that figure, so the alpha stays where it was. Presence
             comes from size and sharpness instead of alpha — hence the wider
             box and the tighter blur, which is what lets the petals read as

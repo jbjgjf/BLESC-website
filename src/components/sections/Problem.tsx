@@ -11,15 +11,14 @@ import { Section } from "@/components/ui";
  * directly under it and the second section is gone.
  *
  * The grid field went with it. It was a blue-tinted orb behind graph paper,
- * which is legible on the near-black build and fights a white ground — and
- * on white the only colour the page wants is the hero sky and the product
- * UI. What sits behind the panel now is not a field: a pool of the logo's
- * own blue at 10%, fading to nothing before it reaches the section's edges,
- * so the panel reads as resting in a little light rather than on a plain
- * sheet. The panel is bg-surface, so nothing inside it changes; the only
- * copy that can fall over the pool is the sentence above it, and secondary
- * text over the pool's deepest point still holds 5.88:1 on the light build
- * and 10.47:1 on the dark one.
+ * which fights a white ground — and on white the only colour the page wants
+ * is the hero sky and the product UI. What sits behind the panel now is not
+ * a field: a pool of the logo's own blue at 10%, fading to nothing before it
+ * reaches the section's edges, so the panel reads as resting in a little
+ * light rather than on a plain sheet. The panel is bg-surface, so nothing
+ * inside it changes; the only copy that can fall over the pool is the
+ * sentence above it, and secondary text over the pool's deepest point still
+ * holds 5.88:1.
  *
  * The ellipse is sized to end inside the box. A gradient is clipped at its
  * element's edge, so an ellipse larger than the section would not spill —

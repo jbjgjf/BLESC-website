@@ -36,9 +36,9 @@ const REST_Y = "14%";
  * is already soft at its edge, so nothing has to be filtered per frame, and
  * the compositor only moves a painted layer. 14% of --color-primary is the
  * ceiling, measured rather than chosen: at the ellipse's centre it takes the
- * light ground to rgb(238,246,252) and the dark ground to rgb(27,36,44), over
- * which --color-text-muted still holds 5.73:1 and 9.66:1 — both clear of
- * the 4.5:1 that secondary copy sitting on the page ground needs.
+ * white ground to rgb(238,246,252), over which --color-text-muted still
+ * holds 5.73:1 — clear of the 4.5:1 that secondary copy sitting on the page
+ * ground needs.
  *
  * Stacking, wrapping and the no-JS fallback are exactly ScrollFlower's: the
  * layer is positioned with z-0 and rendered FIRST, so it paints above the

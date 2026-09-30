@@ -39,10 +39,12 @@ export function Icon({
       /*
        * Size only — deliberately no `display` here. Tailwind's preflight
        * already sets `svg { display: block }`, and an inline display would
-       * outrank every class, which would silently break the one call site
-       * that hides its icon responsively (`hidden md:block` in News). That is
-       * the same specificity trap the old icon font's own CSS set, just from
-       * the other direction.
+       * outrank every class, so a call site that hides an icon by breakpoint
+       * (`hidden md:block`) would silently keep showing it. None does today
+       * — the only display class passed in is PrivacyFigure's plain `block`
+       * — but a class is how an icon is meant to be hidden, and that is the
+       * same specificity trap the old icon font's own CSS set, just from the
+       * other direction.
        */
       style={{ width: size, height: size }}
     >
@@ -115,8 +117,8 @@ export function HoverSwap({
  * one permitted micro-interaction (scale 1 → 1.02); the inner lens is the
  * surface, tinted through --glass-tint so the hover lighten still animates.
  *
- * #85c0ed is a light fill, so primary carries the dark ground colour as its
- * label rather than the page's text colour, which would be light-on-light.
+ * #85c0ed is a light fill, so primary's label is --on-accent, a near-black
+ * that holds 9.96:1 on it.
  */
 export function ButtonLink({
   variant = "primary",
@@ -142,8 +144,9 @@ export function ButtonLink({
           /*
            * The secondary pill is the page ground at 78%, which on the page
            * ground is nothing: 資料請求 sat on white with no edge to it. Its
-           * edge and its lift are tokens per theme (globals.css), because a
-           * white pill wants a shadow and a dark pill wants a lit rim.
+           * edge and its lift are tokens in globals.css — a hairline of ink
+           * and a soft drop, which is what lifts a white pill off a white
+           * page.
            */
           ...(variant === "secondary"
             ? {

@@ -23,11 +23,11 @@ const PANEL =
   "rounded-[1.25rem] border border-line bg-surface p-6 shadow-[var(--shadow-card)] md:p-8";
 
 /**
- * bg-inset, not bg-canvas-alt. On the raised panel the page's second surface
- * is the wrong well: in the dark build it measures 1.03:1 against the plane it
- * sits on, i.e. an invisible field. --surface-inset is the token for a well
- * sunk into a raised plane and reads in both themes (1.07:1 light, 1.21:1
- * dark), with ink at 18.11:1 / 14.81:1 and the placeholder at 5.83:1 / 9.13:1.
+ * bg-inset, not bg-canvas-alt. The two are the same blue-grey today, but
+ * --surface-inset is the token for a well sunk into a raised plane, so the
+ * field keeps its edge if the page's second surface ever moves. It measures
+ * 1.07:1 against the white panel, with ink at 18.11:1 and the placeholder at
+ * 5.83:1.
  *
  * `focus:outline-none` stays: the unlayered `:focus-visible` rule in
  * globals.css outranks it, so the real focus ring is the site's 2px mark-1
@@ -414,8 +414,7 @@ export function ContactForm() {
           /*
             rounded-xl, not rounded-full: 12px is the radius every other
             control on the site uses, and a pill here was the only one of its
-            kind. --on-accent on --color-primary holds 9.96:1 light and
-            10.09:1 dark.
+            kind. --on-accent on --color-primary holds 9.96:1.
           */
           className="group inline-flex items-center justify-center rounded-xl bg-accent px-8 py-3.5 text-[0.95rem] font-medium text-on-accent transition-[scale,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02] disabled:scale-100 disabled:cursor-progress disabled:opacity-70"
         >

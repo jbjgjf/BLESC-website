@@ -19,7 +19,9 @@ import { drawStatic, drawVariants, VIEWPORT } from "@/lib/motion";
  *
  * bg-line-strong, not bg-line: this line is structure, not a seam between
  * two surfaces, and line-strong is the token that clears the 3:1 a
- * meaningful non-text mark needs in both builds (3.72:1 light, 3.15:1 dark).
+ * meaningful non-text mark needs — 3.72:1 on white, 3.46:1 on the second
+ * surface. News, the one caller, sits on that second surface and lays a 4%
+ * film of ink over the rule to bring it back to 3.70:1 (see News).
  */
 export function DrawnRule({
   className = "",

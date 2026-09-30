@@ -23,7 +23,7 @@ export const NAV_LINKS = [
  * Footer sitemap. Every section the nav lists, plus the FAQ.
  *
  * The FAQ is deliberately not in NAV_LINKS: the top bar already runs six
- * links against a theme toggle and a CTA at md, and a seventh wraps it. It
+ * links against the logo and a CTA at md, and a seventh wraps it. It
  * still wants a crawlable internal link from somewhere on the page, so it
  * lives here — which is also where a visitor looking for it would look.
  */
@@ -36,27 +36,23 @@ export const sectionHref = (id: string, onHome: boolean) =>
   onHome ? `#${id}` : `/#${id}`;
 
 /**
- * Brand mark. Two files, because a mark that reads against the near-black
- * ground will not read against the near-white one.
+ * Brand mark: the dark wordmark, for the site's white ground.
  *
- * Both were derived from the supplied JPEG rather than used raw. The source
- * files have opaque grounds — one white, one black — which would have shown
- * as a rectangle behind the mark on either theme, and the black-ground PNG
- * was clipped on the right, cutting the final "c". The white-ground JPEG is
- * the only complete artwork, so both versions come from it: its ground keyed
- * out, and the wordmark flipped to white for the dark build.
+ * Derived from the supplied JPEG rather than used raw. The source files have
+ * opaque grounds, which would have shown as a rectangle behind the mark, and
+ * the black-ground PNG was clipped on the right, cutting the final "c". The
+ * white-ground JPEG is the only complete artwork, so this is that, with its
+ * ground keyed out.
  *
- * To replace them, overwrite these two files keeping the names, or drop new
- * ones beside them and change the paths here — any web format works, since
- * these are plain <img> sources. Transparent backgrounds, please. Nothing
- * else needs touching: all three places the mark appears render <Logo />.
+ * The file keeps its "on-light" name because it says which ground the
+ * artwork is drawn for, and because the structured data in lib/seo.ts points
+ * crawlers at the same path.
+ *
+ * To replace it, overwrite the file keeping the name. Transparent
+ * background, please. Every place on the page the mark appears renders
+ * <Logo />; only a new path would also need lib/seo.ts changed.
  */
-export const LOGO = {
-  /** Shown on the dark theme, so this artwork should be light. */
-  onDark: "/logo/logo-on-dark.png",
-  /** Shown on the light theme, so this artwork should be dark. */
-  onLight: "/logo/logo-on-light.png",
-} as const;
+export const LOGO_SRC = "/logo/logo-on-light.png";
 
 export const CONTACT_EMAIL = "blesc.official@gmail.com";
 

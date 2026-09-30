@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * `js:` — applies once the pre-paint script in lib/theme.ts has run, i.e.
+ * `js:` — applies once the pre-paint script in lib/prepaint.ts has run, i.e.
  * whenever JavaScript is on. Used to give the pinned, scroll-driven stages
  * their extra height only when something will drive them; without a script
  * they are one still screen instead of several screens of a picture that
@@ -10,25 +10,19 @@
 @custom-variant js (&:where([data-js], [data-js] *));
 
 /* ---------------------------------------------------------------------------
-   Design tokens — dark. The light palette is inverted about its own axis:
-   the warm off-white becomes the text, the near-navy becomes the ground.
-   #85c0ed is unchanged and is still the ONLY colour permitted to carry
-   meaning — links, active states, small UI marks, the flow indicator,
-   button fills. Everything else is neutral.
+   Design tokens. One palette, on a white ground: nothing below switches on
+   an attribute or on prefers-color-scheme, and nothing should.
 
-   On this ground #85c0ed measures 10.09:1, so unlike the light build it is
-   now safe as small text too.
+   #85c0ed is the ONLY colour permitted to carry meaning — links, active
+   states, small UI marks, the flow indicator, button fills. Everything else
+   is neutral. It is a fill, never text: on white it measures 1.95:1, which
+   is why the marks below exist.
 --------------------------------------------------------------------------- */
 :root {
   --color-primary: #85c0ed;
-  --color-text: #ffffff;
-  /*
-   * Secondary text. Inverting to a dark ground cost this a lot of apparent
-   * weight — light type on dark needs more separation than the same pair
-   * reversed. Raised from #868f9a (6.0:1) to 12.1:1 on the page ground and
-   * 11.1:1 on a raised card.
-   */
-  --color-text-muted: #c3ccd8;
+  --color-text: #0b0d12;
+  /* Secondary text. 6.25:1 on white, 5.83:1 on the second surface. */
+  --color-text-muted: #576172;
 
   /*
    * Meaning marks. The page was one accent against a lot of neutral grey, so
@@ -36,114 +30,10 @@
    * eyebrows, list numbers, stat figures, news categories.
    *
    * They exist separately from --color-primary because that is a *fill*
-   * colour and stays #85c0ed in both themes, while these are used as TEXT —
-   * and #85c0ed as text on the light ground is 1.87:1. The light variants
-   * below are the same hues taken dark enough to read.
+   * colour, while these are used as TEXT. They are the palette's blue,
+   * violet and green taken dark enough to read: on white 5.44, 6.68 and
+   * 4.88:1, and on the second surface 5.07, 6.22 and 4.55:1.
    */
-  --mark-1: #85c0ed;
-  --mark-2: #a99bf0;
-  --mark-3: #7fd6c0;
-
-  --color-bg: #0a0b0d;
-  --color-bg-alt: #121417;
-  /* Hairline rules and card edges: 1.3:1 was effectively invisible. */
-  --color-border: #3d444d;
-  /*
-   * Lines that carry structure rather than just separating surfaces — the
-   * orbit ring, diagram strokes. Clears the 3:1 WCAG non-text minimum.
-   */
-  --color-border-strong: #586170;
-  /* raised planes: the Why Blesc cards and the step media wells */
-  --surface-raised: #14171b;
-  /*
-   * Wells sunk INTO a raised plane — chat bubbles, the message field, the
-   * signal-bar tracks. --color-bg-alt was doing this job and measured 1.03:1
-   * against the card it sat on, i.e. invisible; it only ever worked because
-   * the light build happens to land at 1.14:1. This is the dark equivalent
-   * of that separation, taken slightly further because a dark ground needs
-   * more of it. Muted copy still holds 9.1:1 here.
-   */
-  --surface-inset: #232830;
-
-  /*
-   * Label colour for anything filled with --color-primary.
-   *
-   * Deliberately NOT --color-bg. #85c0ed is a light blue in both themes, so
-   * its label has to stay dark in both. Following the ground colour would put
-   * #fafaf8 on #85c0ed in light mode — 1.87:1, a total failure — while the
-   * dark navy below holds 8.09:1 there and 10.09:1 here.
-   */
-  --on-accent: #0a0b0d;
-
-  /* Hero readability scrim, and the card lift. */
-  --scrim-strong: rgba(10, 11, 13, 0.92);
-  --scrim-mid: rgba(10, 11, 13, 0.9);
-  --scrim-soft: rgba(10, 11, 13, 0.35);
-  --shadow-card: inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
-    0 18px 40px -24px rgba(0, 0, 0, 0.9);
-
-  /* TiltCard sheen: a light wash lifts a dark card. */
-  --color-glare: #ffffff;
-  --glare-opacity: 0.15;
-
-  /*
-   * The ground the closing statement sits on, inside its sky.
-   *
-   * The dark palette has white ribbons in it, and the statement is set in
-   * white, so the band puts a flat-topped ellipse of the page ground behind
-   * the line. 0.7 was set from the sky itself: the brightest pixel read back
-   * from the canvas under the type was #dadee2, and at the ends of the line,
-   * where the ellipse has fallen to 59% of this, white holds 7.0:1 over it;
-   * a pure-white ribbon, which the palette permits, would still hold 5.7:1.
-   * Above this the middle of the band went black and the sky was lost.
-   */
-  --band-scrim: rgba(10, 11, 13, 0.7);
-
-  /*
-   * The form's error mark. A red is the conventional signal there, and this
-   * is the only place the page uses one — the risk colours that used to share
-   * these values went with the band (docs/claims.md §2). 7.1:1 on this ground.
-   */
-  --color-error-fg: #f87171;
-
-  /*
-   * Spotlight. The pointer position is published to :root by
-   * SpotlightPointer; it starts far off-screen so nothing is lit before the
-   * first move.
-   *
-   * The hue arc is taken from the palette rather than invented: --mark-1 is
-   * hsl(206 74% 73%) and --mark-2 is hsl(250 74% 77%), so sweeping 200 → 255
-   * across the viewport travels between the site's own two blues and cannot
-   * wander off-brand. The component this came from swept 200 degrees from a
-   * blue base, which runs through purple, red and orange.
-   */
-  --pointer-x: -9999;
-  --pointer-y: -9999;
-  --pointer-xp: 0.5;
-  --spot-base: 200;
-  --spot-spread: 55;
-  --spot-sat: 74;
-  --spot-light: 73;
-  --spot-wash: 0.13;
-  --spot-ring: 1;
-
-
-  /* the "expo-out" curve — default premium easing across the whole site */
-  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* ---------------------------------------------------------------------------
-   Light theme. Values are the original brief palette, which turns out to be
-   exactly the light half of this system. Every utility built on the tokens
-   above flips here for free; only genuinely hardcoded colours needed the
-   extra variables.
---------------------------------------------------------------------------- */
-:root[data-theme="light"] {
-  --color-text: #0b0d12;
-  /* 6.25:1 on white, 5.83:1 on the second surface. */
-  --color-text-muted: #576172;
-
-  /* Same three hues, taken dark enough to work as text on a light ground. */
   --mark-1: #2b6ea3;
   --mark-2: #5b4bb8;
   --mark-3: #1e7f6b;
@@ -155,51 +45,105 @@
    */
   --color-bg: #ffffff;
   --color-bg-alt: #f5f7fa;
+  /*
+   * Hairline rules and card edges. Separation only — 1.22:1 on white — so
+   * nothing that has to be seen is drawn in it.
+   */
   --color-border: #e6e9f0;
-  /* 3.56:1 on the light ground — still clears WCAG 1.4.11. */
+  /*
+   * Lines that carry structure rather than just separating surfaces — the
+   * orbit ring, diagram strokes. 3.72:1 on white and 3.46:1 on the second
+   * surface, so it clears the 3:1 WCAG 1.4.11 minimum on both.
+   */
   --color-border-strong: #8a8477;
+  /* raised planes: the Why Blesc cards and the step media wells */
   --surface-raised: #ffffff;
+  /*
+   * Wells sunk INTO a raised plane — chat bubbles, the message field, the
+   * signal-bar tracks. The second surface's blue-grey against the white
+   * card is the separation; ink still holds 18.11:1 inside it and muted
+   * copy 5.83:1.
+   */
   --surface-inset: #f5f7fa;
 
+  /*
+   * Label colour for anything filled with --color-primary.
+   *
+   * Deliberately NOT --color-bg. #85c0ed is a light blue, so its label has
+   * to be dark: white on it is 1.95:1, a total failure, while this
+   * near-black holds 9.96:1.
+   */
   --on-accent: #0b0d12;
 
+  /*
+   * The skies' edge washes, in the page's own white. The hero's sky and the
+   * closing statement's both fade to these at their edges, where they meet
+   * the nav and the sections either side, and leave their middles open.
+   */
   --scrim-strong: rgba(255, 255, 255, 0.72);
   --scrim-mid: rgba(255, 255, 255, 0.45);
   --scrim-soft: rgba(255, 255, 255, 0);
-  /* A white inset highlight is invisible on white; lead with the drop. */
+  /*
+   * The card lift. A white inset highlight is invisible on white, so it
+   * leads with the drop.
+   */
   --shadow-card: inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
     0 12px 32px -18px rgba(26, 35, 50, 0.18);
 
   /*
-   * A light sheen on a white card reads as nothing, so light mode deepens
-   * instead of lifting — the same cue, inverted. It also has to be far
-   * gentler: light-mode muted starts at 5.47:1 on a card against dark mode's
-   * 8.00:1, so there is much less to spend. A blue wash was tried first and
-   * could only reach 10% before the body copy fell under AA; this holds
-   * 5.0:1 at the glare peak.
+   * TiltCard sheen. A light sheen on a white card reads as nothing, so the
+   * card deepens under the pointer instead of lifting. It has to be gentle:
+   * a blue wash was tried first and could only reach 10% before the body
+   * copy fell under AA; this leaves muted copy at 5.15:1 at the glare peak.
    */
   --color-glare: #1a2332;
   --glare-opacity: 0.1;
 
   /*
-   * A 73%-lightness glow is invisible on a near-white card, so light mode
-   * darkens the spotlight and pulls both opacities down — the same cue,
-   * inverted, exactly as the tilt sheen does.
+   * The form's error mark. A red is the conventional signal there, and this
+   * is the only place the page uses one — the risk colours that used to share
+   * these values went with the band (docs/claims.md §2). 6.47:1 on white.
    */
+  --color-error-fg: #b91c1c;
+
+  /*
+   * Spotlight. The pointer position is published to :root by
+   * SpotlightPointer; it starts far off-screen so nothing is lit before the
+   * first move.
+   *
+   * The hue arc is taken from the palette rather than invented: #85c0ed and
+   * --mark-1 sit at hue 206–207 and --mark-2 at 249, so sweeping 200 → 255
+   * across the viewport travels between the site's own blue and violet and
+   * cannot wander off-brand. The component this came from swept 200 degrees
+   * from a blue base, which runs through purple, red and orange.
+   *
+   * Lightness 52, not #85c0ed's 73: a 73%-lightness glow is invisible on a
+   * white card, so the tint is taken darker and both opacities held low.
+   * At the wash's centre, on its worst hue (about 238), muted copy holds
+   * 5.54:1 on white and 5.18:1 on the inset ground the enquiry options use.
+   */
+  --pointer-x: -9999;
+  --pointer-y: -9999;
+  --pointer-xp: 0.5;
+  --spot-base: 200;
+  --spot-spread: 55;
+  --spot-sat: 74;
   --spot-light: 52;
   --spot-wash: 0.07;
   --spot-ring: 0.75;
 
+  /* the "expo-out" curve — default premium easing across the whole site */
+  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   /*
-   * Nothing. The light sky's darkest pixel under the type read back as
-   * #95c3f0, and ink over that is 10.6:1 with no help — the white wash the
-   * band started with only took the sky away.
+   * Native form controls, scrollbars and the overscroll gutter follow suit.
+   * `only` as well: it is the spec's opt-out from a browser's forced-dark
+   * mode (Chrome's auto dark theme, some in-app browsers), which is
+   * otherwise free to darken a page that declares no dark rendering of its
+   * own — and this one has pixels it cannot sensibly recolour: the dark
+   * wordmark PNG, both WebGL skies.
    */
-  --band-scrim: rgba(255, 255, 255, 0);
-
-  /* 6.47:1 on white. */
-  --color-error-fg: #b91c1c;
+  color-scheme: only light;
 }
 
 @theme inline {
@@ -238,14 +182,6 @@ html {
   background: var(--color-bg);
 }
 
-/* Native form controls, scrollbars and the overscroll gutter follow suit. */
-:root {
-  color-scheme: dark;
-}
-:root[data-theme="light"] {
-  color-scheme: light;
-}
-
 body {
   background: var(--color-bg);
   color: var(--color-text);
@@ -259,14 +195,14 @@ body {
 
 ::selection {
   background: var(--color-primary);
-  /* Same reasoning as buttons: the fill is light in both themes. */
+  /* Same reasoning as buttons: the fill is light, so its label is dark. */
   color: var(--on-accent);
 }
 
 /*
- * mark-1, not primary: #85c0ed is a fill colour and measures 1.87:1 as a
- * ring on the light ground, under the 3:1 a focus indicator needs, while
- * mark-1 flips with the theme (5.20:1 light, 10.09:1 dark).
+ * mark-1, not primary: #85c0ed is a fill colour and measures 1.95:1 as a
+ * ring on white, under the 3:1 a focus indicator needs, while mark-1 holds
+ * 5.44:1.
  *
  * No border-radius. This rule is unlayered, so whatever it sets beats every
  * utility — a radius here squared off each rounded-full control the moment
@@ -310,11 +246,11 @@ body {
    Liquid-glass controls.
 
    The tint alpha is what guarantees label contrast, not decoration. A glass
-   button is translucent, so its backdrop is whatever the aurora happens to be
+   button is translucent, so its backdrop is whatever the sky happens to be
    doing underneath — unpredictable and animated. These alphas hold WCAG AA
-   for the label against ANY backdrop from pure black to a white clamp:
-   primary 6.2:1 worst case, secondary 6.7:1. Lowering them to make the glass
-   more see-through breaks that guarantee.
+   for the label against ANY backdrop from pure black to pure white: primary
+   6.16:1 at worst (over black), secondary 11.5:1. Lowering them to make the
+   glass more see-through breaks that guarantee.
 --------------------------------------------------------------------------- */
 .glass-btn-primary {
   --glass-tint: rgba(133, 192, 237, 0.78);
@@ -324,38 +260,21 @@ body {
 }
 
 .glass-btn-secondary {
-  --glass-tint: rgba(10, 11, 13, 0.72);
+  --glass-tint: rgba(255, 255, 255, 0.78);
   /*
    * The pill's edge and lift. The tint is the page ground, so on the page
    * ground the button had no outline at all; an edge of the text colour at
-   * 18% and a shadow are what separate it from the surface it sits on. The
-   * light build's shadow leads with a drop, because an inset highlight on a
-   * white pill on a white page is invisible.
+   * 16% and a shadow are what separate it from the surface it sits on. The
+   * shadow leads with a drop, because an inset highlight on a white pill on
+   * a white page is invisible.
    */
-  --glass-edge: color-mix(in srgb, var(--color-text) 18%, transparent);
-  --glass-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
-    0 10px 28px -14px rgba(0, 0, 0, 0.7);
-}
-.glass-btn-secondary:hover {
-  --glass-tint: rgba(48, 52, 58, 0.78);
-}
-
-/*
- * Secondary flips its tint with the theme — its label is --color-text, which
- * flips too, so a dark pill on a light page would be light-on-light. Primary
- * keeps the accent tint in both, because its label is --on-accent and stays
- * dark either way.
- */
-:root[data-theme="light"] .glass-btn-secondary {
-  --glass-tint: rgba(255, 255, 255, 0.78);
   --glass-edge: color-mix(in srgb, var(--color-text) 16%, transparent);
   --glass-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
     0 1px 2px 0 rgba(11, 13, 18, 0.08),
     0 10px 28px -14px rgba(11, 13, 18, 0.35);
 }
-:root[data-theme="light"] .glass-btn-secondary:hover {
+.glass-btn-secondary:hover {
   --glass-tint: rgba(255, 255, 255, 0.92);
 }
 
@@ -370,10 +289,9 @@ body {
  * working" looked like. Blurring and saturating the backdrop is what makes
  * content read as passing UNDER the bar, and it is supported everywhere.
  *
- * The tint is the page ground at 72%, so the box frosts rather than tints,
- * and it flips with the theme for free. Ink over it holds 14.5:1 on the
- * light build and 15.9:1 on the dark one even in the worst case, where the
- * thing scrolling underneath is a photograph.
+ * The tint is the page ground at 72%, so the box frosts rather than tints.
+ * Ink over it measured 14.5:1 in the worst case found on the page, a
+ * photograph scrolling underneath, and holds 9.8:1 even over pure black.
  */
 .glass-nav {
   background: color-mix(in srgb, var(--color-bg) 72%, transparent);
@@ -386,36 +304,13 @@ body {
    */
   backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
-  /* A lit top edge is what reads as a pane of glass rather than a panel. */
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.12),
-    0 12px 32px -14px rgba(0, 0, 0, 0.55);
-}
-:root[data-theme="light"] .glass-nav {
+  /*
+   * A lit top edge is what reads as a pane of glass rather than a panel,
+   * and a soft ink drop is what lifts a white box off a white page.
+   */
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.85),
     0 12px 32px -16px rgba(11, 13, 18, 0.3);
-}
-
-/* ---------------------------------------------------------------------------
-   Brand mark, one file per theme. Both ship in the markup and CSS picks;
-   the pre-paint script has already set data-theme, so the right one is
-   correct on the first frame rather than corrected after hydration.
-
-   Layered so a Tailwind utility can still override `display` if the mark
-   ever needs to be hidden at a breakpoint — unlayered, these would silently
-   beat every `hidden`/`md:block` in the codebase.
---------------------------------------------------------------------------- */
-@layer components {
-  .logo-on-light {
-    display: none;
-  }
-  :root[data-theme="light"] .logo-on-dark {
-    display: none;
-  }
-  :root[data-theme="light"] .logo-on-light {
-    display: block;
-  }
 }
 
 /* ---------------------------------------------------------------------------

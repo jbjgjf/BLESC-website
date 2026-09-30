@@ -3,9 +3,9 @@
  *
  * Deliberately not a unit chart: nobody is meant to count these, and the count
  * is not a multiple of anything the copy claims. Blurred back at low opacity it
- * gives the figure a crowd to stand on, and the text over it still clears AA in
- * both themes — 5.2:1 for muted copy at this opacity, which is the whole reason
- * it is this faint.
+ * gives the figure a crowd to stand on, and the text over it still clears AA —
+ * 5.2:1 for muted copy at this opacity, which is the whole reason it is this
+ * faint.
  *
  * What changed is that it is now a crowd rather than a grid. Identical glyphs on
  * exact rows read as wallpaper however far you blur them, because the eye finds

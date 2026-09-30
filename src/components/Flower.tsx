@@ -5,8 +5,8 @@ import { FLOWER_PATH, FLOWER_VIEWBOX } from "@/lib/flower";
  *
  * The path is the company's own artwork, lifted out of public/logo/flower.svg
  * and inlined so it can take `currentColor` — the mark appears at 22px in a
- * footer and at 700px as a background wash, in two themes, and an <img> would
- * be stuck at the one blue it was exported in.
+ * footer and at 700px as a background wash, in the accent, mark-1 and ink,
+ * and an <img> would be stuck at the one blue it was exported in.
  *
  * The source file draws the mark on the full lockup's 999x241 canvas, with the
  * flower itself occupying only the left quarter; the viewBox here is cropped to

@@ -2,48 +2,18 @@
 
 import { FooterFlowers } from "@/components/FooterFlowers";
 import { GradientFooter } from "@/components/GradientFooter";
-import { getLenis } from "@/components/SmoothScroll";
 import { WordmarkReveal } from "@/components/WordmarkReveal";
 import { usePathname } from "next/navigation";
-import { useRef } from "react";
-import { useTheme } from "@/components/ThemeProvider";
 import { ButtonLink, Container, Icon } from "@/components/ui";
 import { CONTACT_EMAIL, CTA, FOOTER_LINKS, sectionHref } from "@/lib/site";
-
-/**
- * Glow ramp per theme. Dark rises toward light at the core; light deepens
- * toward saturation instead, because a brightening glow on a near-white page
- * is invisible.
- */
-const DARK_STOPS = [
-  { offset: 0, color: "#050A10" },
-  { offset: 0.1827, color: "#0B3C6E" },
-  { offset: 0.2837, color: "#2E77B8" },
-  { offset: 0.4135, color: "#85C0ED" },
-  { offset: 0.5866, color: "#FFFFFF" },
-  { offset: 0.6827, color: "#BBD9F1" },
-  { offset: 0.8029, color: "#85C0ED" },
-  { offset: 1, color: "#85C0ED00" },
-];
-
-const LIGHT_STOPS = [
-  { offset: 0, color: "#EDF1F8" },
-  { offset: 0.1827, color: "#A8CDEA" },
-  { offset: 0.2837, color: "#85C0ED" },
-  { offset: 0.4135, color: "#6FB0E2" },
-  { offset: 0.5866, color: "#4E97D4" },
-  { offset: 0.6827, color: "#7FBCE9" },
-  { offset: 0.8029, color: "#A9D3F1" },
-  { offset: 1, color: "#85C0ED00" },
-];
 
 /**
  * One treatment for every link in the utility line — the section links and
  * the mail address — so that row reads as a single line of type rather than
  * as two columns with headings of their own.
  *
- * muted holds 6.25:1 on the light ground and 12.1:1 on the dark one, so the
- * resting state already passes AA; hover only raises it to ink.
+ * muted holds 6.25:1 on the white ground, so the resting state already
+ * passes AA; hover only raises it to ink (19.4:1).
  *
  * Tailwind v4 wraps `hover:` in `@media (hover: hover)` on its own. The
  * arbitrary variant adds `(pointer: fine)` as well, so the colour change
@@ -53,60 +23,16 @@ const QUIET_LINK =
   "text-[0.9rem] text-muted transition-colors duration-300 [@media(hover:hover)_and_(pointer:fine)]:hover:text-ink";
 
 export function Footer() {
-  const { theme } = useTheme();
   const onHome = usePathname() === "/";
-  /*
-   * On the home page the footer is already there when the closing
-   * statement's flower finishes: it is pulled up by one pinned screen and
-   * sits underneath the statement's last frame, and that frame — the
-   * flower's blue — fades away to leave it in place (see Philosophy). The
-   * pull-up is CSS-gated like the pin itself (motion allowed and a script
-   * running), so /contact, reduced motion and no-JS get a footer that simply
-   * follows.
-   *
-   * The one thing CSS cannot arrange is focus. A keyboard user tabbing out
-   * of the page's last section lands on a footer button that, until the
-   * pin has run to its end, is still underneath the statement. So focus
-   * arriving in the footer from above takes the page to the end of the pin,
-   * where the footer is uncovered.
-   */
-  const footerRef = useRef<HTMLElement>(null);
-  const onFocusIn = () => {
-    const footer = footerRef.current;
-    if (!onHome || !footer) return;
-    if (parseFloat(getComputedStyle(footer).marginTop) >= 0) return;
-    const top = footer.getBoundingClientRect().top + window.scrollY;
-    if (window.scrollY >= top - 1) return;
-    const lenis = getLenis();
-    if (lenis) lenis.scrollTo(top, { immediate: true });
-    else window.scrollTo({ top });
-  };
 
   /*
    * `relative` is the only positioning the footer gets. Nothing else — no
    * transform, filter or overflow — because the glow band inside
    * GradientFooter is position: fixed and any of those on an ancestor would
-   * capture it and pin it to the footer instead of the viewport. The
-   * negative margin that pulls it under the statement is only a margin.
-   *
-   * `isolate` gives the footer a stacking context of its own, and it has to:
-   * the statement above paints at z-10 so that it covers the footer while
-   * the flower runs, and without one the Container's own z-10 in here would
-   * compete with it in the page's stacking context — and, coming later in
-   * the document, win, printing the invitation over the flower's blue before
-   * the blue had faded. isolation creates no containing block, so the glow
-   * band's position: fixed is unaffected.
-   *
-   * No border-top on the footer: on the home page it is revealed rather than
-   * scrolled to, and a rule across its top would be the first thing seen.
+   * capture it and pin it to the footer instead of the viewport.
    */
   return (
-    <GradientFooter
-      ref={footerRef}
-      onFocusCapture={onFocusIn}
-      className={`relative isolate bg-canvas ${onHome ? "motion-safe:js:-mt-[100lvh]" : ""}`}
-      stops={theme === "light" ? LIGHT_STOPS : DARK_STOPS}
-    >
+    <GradientFooter className="relative bg-canvas">
       {/*
         The content, in a positioned block of its own, which FooterFlowers
         sits against.
@@ -132,15 +58,7 @@ export function Footer() {
           gutters either side of the heading a place the flowers can float,
           rather than dead space to the right of a left-aligned block.
         */}
-        {/*
-          On the home page the footer is revealed with its top at the top of
-          the screen, under the fixed nav, so the invitation starts lower
-          there — far enough that the heading, the buttons and the links all
-          sit in that first screen, clear of the nav.
-        */}
-        <Container
-          className={`relative z-10 pt-16 ${onHome ? "motion-safe:js:pt-[26svh]" : ""}`}
-        >
+        <Container className="relative z-10 pt-16">
           {/*
             導入について, folded in from the old standalone CTA section.
 
