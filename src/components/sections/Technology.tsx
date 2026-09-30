@@ -1,6 +1,6 @@
 import { OntologyGraph } from "@/components/OntologyGraph";
 import { Reveal } from "@/components/Reveal";
-import { Section, SectionTitle } from "@/components/ui";
+import { Icon, Section, SectionTitle } from "@/components/ui";
 import {
   COUNTS,
   EDGES,
@@ -11,6 +11,7 @@ import {
   SUBGRAPH_ORDER,
   conceptsIn,
   publishedRefs,
+  type PublishedSourceId,
   type Relation,
   type SeedEdge,
 } from "@/lib/ontologySeed";
@@ -221,7 +222,13 @@ export function Technology() {
         </div>
       </div>
 
-      <Reveal className="mt-16 border-t border-line pt-10 md:mt-20">
+      {/*
+        Less air above the sources than when they were a bordered list of
+        full titles: 96px from the grid above to the sources at md and up —
+        64 to the rule, 32 below it — down from 120, so a strip about a
+        hundred pixels tall is not set off by more space than it takes.
+      */}
+      <Reveal className="mt-12 border-t border-line pt-8 md:mt-16">
         <Sources />
       </Reveal>
     </Section>
@@ -263,48 +270,124 @@ const CONSULTED = Array.from(
   new Set(UNSUPPORTED.flatMap((e) => publishedRefs(e.source_refs).map((s) => s.short))),
 );
 
+/**
+ * How each source is cited in the strip: who published it, and the opening
+ * words of its title.
+ *
+ * `by` is the publisher by the name a teacher knows it by — WHO, NICE,
+ * 文部科学省 — rather than the full 世界保健機関（WHO）, plus the document's
+ * type or number where the title alone would not say which document it is.
+ * That makes every short name the example path cites (「出典：WHO
+ * ファクトシート」, 「NICE NG134」, …) findable in the strip: the first two
+ * are the prefix, and mhGAP and 生徒指導提要 are in the titles.
+ *
+ * `label` is what is shown of the title, and it must be the title's own
+ * opening words — the check below fails the build otherwise. The rest of the
+ * title is still in the link, visually hidden, so a screen reader hears the
+ * full title and the name it hears contains the words on screen (WCAG 2.5.3,
+ * which is also what lets a voice-control user say the link). A reader
+ * searching for the document can search for the words they see.
+ */
+const CITE: Record<PublishedSourceId, { by: string; label: string }> = {
+  who_adolescent_mh: { by: "WHO ファクトシート", label: "Mental health of adolescents" },
+  nice_ng134: { by: "NICE NG134", label: "Depression in children and young people" },
+  who_mhgap: { by: "WHO", label: "mhGAP Intervention Guide" },
+  mext_seitoshido: { by: "文部科学省", label: "生徒指導提要（改訂版）" },
+};
+
+for (const s of SOURCES) {
+  if (!s.title.startsWith(CITE[s.id].label)) {
+    throw new Error(
+      `Technology: the short title for ${s.id} is not the start of its title in lib/ontologySeed.ts`,
+    );
+  }
+}
+
 /*
+ * The sources as a citation strip, not a list: the four of them were a
+ * bordered list of full titles and full publisher names, about 375px tall
+ * at desktop, and the section's claim is carried by the graph and the
+ * counts above, not by the bibliography. Two columns of two lines each —
+ * publisher and year small and muted, the title as the link — about 93px;
+ * one column on a phone.
+ *
+ * The item's type size is set on the <li>, not only on the link: the link
+ * is inline, and an inline box cannot make its line shorter than the
+ * block's own strut, which would otherwise be the body's 18px at 1.6.
+ *
+ * The first column is `auto`, sized to its entries, so the second gets the
+ * rest of the row: NICE's is the longest title shown, and that is what
+ * keeps it on one line down to about the narrowest desktop width (it wraps
+ * a word early where a scrollbar takes its 15px there, which is harmless).
+ *
  * Links open in a new tab, and say so to a screen reader: the reader is
  * checking a claim and should not lose their place on the page to do it.
  * mark-1 underlined, the site's link style — 5.44:1 on the page ground,
- * 4.98:1 where ScrollWash's blue is at its densest.
+ * 4.98:1 where ScrollWash's blue is at its densest; the muted heading,
+ * prefix and disclaimer are 6.25:1 and 5.72:1 on the same two. The arrow
+ * is the same mark-1, and the last word travels with it (whitespace-nowrap)
+ * so a wrapped title never leaves the arrow alone on a line.
  */
 function Sources() {
   return (
-    <div className="grid gap-8 lg:grid-cols-[5fr_7fr] lg:gap-12">
+    <div className="grid gap-5 lg:grid-cols-[5fr_7fr] lg:gap-12">
       <div>
-        <h3 className="text-[1.05rem] font-medium tracking-[-0.01em] text-ink">
+        <h3 className="text-[0.8rem] font-medium tracking-[0.02em] text-muted">
           参照している公開資料
         </h3>
         {/*
           The non-endorsement line, word for word as the company set it. It
           sits under the heading rather than at the foot of the list so that
           it is read before the institutions' names are, not after.
+
+          One line wherever it fits, which is everywhere but a phone. On a
+          phone it runs a character or two past the measure (about 343px of
+          text in 327 at 375px wide), and plain wrapping left 「ん。」 alone
+          on the second line. break-keep lets it break only after its
+          punctuation, and text-balance picks the break that evens the two
+          lines: after 「推奨・」. Even from 「Blesc」 to the end, unbroken,
+          it is about 250px, so a 320px screen cannot overflow.
         */}
-        <p className="measure-jp mt-3 text-[0.85rem] text-muted">
+        <p className="mt-1.5 text-balance break-keep text-[0.75rem] leading-[1.6] text-muted">
           掲載の各機関は、Blescを推奨・承認するものではありません。
         </p>
       </div>
 
       <div>
-        <ol className="flex flex-col divide-y divide-line border-y border-line" role="list">
-          {SOURCES.map((s) => (
-            <li key={s.id} className="py-4">
-              <a
-                href={s.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[0.95rem] font-medium leading-snug text-mark-1 underline decoration-mark-1/40 underline-offset-2 transition-colors duration-300 hover:decoration-mark-1"
-              >
-                {s.title}
-                <span className="sr-only">（新しいタブで開きます）</span>
-              </a>
-              <p className="mt-1 text-[0.8rem] text-muted">
-                {s.publisher}
-                {s.kind ? `・${s.kind}` : ""}・{s.year}年
-              </p>
-            </li>
-          ))}
+        <ol
+          className="grid gap-y-3 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-x-10 sm:gap-y-4"
+          role="list"
+        >
+          {SOURCES.map((s) => {
+            const { by, label } = CITE[s.id];
+            const cut = label.lastIndexOf(" ") + 1;
+            return (
+              <li key={s.id} className="min-w-0 text-[0.875rem] leading-[1.45]">
+                <span className="block text-[0.75rem] leading-[1.5] tabular-nums text-muted">
+                  {by}・{s.year}
+                </span>
+                <a
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group/src text-mark-1 underline decoration-mark-1/40 underline-offset-2 transition-colors duration-300 hover:decoration-mark-1"
+                >
+                  {label.slice(0, cut)}
+                  <span className="whitespace-nowrap">
+                    {label.slice(cut)}
+                    <Icon
+                      name="arrow_outward"
+                      size={12}
+                      className="ml-0.5 inline-block align-[-0.1em] transition-[translate] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/src:translate-x-px group-hover/src:-translate-y-px motion-reduce:transition-none"
+                    />
+                  </span>
+                  <span className="sr-only">
+                    {s.title.slice(label.length)}（新しいタブで開きます）
+                  </span>
+                </a>
+              </li>
+            );
+          })}
         </ol>
 
         {/*
