@@ -3,10 +3,10 @@
  *
  * One module, because the mockups are an argument and the argument only holds
  * if they agree with each other: the entry the student writes in 仕組み has to
- * be the same entry the AI asks about, and the roll number the analysis
- * flags has to be the row the teacher receives. When this lived as a local
- * `const` in each section, two screens could quietly come to show two
- * different products.
+ * be the same entry the AI asks about, and the row along the foot of step
+ * 04's analysis has to be the row the teacher receives. When this lived as
+ * a local `const` in each section, two screens could quietly come to show
+ * two different products.
  *
  * Nothing here is real, and nothing here may be *invented* either. The rule
  * the whole site follows: a student is a class and a roll number, never a
@@ -78,8 +78,11 @@ export const TEACHER_BAR = {
  * The class a mockup is set in, and its size.
  *
  * 全生徒が対象 is a claim about the unit being a whole class rather than the
- * students who volunteer, so the roster mockup needs a class to be about.
- * Both strings are the ones the 仕組み roster already used.
+ * students who volunteer, so step 01's screen in 仕組み is a class list, and
+ * it needs a class to be about: `label` is its title, `size` the chip beside
+ * it, and `count` how many roll numbers it draws, so the list cannot hold a
+ * different number of students from the one its chip states. Both strings
+ * came over from the roster that screen used to be.
  */
 export const CLASS = { label: "3年2組", size: "全40名", count: 40 } as const;
 
@@ -168,7 +171,7 @@ export const REPORT_SORT = "新しい順";
  * usual range (the band, `BASELINE`) and entries leaving it. One tall day on
  * its own returns to the band; a run of recent days stays outside it. That is
  * the distinction step 04 describes — a clue for the teacher to look closer,
- * not a judgement — and the caption says so in words.
+ * not a judgement — and the step's own text says so in words.
  *
  * `h` is a percentage of the chart's own height — the bars are styled, never
  * animated, so no frame animates a height. `recent` marks the latest run,

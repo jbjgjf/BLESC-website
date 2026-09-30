@@ -43,12 +43,12 @@ const RADIUS = 28;
 const ELBOW = 1.62332;
 /**
  * Where the horizontal crossings fall, as fractions of the drop between one
- * anchor's foot and the next one's top. Leaving at 35% puts the first
- * crossing below the 仕組み captions and inside the air between that section
- * and プロダクト at the common desktop widths; arriving at 25% puts the
- * second one in the gap above the product figure rather than across the
- * lead sentence. Both are clamped so a very tall or very short drop cannot
- * push a crossing into the anchor itself.
+ * anchor's foot and the next one's top. Leaving at 35% takes the first
+ * crossing clear of the foot of step 04's panel, the last thing in 仕組み,
+ * and into the air between that section and プロダクト at the common desktop
+ * widths; arriving at 25% puts the second one in the gap above the product
+ * figure rather than across the lead sentence. Both are clamped so a very
+ * tall or very short drop cannot push a crossing into the anchor itself.
  */
 const LEAD_OUT = 0.35;
 const LEAD_IN = 0.25;

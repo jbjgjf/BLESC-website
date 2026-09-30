@@ -5,12 +5,13 @@
  * the claim actually lives — for a screen reader it is the whole figure, and
  * for everyone else it is the sentence the picture is evidence for. The shape
  * is one paragraph in two weights: the lead clause in ink, the continuation
- * muted. That is what lets a grid of four read as four short statements
- * rather than four headings with four paragraphs hanging off them.
+ * muted. That is what lets a figure's caption read as one short statement
+ * rather than a heading with a paragraph hanging off it.
  *
- * The numeral is decoration over a list that is already ordered — callers
- * put these inside an <ol>, which is what announces position — so it is
- * hidden from assistive tech rather than read out before the lead.
+ * The numeral is decoration over a list that is already ordered — a caller
+ * that passes `n` puts the caption inside an <ol>, which is what announces
+ * position — so it is hidden from assistive tech rather than read out
+ * before the lead.
  */
 export function Caption({
   n,

@@ -19,10 +19,19 @@ import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 
 /**
  * The three points the thread is strung between, in the order it runs: the
- * flagged row the analysis produces in 仕組み, the same row arriving in the
- * teacher's report in プロダクト, and the graph in テクノロジー that produced
- * it. Each is marked in the markup with data-thread="…", which is all a
- * section has to know.
+ * foot of step 04's panel in 仕組み — Blesc's analysis, whose bottom row is
+ * the observation that reaches the teacher — then that same row arriving
+ * first in the teacher's screen in プロダクト, and the graph in テクノロジー
+ * that produced it. Each is marked in the markup with data-thread="…",
+ * which is all a section has to know.
+ *
+ * The 仕組み anchor is the box step 04's panel sits in, not the row itself:
+ * in the pinned stepper the panel is sticky, and a sticky box's offsets
+ * depend on the scroll position they were taken at. The box is not sticky,
+ * and its foot is where the panel comes to rest in both of that section's
+ * layouts — the foot of the track when pinned, the foot of the panel in the
+ * plain list — so the thread leaves from the middle of the panel's foot
+ * either way (see HowItWorks).
  */
 const ANCHORS = ["analysis", "report", "graph"] as const;
 

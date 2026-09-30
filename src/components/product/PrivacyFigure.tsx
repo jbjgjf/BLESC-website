@@ -34,8 +34,8 @@ import {
  * So the claim is drawn once, at rest: the student's window on the left with
  * words in it, the teacher's window on the right with none, and a lit line
  * between them that the writing visibly does not cross. Both windows are the
- * same <Screen> the 仕組み cards use, so this reads as two views of the one
- * product rather than as a diagram about it.
+ * same <Screen> the four 仕組み steps are drawn in, so this reads as two
+ * views of the one product rather than as a diagram about it.
  *
  * Four scroll-linked beats, because the mechanism is a sequence:
  *   1. a hairline scans across the entry — the model reading it — and fades
@@ -203,8 +203,8 @@ function DiaryScreen({
       {/*
         Tinted rather than bordered so it reads as the system speaking back,
         not as another field to fill in. mark-1, not accent: #85c0ed is a fill
-        colour and measures 1.87:1 as text on the light ground, while mark-1
-        flips with the theme.
+        colour and measures 1.83:1 as text on this bubble (accent/10 over the
+        white window, #f3f9fd), where mark-1 holds 5.11:1.
       */}
       <div className="mt-2.5 max-w-[92%] shrink-0 rounded-xl rounded-bl-sm bg-accent/10 px-3 py-2.5">
         <p className="flex items-center gap-1 text-[0.66rem] font-medium tracking-[0.06em] text-mark-1">
@@ -226,8 +226,12 @@ function DiaryScreen({
 /**
  * A hairline across the band on a phone and down it on a wide screen, with
  * the lock sitting on the crossing. mark-1 and not border-line-strong: this
- * line has to be seen to be believed, and line-strong would not clear the
- * 3:1 a meaningful non-text mark needs on the dark build.
+ * line has to be seen to be believed. line-strong does clear the 3:1 a
+ * meaningful non-text mark needs, but only just — 3.48:1 on the Frame's
+ * tint, 3.20:1 where the section's blue wash peaks behind it — and in the
+ * warm grey of a diagram stroke. mark-1 holds 5.09 and 4.67:1 on the same
+ * two grounds, and it is the blue the glow is drawn in, so the line and its
+ * glow read as one lit wall.
  *
  * From md the line is `inset-y-0` and nothing else on the vertical axis.
  * It used to carry `md:top-auto` as well, and Tailwind emits `top-*` after
@@ -299,7 +303,7 @@ function ReportScreen({
         const first = i === 0;
         return (
           /*
-            The first row is where the signal thread arrives from the
+            The first row is where the signal thread arrives from step 04's
             analysis in 仕組み, and data-thread is how the page's thread layer
             finds it. The row is its own element rather than a kit <Row>,
             because what it holds is three lines — who and when, what was

@@ -28,23 +28,31 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
  * controls labelled — which reads as explanation rather than as software.
  *
  * So there is nothing annotated here. No arrows, no legends, no labels pasted
- * over a picture to say what it means: the <Caption> under each panel carries
- * the claim in real text, which is also the only way the claim reaches a
- * screen reader, since every <Frame> is aria-hidden.
+ * over a picture to say what it means — but every screen has to be readable
+ * without the text beside it, because in 仕組み's pinned layout only one of
+ * them is on screen at a time and the reader's eye is on it. That is done
+ * with the words a real interface would print (a class name, a column head,
+ * a button), and whose screen it is goes on the <Frame> around it, never in
+ * here. The step's own text carries the claim, which is also the only way
+ * the claim reaches a screen reader, since every <Frame> is aria-hidden.
  *
  * Every string is sample data from @/lib/sample or a word the interface
- * itself says (a button, a title). Students are a class and a roll number.
+ * itself says (a button, a title, a column head). Students are a class and a
+ * roll number.
  *
- * Motion is one beat per screen at most, on view, once, ~0.5s on the expo
- * curve, and under prefers-reduced-motion each one lands on its end state
- * without travelling. The starting state is the same either way and only the
+ * Motion is one beat per screen at most, on view, ~0.5s on the expo curve,
+ * and under prefers-reduced-motion each one lands on its end state without
+ * travelling. The starting state is the same either way and only the
  * transition reads the setting: the starting state is written into the
  * server HTML, which cannot know the setting, so a reduced-motion start would
  * disagree with it on hydration. A transition is only read when the beat
  * fires, after hydration, so motion's useReducedMotion is the right flag for
- * it here. None of them is scroll-linked, on purpose: every card is wrapped in a
- * <RevealItem>, and an ancestor that is still animating a translate would be
- * measured mid-flight by useScroll.
+ * it here. None of them is scroll-linked, on purpose: each sits inside a
+ * <Reveal>, and an ancestor that is still animating a translate would be
+ * measured mid-flight by useScroll. 仕組み remounts a screen each time its
+ * step becomes the active one in the pinned layout, which is what lets a
+ * beat play when the screen is actually shown rather than while it was
+ * stacked out of sight.
  */
 
 /* -------------------------------------------------------------------------- */
@@ -52,34 +60,63 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
 /* -------------------------------------------------------------------------- */
 
 /**
- * One cell per student, filling in together.
+ * The class list: every roll number in the class, all of them lit.
  *
- * A roster is the obvious screen for 全生徒が対象, and a roster is a list of
- * names — which this site does not have and will not invent. A class-shaped
- * grid says the same thing with nothing in it: forty identical cells, no
- * ordering, no state, nothing that could be read as a measurement of any
- * student.
+ * 全生徒が対象 is a claim about the unit being the whole class rather than the
+ * students who volunteer, so the screen is the class. The version before
+ * this was forty identical blue squares, which said nothing until you had
+ * read the caption — a reviewer saw a grid of tiles and could not say what
+ * it was. Numbering the cells is what makes it a class: 3年2組, 全40名, a
+ * column head that says 出席番号, and 1 to 40 underneath it. Every cell is
+ * drawn the same way, because the point is that nobody is left out, and
+ * nothing about any one cell could be read as a state or a measurement of
+ * that student.
+ *
+ * Numbers, never names: a roll number is how the whole site refers to a
+ * student, and the count comes from the sample class rather than being
+ * typed out here.
+ *
+ * The beat is the list filling in together — each cell from faint to full,
+ * a few milliseconds apart — on the parent, so forty cells cost one
+ * observer rather than forty.
  */
-export function RosterMock() {
+export function ClassMock() {
   const reduce = useReducedMotion();
 
+  const cell = {
+    hidden: { opacity: 0.2 },
+    show: {
+      opacity: 1,
+      transition: reduce ? { duration: 0 } : { duration: 0.4, ease: EXPO_OUT },
+    },
+  };
+
   return (
-    <Screen title={CLASS.label} trailing={<Chip>{CLASS.size}</Chip>}>
-      <div className="my-auto grid grid-cols-10 gap-1 sm:gap-1.5">
-        {Array.from({ length: CLASS.count }, (_, i) => (
-          <motion.span
-            key={i}
-            className="aspect-square rounded-[3px] bg-mark-1"
-            initial={{ opacity: 0.12 }}
-            whileInView={{ opacity: 0.85 }}
-            viewport={VIEWPORT}
-            transition={
-              reduce
-                ? { duration: 0 }
-                : { duration: 0.4, ease: EXPO_OUT, delay: i * 0.012 }
-            }
-          />
-        ))}
+    <Screen
+      title={CLASS.label}
+      trailing={<Chip tone="accent">{CLASS.size}</Chip>}
+    >
+      <div className="my-auto">
+        <p className="text-[0.66rem] text-muted lg:text-[0.7rem]">出席番号</p>
+        <motion.div
+          className="mt-2 grid grid-cols-10 gap-1 sm:gap-1.5"
+          initial="hidden"
+          whileInView="show"
+          viewport={VIEWPORT}
+          variants={{
+            show: { transition: { staggerChildren: reduce ? 0 : 0.012 } },
+          }}
+        >
+          {Array.from({ length: CLASS.count }, (_, i) => (
+            <motion.span
+              key={i}
+              variants={cell}
+              className="flex aspect-square min-w-0 items-center justify-center rounded-[4px] bg-accent/15 text-[0.62rem] font-medium tabular-nums text-mark-1 lg:text-[0.7rem]"
+            >
+              {i + 1}
+            </motion.span>
+          ))}
+        </motion.div>
       </div>
     </Screen>
   );
@@ -145,8 +182,10 @@ export function DiaryMock() {
  * question back is the whole of what the AI sends. A thread of four would be
  * a chat app, which is the one thing this is not.
  *
- * The question arriving is the one beat in this section worth animating, so it
- * is the only screen here that moves on its own.
+ * The question arriving is the whole of this step, so the bubble is the one
+ * thing on this screen that moves. It is held back 0.3s, which in the pinned
+ * layout is long enough for the screen to be mostly faded in before the
+ * question starts to arrive.
  */
 export function ProbeMock() {
   const reduce = useReducedMotion();
@@ -179,8 +218,9 @@ export function ProbeMock() {
           }
         >
           {/*
-            mark-1, not accent: #85c0ed is a fill colour and measures 1.87:1
-            as text on the light ground, while mark-1 flips with the theme.
+            mark-1, not accent: #85c0ed is a fill colour and measures 1.95:1
+            as text on white, where mark-1 is the same blue taken dark enough
+            to read.
           */}
           <p className="flex items-center gap-1 text-[0.66rem] font-medium tracking-[0.06em] text-mark-1">
             <Icon name="auto_awesome" size={12} className="shrink-0" />
@@ -238,12 +278,14 @@ export function TrendMock() {
       title={TREND_TITLE}
       footer={
         /*
-          data-thread marks this row as the point the signal thread leaves
-          from on its way to the teacher's screen: the page's thread layer
-          finds it by this attribute and nothing else here knows the thread
-          exists.
+          No data-thread here, though this row is what the signal thread
+          carries on to the teacher's screen. The thread measures its anchor
+          by layout offsets, and in 仕組み's pinned layout this window sits
+          in a sticky box, whose offsets change with the scroll position they
+          are measured at — so the anchor is 仕組み's own box for step 04,
+          which is not sticky. See HowItWorks.
         */
-        <div data-thread="analysis" className="w-full min-w-0">
+        <div className="w-full min-w-0">
           {/*
             The same three lines the teacher's row carries — who and when,
             what was observed, on what basis — because an observation is only

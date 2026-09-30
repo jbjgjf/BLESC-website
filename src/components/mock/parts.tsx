@@ -77,6 +77,52 @@ const CHIP_TONES = {
 } as const;
 
 /* -------------------------------------------------------------------------- */
+/* ViewLabel                                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Whose screen a mockup is — 生徒の画面, クラス — or, where it is nobody's
+ * screen, what it is: Blescの分析.
+ *
+ * Why it exists: 仕組み walks through screens that belong to different points
+ * of view — the class, the student twice, then Blesc's own analysis, of
+ * which only one row reaches the teacher — and a reader coming to them cold
+ * could not tell where the point of view changed. The label has to be true
+ * as well as clear: 先生の画面 goes only on a picture of what the teacher's
+ * screen actually shows, which is observations with their time and basis
+ * and nothing else (docs/claims.md §2). A window cannot say whose it is
+ * from inside its own chrome without the interface growing words the real
+ * product does not have, so this sits outside the window, on the tinted
+ * plane (<Frame label>), the way a tag sits on a slide.
+ *
+ * The dot takes the meaning mark of the plane it sits on, so the point of
+ * view is carried twice — by the word and by the colour — and the word is
+ * ink on white, so the colour is never the only cue.
+ */
+export function ViewLabel({
+  mark = 1,
+  children,
+}: {
+  /** The same mark as the <Frame>'s tint. 1 blue, 2 violet, 3 green. */
+  mark?: 1 | 2 | 3;
+  children: ReactNode;
+}) {
+  return (
+    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-[0.7rem] leading-none font-medium tracking-[0.02em] text-ink shadow-[var(--shadow-card)] ring-1 ring-line">
+      <span className={`size-1.5 shrink-0 rounded-full ${DOTS[mark]}`} />
+      {children}
+    </span>
+  );
+}
+
+/** Written out in full — Tailwind only generates classes it can read. */
+const DOTS = {
+  1: "bg-mark-1",
+  2: "bg-mark-2",
+  3: "bg-mark-3",
+} as const;
+
+/* -------------------------------------------------------------------------- */
 /* TextLine                                                                   */
 /* -------------------------------------------------------------------------- */
 
