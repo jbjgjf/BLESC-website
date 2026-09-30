@@ -61,11 +61,35 @@ const MANAGED_ORGS = ["京都大学", "Hatapro", "ハタプロ"];
 /**
  * Names cleared for use, with the written permission on file.
  *
- * EMPTY ON PURPOSE. Adding a name here asserts that its permission exists.
- * Add the scope of the collaboration to the copy at the same time — see
- * docs/claims.md §3.
+ * Adding a name here asserts that its permission exists. Add the scope of
+ * the collaboration to the copy at the same time — see docs/claims.md §3.
+ *
+ * The skip below is a substring test on the matched text, and a match is
+ * always exactly one MANAGED_ORGS name, so a name listed here clears that
+ * name and nothing else: 京都大学 passing does not let Hatapro or ハタプロ
+ * through.
  */
-const PERMITTED_ORGS = [];
+const PERMITTED_ORGS = [
+  // Written permission confirmed by the Blesc team (Jasper McGann,
+  // 2026-09-30). Scope: 支援, shown in the backing section
+  // (src/components/sections/Backing.tsx) only.
+  "京都大学",
+];
+
+/** 京都大学 under each name it is written as. See unscoped-relationship. */
+const KYOTO_NAMES = "京都大学|(?<![東北南])京大|Kyoto University";
+
+/**
+ * Words that say what an institution did — each narrower than 支援, and none
+ * confirmed for 京都大学. English stems, so "collaboration", "partnership",
+ * "jointly" and "supervised" are all caught.
+ */
+const SCOPE_WORDS =
+  "共同研究|共同開発|監修|協働|提携|連携|[Cc]ollaborat|[Pp]artner|[Jj]oint|[Ss]upervis|[Cc]o-?develop";
+
+/** Words that make an accelerator selection read as an investment. */
+const INVESTMENT_WORDS =
+  "出資|投資|資金調達|ベンチャーキャピタル|VC|[Ii]nvest";
 
 const RULES = [
   {
@@ -111,6 +135,42 @@ const RULES = [
     why: "許諾が書面で確認できる機関名だけを記載できます。許諾を得たら scripts/check-claims.mjs の PERMITTED_ORGS に追加してください。",
     negatable: false,
     skip: (hit) => PERMITTED_ORGS.some((org) => hit.includes(org)),
+  },
+  {
+    id: "unscoped-relationship",
+    section: "§3 外部機関名",
+    // Permission to name 京都大学 is permission to say 支援 and nothing
+    // narrower. Each of these words says what the university did, and none
+    // of them has been confirmed; the skip above clears the name, this keeps
+    // the scope.
+    //
+    // The university is matched under every name it goes by, and the words
+    // in English as well as Japanese: the permission covers the institution,
+    // not one spelling of it, so 「京大と共同研究」 or "in collaboration with
+    // Kyoto University" would otherwise walk straight past a rule that only
+    // knew 京都大学. The lookbehind keeps 東京大学, 北京大学 and 南京大学 —
+    // each of which contains 京大 — out of it.
+    pattern: new RegExp(
+      `(${KYOTO_NAMES})(?:[^。\\n]{0,24}?)(${SCOPE_WORDS})|(${SCOPE_WORDS})(?:[^。\\n]{0,12}?)(${KYOTO_NAMES})`,
+      "g",
+    ),
+    why: "京都大学について確認されている範囲は「支援」のみです。共同研究・監修・協働・提携・連携は、範囲が書面で確認できるまで書けません。",
+    negatable: true,
+  },
+  {
+    id: "accelerator-as-investment",
+    section: "§3 外部機関名",
+    // ANOBAKA is a venture capital firm, and Blesc's relationship with it is
+    // selection into its accelerator — not an investment. VC, 出資 or 投資
+    // in the same sentence as the name would read as ANOBAKA holding equity.
+    // Checked on both sides of the name: 「ベンチャーキャピタルのANOBAKA」
+    // says what 「ANOBAKA（VC）」 says.
+    pattern: new RegExp(
+      `ANOBAKA(?:[^。\\n]{0,40}?)(${INVESTMENT_WORDS})|(${INVESTMENT_WORDS})(?:[^。\\n]{0,24}?)ANOBAKA`,
+      "g",
+    ),
+    why: "ANOBAKA との関係は「U-25 AI Accelerator 第2期 採択」です。出資ではないため、VC・出資・投資とは書けません。",
+    negatable: true,
   },
   {
     id: "overclaimed-ontology",
