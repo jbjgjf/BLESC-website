@@ -135,7 +135,7 @@ const ENTRIES: NewsEntry[] = [
     kind: "news",
     date: "2026-09",
     name: "ANOBAKA",
-    body: "U-25 AI Accelerator 第2期に採択され、支援金10万円を受けました。",
+    body: "U-25 AI Accelerator 第2期に採択され、支援金100万円を受けました。",
     photo: {
       src: "/news/anobaka-u25-2026.jpg",
       width: 1206,
@@ -144,8 +144,9 @@ const ENTRIES: NewsEntry[] = [
     },
     // The release is the call for 第2期 applications, published before
     // selection, so it names no teams. 2026-09 is the programme's start
-    // (実施期間 2026年9月1日〜). 10万円 is the amount the team received,
-    // confirmed by the team on 2026-09-30.
+    // (実施期間 2026年9月1日〜). 100万円 is the amount the team received,
+    // confirmed by the team on 2026-10-05; it matches ANOBAKA's own 第2期
+    // material (100万円 at incorporation).
     source: "https://prtimes.jp/main/html/rd/p/000000065.000056016.html",
   },
   {
