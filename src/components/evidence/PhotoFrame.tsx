@@ -45,11 +45,10 @@ export function PhotoFrame({ src, sizes }: { src: string; sizes: string }) {
 
   return (
     /*
-     * 3:2 rather than the 4:3 the files were cropped to. object-cover takes the
-     * difference off the top and bottom, which leaves every subject the crop
-     * was made for — the doorframe in 02 and the central aisle in 03 both run
-     * vertically through the frame — and a wider panel fits the page's other
-     * visuals.
+     * 3:2, a wider panel that fits the page's other visuals. The corridor and
+     * the classroom are 3:2 files and fill it as they are; the survey is 4:3,
+     * and object-cover takes the difference off its top and bottom, which
+     * keeps the hand and the answer sheet in the middle of the frame.
      */
     <div
       ref={ref}

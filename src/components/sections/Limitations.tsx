@@ -21,25 +21,38 @@ type Limitation = {
  * dropped: each one is the original pair of sentences joined, or kept as a
  * short pair where joining them would have needed a new clause to hold the
  * two halves together.
+ *
+ * The photographs are free stock, not generated images (the AI-made set that
+ * was here read as fake). Both licences allow commercial use with no credit
+ * required; the sources are kept here so they can be re-checked:
+ *   01 Pexels, "This And No Internet 25" —
+ *      https://www.pexels.com/photo/student-taking-exam-in-classroom-setting-31115182/
+ *   02 Unsplash, urusy (Hagi, Japan) —
+ *      https://unsplash.com/photos/brown-wooden-hallway-with-light-fixture-kscOvVLq2fk
+ *   03 Unsplash, urusy (Hagi, Japan) —
+ *      https://unsplash.com/photos/wooden-classroom-with-rows-of-desks-vfRkE_9wuPo
+ * 02 is an empty corridor on purpose: the row is about students who
+ * disappear from view, and it puts no real child's face beside a line about
+ * serious cases.
  */
 const ITEMS: Limitation[] = [
   {
     n: "01",
-    photo: "/photos/limitation-01.jpg",
+    photo: "/photos/classroom-survey.jpg",
     title: "アンケートでは本音が表れない。",
     body: "「はい／いいえ」形式では、生徒は大人が望む無難な回答を選びます。",
     figure: "binary",
   },
   {
     n: "02",
-    photo: "/photos/limitation-02.jpg",
+    photo: "/photos/classroom-corridor.jpg",
     title: "深刻なケースほど見えなくなる。",
     body: "追い詰められた生徒ほど周囲を拒み孤立するため、SOSを待つ仕組みでは間に合いません。",
     figure: "isolating",
   },
   {
     n: "03",
-    photo: "/photos/limitation-03.jpg",
+    photo: "/photos/classroom-room.jpg",
     title: "教員のリソースには限界がある。",
     body: "40名一人ひとりの心の機微まで捉えるのは現実的ではありません。教員の熱意ではなく、構造の問題です。",
     figure: "attention",
