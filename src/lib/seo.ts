@@ -278,9 +278,38 @@ export const FAQ: { q: string; a: string }[] = [
     q: "汎用のAIチャットとは何が違うのですか？",
     a: "Blescは会話を続けるチャットではなく、日記に短い問いをひとつだけ返します。また、睡眠・社会的ひきこもり・学業上の負荷の3領域について、気分や行動、学校での出来事などの概念どうしのつながりを、WHOやNICEなどの公開資料に照らして知識グラフ（オントロジー）として整理しています。つながりの一本ずつに、裏付けとなる公開資料があるかどうかを記録しています。",
   },
+  /*
+   * Three entries written to be found by what a school actually types —
+   * 心の健康観察, いじめ 早期発見, 不登校 予防 — and each one answers by saying
+   * what Blesc is NOT before what it does. That keeps them inside
+   * docs/claims.md §1 (no 検知・判定 of a condition) while still matching the
+   * query, and it is the honest answer: none of the three is something the
+   * product claims to do.
+   *
+   * 心の健康観察 is described in the ministry's own terms (MEXT, 「１人１台
+   * 端末等を活用した「心の健康観察」の導入推進」, Mar 2025: 児童生徒の心や体調
+   * の変化を把握し、早期発見、早期支援につなげる), and the contrast drawn is
+   * only the one that source supports — its examples are web stress checks,
+   * forms and apps, i.e. questions answered. The last sentence disclaims
+   * endorsement the same way 技術的な裏づけ does. There is deliberately no
+   * claim that Blesc can be used alongside it, replaces it, or is listed by
+   * it: nobody on the team has confirmed any of those, so none is written.
+   */
+  {
+    q: "「心の健康観察」とは何ですか？ Blescとの違いは？",
+    a: "「心の健康観察」は、文部科学省が全国の学校での実施を目指して導入を進めている取り組みで、1人1台端末などを使って児童生徒の心や体調の変化を把握し、早期発見・早期支援につなげるものです。文部科学省の資料に示された実施例は、ウェブ上のストレスチェックやフォーム、アプリなど、質問への回答を集める形のものです。Blescは回答を選ぶ形式ではなく、生徒が自分のタイミングで綴る日記から、言葉づかいや書きぶりの変化を捉えて可視化します。なお、これは文部科学省の取り組みの説明であり、文部科学省がBlescを推奨・承認するものではありません。",
+  },
   {
     q: "一日の落ち込みと、続いている変化は見分けられますか？",
     a: "言葉のニュアンス、書くことをためらった間、日々の書きぶりの変化といった微細なシグナルを積み重ねて捉えます。書き重ねられるからこそ、一日の落ち込みなのか、続いている変化なのかを見分ける手がかりになります。判断そのものは、記録を受け取った教員が行います。",
+  },
+  {
+    q: "Blescでいじめの早期発見はできますか？",
+    a: "Blescは、いじめがあるかどうかを判定したり、見つけ出したりするものではありません。生徒が自分のタイミングで綴る日記から、言葉づかいや書きぶりの変化を捉えて可視化し、観測された記述をその時刻と根拠とともに教員にお届けします。それは教員が気づくための手がかりであり、いじめの有無を判断し、対応を決めるのは学校と教員です。",
+  },
+  {
+    q: "不登校の予防にBlescは使えますか？",
+    a: "Blescは、不登校になるかどうかを予測したり、予防を保証したりするものではありません。言葉づかいや書きぶりの変化を捉えて可視化し、教員が生徒の変化に気づくための手がかりを届けます。気づいたあとの支援をどう行うかは、学校と教員が判断します。",
   },
   {
     q: "技術的な裏づけはありますか？",
