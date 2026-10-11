@@ -47,7 +47,7 @@ import { usePrefersReducedMotion } from "@/lib/reducedMotion";
  * Every other row — the buttons, the nav line, the address, the copyright —
  * is narrower than the heading and centred, so the heading's box is the
  * bound. That holds in English as it does in Japanese: the English heading
- * is on the same 768px measure (724px of type at its largest), its two
+ * is on the same 768px measure (552px of type at its widest), its two
  * buttons are about 425px together and its nav line 731px at the widest
  * (see Footer), so the clusters need nothing of their own per language.
  * Each cluster is anchored 3vw in from its edge (3vw − 3.5rem at lg,

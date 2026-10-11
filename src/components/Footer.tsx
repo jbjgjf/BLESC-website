@@ -51,7 +51,8 @@ const LINK_ROW =
  * is left to say here is the invitation and the name of the link row.
  *
  * `headingClass` is a whole class string per language: the two headings
- * share a measure and a size and differ in weight, tracking and palt.
+ * share a measure, a size, a weight and a tracking, and differ in balance
+ * and in palt.
  */
 const COPY: Record<
   Locale,
@@ -64,19 +65,31 @@ const COPY: Record<
     navLabel: "フッターナビゲーション",
   },
   en: {
-    heading: "Talk to us about bringing Blesc to your school.",
     /*
-      The same invitation, on the same measure and the same size, set the
-      way the site sets Latin at display size: Helvetica Neue Light. At 500
-      this line is 769px at the top of its clamp, one pixel more than the
-      768px measure, and drops its last word alone onto a second line; at
-      300 it is 724px and sits on one. text-balance is for everything
-      narrower, and for a fallback face wide enough to wrap it (Inter is
-      782px) — two even lines rather than a line and an orphan. No palt:
-      it is a Japanese feature and there is no Japanese in the line.
+      導入について、お話ししませんか。 with 導入 as "adopting Blesc", the
+      word the FAQ and the contact page use for it, so the invitation at the
+      foot of every page asks for what the page above it has been calling
+      by that name. It names no addressee: the Japanese does not, and the
+      reader may be a school or a board of education.
+    */
+    heading: "Talk to us about adopting Blesc.",
+    /*
+      The same invitation in the same voice: the Japanese heading's size,
+      weight and tracking, on the same measure.
+
+      At its largest, 38px, the line is 538px in Helvetica Neue and 552px
+      in Inter (worked out from the faces' advance widths, not measured in
+      a browser), so it is one line inside the 768px measure in either
+      face. Inter is not an edge case: it is the Latin face on every
+      Windows and Android device, which have no Helvetica Neue.
+
+      text-balance is for a phone. At the 26px floor the line is 368px and
+      378px, more than the column holds below about 420px wide, so there it
+      is two lines: even ones rather than a line and an orphan. No palt: it
+      is a Japanese feature and there is no Japanese in the line.
     */
     headingClass:
-      "mx-auto max-w-3xl text-balance text-center text-[clamp(1.625rem,3.6vw,2.375rem)] font-light leading-[1.3] tracking-[-0.02em] text-ink",
+      "mx-auto max-w-3xl text-balance text-center text-[clamp(1.625rem,3.6vw,2.375rem)] font-medium leading-[1.3] tracking-[-0.025em] text-ink",
     navLabel: "Footer",
   },
 };

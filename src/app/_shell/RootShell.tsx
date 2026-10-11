@@ -68,14 +68,17 @@ export function RootShell({
       </head>
       <body className="antialiased">
         {/*
-          Organization + WebSite + SoftwareApplication as one @graph. In the
-          body rather than the head because Next streams the head, and a
-          script tag appended there after the shell has flushed is not
-          guaranteed to be in the HTML a crawler receives.
+          Organization + WebSite + SoftwareApplication as one @graph, in
+          this document's language. In the body rather than the head because
+          Next streams the head, and a script tag appended there after the
+          shell has flushed is not guaranteed to be in the HTML a crawler
+          receives.
         */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd()) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(siteJsonLd(locale)),
+          }}
         />
         <LocaleProvider locale={locale}>
           <SmoothScroll />

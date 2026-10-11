@@ -46,7 +46,12 @@
  *   things, as the Japanese ones do: "links", "academic pressure" (the
  *   area's label in lib/ontologySeed.ts), "our own judgment", "which one is
  *   the cause", and "Student Guidance Guidelines" for 生徒指導提要 (that
- *   file's title_en). If the section's English changes, change it here.
+ *   file's title_en). 公開資料に照らして is the section's "checking them
+ *   against published sources" — not "drawn from" or "based on", since most
+ *   links have no published source behind them. 出典のあるつながりも is
+ *   "Even the links that have a source": the も says a source does not
+ *   make a link more than an association, which "also" would lose. If the
+ *   section's English changes, change it here.
  *
  * The counts in the ontology answer (42 links, 15 with a published source,
  * 27 without) are typed here as they are typed in lib/seo.ts, and both have
@@ -73,7 +78,7 @@ export const FAQ_EN: readonly { q: string; a: string }[] = [
   },
   {
     q: "How is Blesc different from a general-purpose AI assistant?",
-    a: "Blesc does not keep a back-and-forth going. It replies to a diary entry with just one short follow-up question. In addition, for three areas (sleep, social withdrawal, and academic pressure), we have organized the links between concepts such as mood, behavior, and events at school into a knowledge graph (an ontology), with reference to published sources such as those from WHO and NICE. For each link, we record whether a published source supports it.",
+    a: "Blesc does not keep a back-and-forth going. It replies to a diary entry with just one short follow-up question. In addition, for three areas (sleep, social withdrawal, and academic pressure), we have organized the links between concepts such as mood, behavior, and events at school into a knowledge graph (an ontology), checking them against published sources such as those from WHO and NICE. For each link, we record whether a published source supports it.",
   },
   {
     q: "What is “mental health observation,” and how is Blesc different?",
@@ -93,7 +98,7 @@ export const FAQ_EN: readonly { q: string; a: string }[] = [
   },
   {
     q: "Is there technical backing for Blesc?",
-    a: "The knowledge graph is compiled in-house with reference to the WHO fact sheet “Mental health of adolescents,” NICE guideline NG134, the WHO mhGAP Intervention Guide, and Seito Shidō Teiyō, the Student Guidance Guidelines of MEXT (Japan’s Ministry of Education). Of its 42 links, 15 are recorded as associations with a published source cited. The remaining 27 have no published source behind them, and are clearly marked as our own judgment. The links that do have a source are also recorded as associations. They do not show which one is the cause. The organizations listed do not recommend or endorse Blesc. We are preparing a review by clinical experts.",
+    a: "The knowledge graph is compiled in-house with reference to the WHO fact sheet “Mental health of adolescents,” NICE guideline NG134, the WHO mhGAP Intervention Guide, and Seito Shidō Teiyō, the Student Guidance Guidelines of MEXT (Japan’s Ministry of Education). Of its 42 links, 15 are recorded as associations with a published source cited. The remaining 27 have no published source behind them, and are clearly marked as our own judgment. Even the links that have a source are recorded as associations. They do not show which one is the cause. The organizations listed do not recommend or endorse Blesc. We are preparing a review by clinical experts.",
   },
   {
     q: "How do we get in touch about adopting Blesc?",

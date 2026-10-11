@@ -126,20 +126,31 @@ export const DESCRIPTION =
  * DESCRIPTION in English, for /en's meta description.
  *
  * Every claim of the Japanese and nothing more: what Blesc is, what it
- * makes visible, that teachers do not see the diary text, and that it does
- * not assess psychological risk. The two negations are the glossary's own
- * wording and stay negations.
+ * makes visible, that the diary is written in the student's own time, that
+ * teachers do not see the diary text, and that it does not assess
+ * psychological risk. The two negations are the glossary's own wording and
+ * stay negations.
  *
  * Budgeted the way the Japanese is. An English desktop snippet shows about
- * 155–160 characters; this is 190, and the first sentence is kept to 109 so
- * that "Teachers never see the diary text" ends at 144 — inside the cut —
- * for the reason given above: it is the line a school cares about most.
- * What paid for it is 自分のタイミングで ("in their own time"), which the
- * page itself says in several places. With it the first sentence alone is
- * 139 characters and the cut lands in the middle of the privacy line.
+ * 155–160 characters; this is 206, and the first sentence is kept to 125 so
+ * that "Teachers never see the diary text" ends at 159 — at the edge of the
+ * cut, not past it — for the reason given above: it is the line a school
+ * cares about most.
+ *
+ * 自分のタイミングで ("in their own time") stays in. An earlier draft left
+ * it out to end the privacy line at 143, but when the diary is written is a
+ * fact the Japanese states — and one the team corrected (see the note above
+ * FAQ) — so the English says it too. It is folded into the one clause, "how
+ * students write diaries in their own time", because spelled out separately
+ * ("…in the diaries they keep in their own time") the first sentence runs
+ * to 138 and the cut lands in the middle of the privacy line. If this is
+ * reworded, re-count: the privacy sentence has one character to spare.
+ *
+ * Like DESCRIPTION, it is not only a snippet: siteJsonLd("en") puts it on
+ * the three nodes of the English pages' structured data.
  */
 export const DESCRIPTION_EN =
-  "Blesc is a mental health platform for schools that makes changes in how students write their diaries visible. Teachers never see the diary text, and Blesc does not assess psychological risk.";
+  "Blesc is a mental health platform for schools that makes visible the changes in how students write diaries in their own time. Teachers never see the diary text, and Blesc does not assess psychological risk.";
 
 /** Shorter variant for social cards, where the card itself truncates hard. */
 export const DESCRIPTION_SHORT =
@@ -149,9 +160,18 @@ export const DESCRIPTION_SHORT =
  * DESCRIPTION_SHORT in English. 捉え is "captures", the verb the English
  * FAQ uses for it (lib/faqEn.ts) — never "detects", which docs/claims.md
  * rules out in either language.
+ *
+ * 生徒 is said once, as the subject of 孤立する: "before a student becomes
+ * isolated". Written as "students’ early signs … makes them visible before
+ * they become isolated", "them" is the signs and "they" the students, and
+ * the sentence reads as though the signs were what became isolated.
+ *
+ * This is also the last line on the English share card
+ * (app/_shell/shareCard), where it sets on two lines of about 73
+ * characters. A longer second sentence drops one word onto a third.
  */
 export const DESCRIPTION_SHORT_EN =
-  "Toward a society that notices the SOS no one says aloud. AI captures students’ early signs and makes them visible before they become isolated.";
+  "Toward a society that notices the SOS no one says aloud. AI captures early signs and makes them visible before a student becomes isolated.";
 
 export const DESCRIPTIONS: Record<Locale, string> = {
   ja: DESCRIPTION,
@@ -436,13 +456,75 @@ export function siteMetadata(locale: Locale): Metadata {
 /* -------------------------------------------------------------------------- */
 
 /**
+ * The words of the graph below that are not already a constant above, in
+ * each language.
+ *
+ * The Japanese is as it was. The English is that Japanese translated, item
+ * for item, and it is bound by docs/claims.md as the Japanese is — by hand,
+ * since scripts/check-claims.mjs looks for Japanese wording. Where a choice
+ * was made:
+ *
+ * - `features`: implemented features only (see the note in siteJsonLd), in
+ *   the words the English pages already use — "in their own time", "one
+ *   follow-up question", "how a student writes", "observations", "basis".
+ *   The fourth says the graph is structured "with reference to" published
+ *   guidelines, the FAQ's phrase for the same sources (lib/faqEn.ts), and
+ *   not "based on" them: most of its links have no published source behind
+ *   them, and テクノロジー says so.
+ * - Nothing is a detection, a score or an assessment of a student, and the
+ *   privacy item stays a negation.
+ */
+const GRAPH_COPY: Record<
+  Locale,
+  { subCategory: string; features: readonly string[]; pricing: string }
+> = {
+  ja: {
+    subCategory: "学校向けメンタルヘルスプラットフォーム",
+    features: [
+      "自分のタイミングで綴る日記による全生徒のセルフレポート",
+      "独自AIによる一問一答の深掘り",
+      "入力のためらいや書き直しといった書きぶりの計測",
+      "公開されている医学的ガイドラインをもとに構造化したオントロジー知識グラフによる記述の整理",
+      "日記本文を教員に開示しないプライバシー設計",
+      "教員向けダッシュボードでの観測・時刻・根拠の提示",
+    ],
+    pricing: "導入のご相談・お見積りはお問い合わせください。",
+  },
+  en: {
+    subCategory: "Mental health platform for schools",
+    features: [
+      "Self-reports from all students, through a diary each writes in their own time",
+      "One follow-up question from Blesc’s own AI in reply to a diary entry",
+      "Measurement of how a student writes, such as hesitation and rewriting while typing",
+      "Organizing what is written with an ontology knowledge graph structured with reference to published medical guidelines",
+      "A privacy design that does not disclose the diary text to teachers",
+      "A teacher dashboard that shows observations with their time and basis",
+    ],
+    pricing: "Please contact us to discuss adoption or to request a quote.",
+  },
+};
+
+/**
  * One @graph rather than several loose blocks. Nodes cross-reference by @id,
  * so Google resolves "the organisation that publishes this website that
  * offers this software" as a single entity instead of three unrelated ones.
+ *
+ * The graph is emitted on every page, and it describes the same three
+ * things on all of them — the @ids and URLs are the site's, not the page's
+ * — in the language of the page it is on: the descriptions, the site's
+ * name and the feature list are English under /en, so an English page does
+ * not hand a crawler a Japanese account of itself. The contact point's URL
+ * is that language's form. What stays as it is in both: the names, the
+ * katakana reading in alternateName, and the two statements of fact about
+ * language (the product's inLanguage and the contact point's
+ * availableLanguage), which describe the product and the inbox, not the
+ * page.
  */
-export function siteJsonLd() {
+export function siteJsonLd(locale: Locale) {
   const orgId = `${SITE_URL}/#organization`;
   const siteId = `${SITE_URL}/#website`;
+  const copy = GRAPH_COPY[locale];
+  const description = DESCRIPTIONS[locale];
 
   return {
     "@context": "https://schema.org",
@@ -458,7 +540,7 @@ export function siteJsonLd() {
           "@type": "ImageObject",
           url: absoluteUrl("/logo/logo-on-light.png"),
         },
-        description: DESCRIPTION,
+        description,
         email: CONTACT_EMAIL,
         areaServed: { "@type": "Country", name: "Japan" },
         ...(SOCIAL_PROFILES.length ? { sameAs: SOCIAL_PROFILES } : null),
@@ -467,7 +549,7 @@ export function siteJsonLd() {
             "@type": "ContactPoint",
             contactType: "sales",
             email: CONTACT_EMAIL,
-            url: absoluteUrl(CONTACT_PATH),
+            url: pageUrl(locale, CONTACT_PATH),
             availableLanguage: ["ja"],
           },
         ],
@@ -476,13 +558,13 @@ export function siteJsonLd() {
         "@type": "WebSite",
         "@id": siteId,
         url: SITE_URL,
-        name: `${SITE_NAME} — ${TAGLINE}`,
-        description: DESCRIPTION,
+        name: `${SITE_NAME} — ${TAGLINES[locale]}`,
+        description,
         /*
          * The site, not this page: every page exists in both languages
          * (lib/i18n), and this one node is emitted on all of them.
          */
-        inLanguage: LOCALES.map((locale) => HTML_LANG[locale]),
+        inLanguage: LOCALES.map((each) => HTML_LANG[each]),
         publisher: { "@id": orgId },
       },
       {
@@ -490,9 +572,9 @@ export function siteJsonLd() {
         "@id": `${SITE_URL}/#product`,
         name: SITE_NAME,
         applicationCategory: "EducationalApplication",
-        applicationSubCategory: "学校向けメンタルヘルスプラットフォーム",
+        applicationSubCategory: copy.subCategory,
         operatingSystem: "Web, iOS, Android",
-        description: DESCRIPTION,
+        description,
         url: SITE_URL,
         inLanguage: "ja",
         publisher: { "@id": orgId },
@@ -508,22 +590,16 @@ export function siteJsonLd() {
          * neither, and no analysis produces a risk judgement — see
          * `sentra/docs/educator_display_policy.md`. Writing dynamics is
          * listed because `writing_dynamics.py` genuinely implements it.
+         * The list itself is GRAPH_COPY's, above, in the page's language.
          */
-        featureList: [
-          "自分のタイミングで綴る日記による全生徒のセルフレポート",
-          "独自AIによる一問一答の深掘り",
-          "入力のためらいや書き直しといった書きぶりの計測",
-          "公開されている医学的ガイドラインをもとに構造化したオントロジー知識グラフによる記述の整理",
-          "日記本文を教員に開示しないプライバシー設計",
-          "教員向けダッシュボードでの観測・時刻・根拠の提示",
-        ],
+        featureList: copy.features,
         offers: {
           "@type": "Offer",
           category: "SaaS",
           availability: "https://schema.org/InStock",
           priceSpecification: {
             "@type": "PriceSpecification",
-            description: "導入のご相談・お見積りはお問い合わせください。",
+            description: copy.pricing,
           },
         },
       },

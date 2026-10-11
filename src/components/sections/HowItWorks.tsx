@@ -63,6 +63,11 @@ type Step = {
  *   never a word for finding or measuring something in a student. Its last
  *   sentence is a negation in both languages and has to stay one
  *   (docs/claims.md §1).
+ *
+ * Both also say their Japanese in the words the FAQ uses for the same
+ * Japanese (lib/faqEn.ts): 短い問いをひとつだけ is "just one short follow-up
+ * question", and 一日だけの落ち込みか、続いている変化か is "one low day"
+ * against "a change that continues". Change one and change the other.
  */
 const STEPS: Step[] = [
   {
@@ -106,7 +111,7 @@ const STEPS: Step[] = [
     },
     en: {
       title: "The AI replies with a question",
-      body: "There is no back-and-forth. The AI replies with just one short question.",
+      body: "There is no back-and-forth. The AI replies with just one short follow-up question.",
       view: "Student’s screen",
     },
   },
@@ -121,7 +126,7 @@ const STEPS: Step[] = [
     },
     en: {
       title: "Capture changes",
-      body: "This gives a clue for telling a one-day dip from a continuing change. Blesc does not assess psychological risk.",
+      body: "This gives a clue for telling one low day from a change that continues. Blesc does not assess psychological risk.",
       view: "Blesc’s analysis",
     },
   },
@@ -157,8 +162,9 @@ const STEP_TITLE: Record<Locale, string> = {
  * A step's sentence. measure-jp is the leading and tracking Japanese
  * paragraphs want (1.9, 0.01em); Latin text at the same size is set
  * tighter, with no added tracking. text-pretty, because English breaks at
- * spaces and two of these otherwise end on a word by itself — "length." on
- * a 320px phone, "question." in the pinned layout's 255px column at 768px.
+ * spaces and a sentence can otherwise end on a word by itself — step 02's
+ * "length." on a 320px phone, for one, and whichever word a later edit to
+ * these sentences leaves last in the pinned layout's 255px column at 768px.
  */
 const STEP_BODY: Record<Locale, string> = {
   ja: "measure-jp mt-3 max-w-[26rem] text-[1.0625rem] text-muted",

@@ -144,12 +144,13 @@ export function Product({ locale }: { locale: Locale }) {
           the way down to テクノロジー's graph (flourish/threadPath), so every
           pixel added between the two moves that crossing. Without the
           button it runs inside the foot of the figure's panel; 78px more
-          put it 27px lower, on the caption's first line from 1440px. With
-          no height added, everything from the figure down is where it was
-          and so is the thread. The air is padding, not margin, because a
-          margin would collapse through the zero-height box and be added
-          back above it. Below 1024px there is no thread, and the button is
-          in the flow like anything else.
+          put it 27px lower, which from 1440px is along the top of the
+          caption's first line. With no height added, everything from the
+          figure down is where it was and so is the thread (laid out and
+          measured at 1024, 1280, 1440 and 1728px). The air is padding, not
+          margin, because a margin would collapse through the zero-height
+          box and be added back above it. Below 1024px there is no thread,
+          and the button is in the flow like anything else.
 
           The Reveal is inside the zero-height box rather than being it, so
           what the reveal watches for is the button's real 78px and not an

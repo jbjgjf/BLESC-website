@@ -21,7 +21,9 @@ import type { Locale } from "@/lib/i18n";
  * the looser leading and tracking Japanese text wants. English ends its
  * lead on a full stop of its own, joins with an ordinary space — an
  * ideographic one is a full em of hole in a Latin line — and is set at a
- * Latin leading with no added tracking.
+ * Latin leading with no added tracking, with text-pretty so that a caption
+ * which ends on a claim does not leave that claim's last word on a line by
+ * itself.
  */
 export function Caption({
   locale,
@@ -65,7 +67,7 @@ export function Caption({
 /** Written out in full — Tailwind only generates classes it can read. */
 const SETTING: Record<Locale, string> = {
   ja: "measure-jp text-[0.95rem] sm:text-[1rem]",
-  en: "text-[0.95rem] leading-[1.7] sm:text-[1rem]",
+  en: "text-[0.95rem] leading-[1.7] text-pretty sm:text-[1rem]",
 };
 
 /** What sits between the lead and the rest of the caption. */

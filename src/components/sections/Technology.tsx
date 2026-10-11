@@ -92,6 +92,11 @@ import {
  *     for a link and does not state it is not that link's source.
  *   - 準備しています is "we are preparing": the clinical review has not
  *     happened, and the English must not read as if it had.
+ *   - The FAQ says the same things about the graph (lib/faqEn.ts), and the
+ *     two use one set of words for them: 整理 is "organize", まとめる is
+ *     "compile", 公開資料に照らして is "checking them against published
+ *     sources", and a list takes a comma before its "and". Change one and
+ *     change the other.
  */
 type Copy = {
   title: string;
@@ -173,7 +178,7 @@ const COPY: Record<Locale, Copy> = {
     title: "Technology",
     headline:
       "We organize the links between mind and daily life, checking them against published sources.",
-    body: "We gather the links between concepts such as mood, behavior and events at school into a knowledge graph (an ontology), covering three areas: sleep, social withdrawal and academic pressure. For each link, we record whether a published source supports it.",
+    body: "We compile the links between concepts such as mood, behavior, and events at school into a knowledge graph (an ontology), covering three areas: sleep, social withdrawal, and academic pressure. For each link, we record whether a published source supports it.",
     counts: { subgraphs: "Areas", concepts: "Concepts", relations: "Links" },
     sourced: (supported) =>
       `Of these, ${supported} links are recorded with a published source. Links without a source are marked separately as our own judgment, and we are preparing a review by clinical experts.`,
@@ -225,7 +230,9 @@ const COPY: Record<Locale, Copy> = {
  *
  * `mark` is the verb drawn on a relation's arrow. Japanese may break inside
  * it, as it always could; an English one has spaces in it ("─seen together
- * with─") and must not be split from its arrow, so it does not wrap.
+ * with─") and must not be split from its arrow, so it does not wrap. Where
+ * an English line may then end is RelationList's business (see the <wbr>
+ * there).
  */
 const TYPE = {
   ja: {
@@ -768,6 +775,21 @@ function RelationList({
               <span aria-hidden className={TYPE[locale].mark}>
                 {relation[e.relation].mark}
               </span>
+              {/*
+                English only: somewhere for the line to end. Japanese breaks
+                between any two characters; English breaks at its spaces, and
+                there is none between a name and the mark, nor (the spoken
+                verb being out of flow) between the mark and the next name.
+                So the last word of one name, the mark and the first word of
+                the next were a single run — "absence─seen together
+                with─withdrawing" is 277px in Helvetica Neue and about 293
+                in Inter, more than the 272px a 320px phone gives the list,
+                so the row ran out of its column into the page's gutter.
+                With a break allowed after the mark the longest run is 203px
+                (214 in Inter), and a wrapped row reads name–verb, then the
+                second name on its own line.
+              */}
+              {locale === "en" && <wbr />}
               <span className="sr-only">{relation[e.relation].spoken}</span>
               {labelOf(NODE_BY_ID[e.to], locale)}
             </span>

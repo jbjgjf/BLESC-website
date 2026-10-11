@@ -82,10 +82,18 @@ const LATIN_FALLBACK =
  *
  * Two routes draw it: app/opengraph-image.tsx in Japanese and
  * app/en/opengraph-image.tsx in English (each re-exported as the X card
- * beside it). The English card is all Latin, so it needs no font file and
- * makes no request; it is set in the face the Japanese card's headline is
- * already set in — Satori's own, since the Japanese subset holds none of
- * those letters.
+ * beside it). The English card is all Latin, so it is given no font file
+ * and makes no request: ImageResponse sets it in the face it ships with,
+ * Geist.
+ *
+ * That is close to the Japanese card's headline but not the same face.
+ * Given a font list, ImageResponse drops its own default, and for letters
+ * the list lacks — the Japanese subset holds none of the headline's — it
+ * fetches Noto Sans on demand. So the one English line the two cards share
+ * is Noto Sans on the Japanese card and Geist on the English one. To make
+ * them match, hand the English card Noto Sans the way notoSansJp fetches
+ * its subset; it was left as it is so that the English card cannot fail on
+ * the network.
  */
 export async function shareCard(locale: Locale) {
   const copy = COPY[locale];

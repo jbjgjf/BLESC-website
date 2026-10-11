@@ -111,10 +111,17 @@ export const STUDENT_BAR = {
     action: "提出する",
   },
   /*
-   * The note is cut with an ellipsis where it does not fit (<Composer>), and
-   * it sits beside the button in a window as narrow as 248px, so the English
-   * is held to what fits there whole: a promise that loses its last word
-   * reads as a different promise.
+   * 本文は先生に見えません, as the screen says it to the student who is
+   * writing: "this" is the text in front of them. It is short because it
+   * has to be. The note sits beside the button in a window as narrow as
+   * 248px, which on a 320px phone leaves it 134px, and it does not wrap
+   * (<Composer>). In プロダクト a longer one is cut with an ellipsis, and a
+   * promise that loses its last word reads as a different promise. In
+   * 仕組み it is not cut at all: each step is a grid item, which will not
+   * shrink below its longest unbreakable line, so a longer note widens the
+   * whole step and the page scrolls sideways. This one is 108px in
+   * Helvetica Neue and 115px in Inter; "Teachers can’t see your text" is
+   * 132px and 141px.
    */
   en: {
     note: "Teachers can’t see this",

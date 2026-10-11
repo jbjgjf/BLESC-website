@@ -81,7 +81,12 @@ const EN_BREAKS = ["md:hidden", "hidden md:inline", "md:hidden"] as const;
  * and the same 42rem it is five lines from md (six in Inter) and nine or
  * ten on a phone, where the Japanese is five and ten. text-pretty keeps a
  * lone "teachers." off the last line on a phone, where ten lines are more
- * than text-balance will take on; from md, balance evens the five or six.
+ * than Chrome's text-balance will take on. text-balance is declared with
+ * it for a browser that has balance and not pretty (Safari before 26),
+ * which would otherwise leave that word alone from 320px to 393px in
+ * Helvetica Neue: the two set the same property, Tailwind emits pretty
+ * second, and a browser that does not know it keeps balance. From md,
+ * balance evens the five or six.
  *
  * So the English column is 450–480px tall on a 1280×800 laptop and 392–421px
  * on a 768×1024 tablet, against 640px and 864px between the nav and the
@@ -99,7 +104,7 @@ const TYPE = {
     statement:
       "mt-[clamp(0.75rem,6svh,2rem)] text-[clamp(1.6rem,8vw,3.25rem)] font-light leading-[1.05] tracking-[-0.02em] text-ink md:mt-[clamp(0.75rem,6svh,2.5rem)] md:text-[max(2rem,min(5.4vw,10svh))]",
     paragraph:
-      "mt-[clamp(0.75rem,4svh,1.5rem)] max-w-[42rem] text-pretty text-[clamp(0.8rem,4vw,1rem)] leading-[1.6] text-ink md:mt-[clamp(0.75rem,5svh,2rem)] md:text-balance md:text-[1.0625rem] md:leading-[1.7]",
+      "mt-[clamp(0.75rem,4svh,1.5rem)] max-w-[42rem] text-balance text-pretty text-[clamp(0.8rem,4vw,1rem)] leading-[1.6] text-ink md:mt-[clamp(0.75rem,5svh,2rem)] md:text-balance md:text-[1.0625rem] md:leading-[1.7]",
   },
 } as const;
 
