@@ -61,6 +61,17 @@ import {
  *     汎用AIではありません。」, went: set over this graph it said the graph
  *     is what makes the product more than a language model, which is claim
  *     ③ again.
+ *   - The section now opens on what Blesc takes from a diary — only the
+ *     change, 「日記から抽出するのは、変化だけです。」 — at the company's
+ *     direction, and the graph follows in a paragraph of its own that
+ *     begins 「これとは別に」 / "Separately". The separation is the point:
+ *     a headline about extraction set straight over this figure would say
+ *     the graph does the extracting, which is claim ③ once more. Every
+ *     statement in that opening is one the site already makes or
+ *     docs/claims.md §1 lists as what the implementation does: change
+ *     against the student's own baseline, wording, 入力のためらい and
+ *     書き直し, teachers receiving the observation with its time and basis
+ *     and never the diary, and no 判定. Nothing in it is new.
  *   - No collaborating institution is named here. docs/claims.md §3 keeps
  *     the one that may be named to its own section, and not beside this
  *     one, where it would read as having built or checked the graph.
@@ -102,6 +113,8 @@ type Copy = {
   title: string;
   headline: string;
   body: string;
+  /** The graph's own paragraph: what it is, kept apart from `body`. */
+  graph: string;
   counts: { subgraphs: string; concepts: string; relations: string };
   sourced: (supported: number) => string;
   exampleHeading: string;
@@ -141,8 +154,10 @@ type Copy = {
 const COPY: Record<Locale, Copy> = {
   ja: {
     title: "テクノロジー",
-    headline: "心と生活のつながりを、公開資料に照らして整理しています。",
-    body: "睡眠・社会的ひきこもり・学業上の負荷の3領域について、気分や行動、学校での出来事などの概念どうしのつながりを知識グラフ（オントロジー）にまとめています。つながりの一本ずつに、裏付けとなる公開資料があるかどうかを記録しています。",
+    headline: "日記から抽出するのは、変化だけです。",
+    body: "Blescが日記から取り出すのは、本文そのものではなく、その生徒のこれまでと比べた変化です。言葉づかいの変化と、入力のためらいや書き直しといった書きぶりの変化を捉えます。変化だけを抽出するから、先生が日記を読むことはありません。届くのは、観測された変化と、その時刻と根拠だけです。変化が何を意味するかの判定は行わず、判断は先生が行います。",
+    graph:
+      "これとは別に、心と生活のつながりを公開資料に照らして整理しています。睡眠・社会的ひきこもり・学業上の負荷の3領域について、気分や行動、学校での出来事などの概念どうしのつながりを知識グラフ（オントロジー）にまとめています。つながりの一本ずつに、裏付けとなる公開資料があるかどうかを記録しています。",
     counts: { subgraphs: "領域", concepts: "概念", relations: "つながり" },
     sourced: (supported) =>
       `このうち${supported}のつながりは、公開資料を出典として記録しています。出典のないつながりは社内の判断として区別して明記し、臨床の専門家によるレビューを準備しています。`,
@@ -176,9 +191,10 @@ const COPY: Record<Locale, Copy> = {
   },
   en: {
     title: "Technology",
-    headline:
-      "We organize the links between mind and daily life, checking them against published sources.",
-    body: "We compile the links between concepts such as mood, behavior, and events at school into a knowledge graph (an ontology), covering three areas: sleep, social withdrawal, and academic pressure. For each link, we record whether a published source supports it.",
+    headline: "From each diary, we extract only what has changed.",
+    body: "What Blesc takes from a diary is not the text itself, but what has changed compared with that student’s own writing so far. It captures changes in wording and changes in how a student writes, such as hesitating before typing or rewriting. Because we extract only the change, teachers never see the diary itself. What reaches them is only the change that was observed, with its time and its basis. Blesc does not assess what a change means. That judgment is made by teachers.",
+    graph:
+      "Separately, we organize the links between mind and daily life, checking them against published sources. We compile the links between concepts such as mood, behavior, and events at school into a knowledge graph (an ontology), covering three areas: sleep, social withdrawal, and academic pressure. For each link, we record whether a published source supports it.",
     counts: { subgraphs: "Areas", concepts: "Concepts", relations: "Links" },
     sourced: (supported) =>
       `Of these, ${supported} links are recorded with a published source. Links without a source are marked separately as our own judgment, and we are preparing a review by clinical experts.`,
@@ -221,8 +237,8 @@ const COPY: Record<Locale, Copy> = {
  * loose for Latin, which reads best nearer 1.65 and can ask the browser for
  * better line endings (text-pretty), there being spaces to break at.
  *
- * `headline` likewise: the Japanese line is two lines at 1.55; the English
- * one is about three, so it is balanced and set tighter.
+ * `headline` likewise: set at 1.55 in Japanese; the English one runs
+ * longer, so it is balanced and set tighter.
  *
  * `disclaimer`: break-keep is what stops the Japanese line breaking inside
  * a phrase. English already breaks only at its spaces, so it takes
@@ -270,13 +286,6 @@ export function Technology({ locale }: { locale: Locale }) {
       */}
       <div className="grid items-start gap-10 lg:grid-cols-[5fr_7fr] lg:gap-12">
         <Reveal>
-          {/*
-            「公開資料に照らして」, not 「公開資料から」: most of the relations
-            are not from a published source (the count two paragraphs down
-            says how many), but every one was checked against the source
-            registry and recorded as supported or not. In English that is
-            "checking them against", not "drawn from" or "based on".
-          */}
           <p
             className={`text-[clamp(1.125rem,2vw,1.5rem)] font-medium ${type.headline} tracking-[-0.015em] text-ink`}
           >
@@ -285,6 +294,21 @@ export function Technology({ locale }: { locale: Locale }) {
 
           <p className={`${type.prose} mt-5 text-[1rem] text-muted`}>
             {copy.body}
+          </p>
+
+          {/*
+            Its own paragraph, opening 「これとは別に」 / "Separately": the
+            lines above are about what is taken from a diary, and the graph
+            is not what takes it (see the header).
+
+            「公開資料に照らして」, not 「公開資料から」: most of the relations
+            are not from a published source (the count below says how many),
+            but every one was checked against the source registry and
+            recorded as supported or not. In English that is "checking them
+            against", not "drawn from" or "based on".
+          */}
+          <p className={`${type.prose} mt-4 text-[1rem] text-muted`}>
+            {copy.graph}
           </p>
 
           {/*
