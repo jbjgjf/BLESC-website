@@ -1,4 +1,4 @@
-import { OntologyGraph } from "@/components/OntologyGraph";
+import { ChangeFigure } from "@/components/ChangeFigure";
 import { Reveal } from "@/components/Reveal";
 import { Icon, Section, SectionTitle } from "@/components/ui";
 import type { Locale } from "@/lib/i18n";
@@ -30,7 +30,7 @@ import {
  * do: neither organisation endorses Blesc, both restrict use of their
  * emblems, and a logo row is precisely what reads as endorsement. What it
  * does instead is the checkable version of the same thing — the sources by
- * name, publisher, year and link, the real graph drawn from the seed, and
+ * name, publisher, year and link, the real graph listed from the seed, and
  * the seed's own count of how much of it those sources support.
  *
  * What the copy may say is bounded by the company's decision record
@@ -83,8 +83,16 @@ import {
  * source shows, proves or causes anything. scripts/check-claims.mjs looks
  * for Japanese wording in this section, so the English keeps to the bounds
  * by hand. The concepts' names are upstream's own label_en, unaltered
- * (lib/ontologySeed.ts), and the figure takes its language from the layout
- * (OntologyGraph).
+ * (lib/ontologySeed.ts), and the figure is handed `locale` as this is
+ * (ChangeFigure).
+ *
+ * THE FIGURE is no longer the graph. It was the seed drawn whole, as three
+ * overlapping discs; the company judged that the wrong model of the product,
+ * and the panel now draws the headline instead — what is taken from a diary
+ * (ChangeFigure). The graph is still here in words: the paragraph that
+ * begins 「これとは別に」, the counts, the example and the full list under
+ * the sources. components/OntologyGraph.tsx and product/ontology.ts are left
+ * in the tree, unused, in case it is wanted elsewhere.
  */
 
 /**
@@ -430,27 +438,33 @@ export function Technology({ locale }: { locale: Locale }) {
         </Reveal>
 
         {/*
-          Deliberately NOT wrapped in <Reveal>: the figure fades itself in,
-          and a translate on an ancestor would carry its absolutely placed
-          names with it mid-flight.
+          The figure is the picture of the headline — what is taken from a
+          diary, and how little of it — and no longer the knowledge graph,
+          which the company judged the wrong model of the product (see
+          ChangeFigure). The graph is still described in words on the left
+          and listed in full under the sources.
 
-          A white panel now, not the inset grey it was. The figure tints its
-          own discs, and every contrast in it was measured over white: on
-          --surface-inset the relation lines would drop to 2.91:1 where the
-          three discs overlap, under the 3:1 they hold on white.
+          Deliberately NOT wrapped in <Reveal>: the figure brings itself in,
+          in the order of the sentence it draws, and an entrance on an
+          ancestor would play over the top of that.
+
+          A white panel: the band's wash and the grey of the diary's strokes
+          are both tints over whatever is behind them, and were chosen over
+          white.
 
           min-w-0 so the grid item can be narrower than its content's
           minimum, which keeps a phone from gaining a horizontal scroll.
 
           data-thread marks the panel as where the signal thread ends: the
           page's thread layer finds it by this attribute, and the section
-          knows nothing more about it.
+          knows nothing more about it. The attribute keeps the name "graph"
+          because that layer looks for it by that name.
         */}
         <div
           data-thread="graph"
           className="min-w-0 rounded-[1.25rem] border border-line bg-surface p-4 shadow-[var(--shadow-card)] sm:p-6"
         >
-          <OntologyGraph />
+          <ChangeFigure locale={locale} />
         </div>
       </div>
 
