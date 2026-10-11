@@ -111,7 +111,12 @@ import {
  */
 type Copy = {
   title: string;
-  headline: string;
+  /**
+   * In phrases. Each is set as a unit that does not break inside itself
+   * until it has to, so a line can only end between two of them: the
+   * Japanese wrapped as 「…変化だけで／す。」 when it was one string.
+   */
+  headline: readonly string[];
   body: string;
   /** The graph's own paragraph: what it is, kept apart from `body`. */
   graph: string;
@@ -154,7 +159,7 @@ type Copy = {
 const COPY: Record<Locale, Copy> = {
   ja: {
     title: "テクノロジー",
-    headline: "日記から抽出するのは、変化だけです。",
+    headline: ["日記から抽出するのは、", "変化だけです。"],
     body: "Blescが日記から取り出すのは、本文そのものではなく、その生徒のこれまでと比べた変化です。言葉づかいの変化と、入力のためらいや書き直しといった書きぶりの変化を捉えます。変化だけを抽出するから、先生が日記を読むことはありません。届くのは、観測された変化と、その時刻と根拠だけです。変化が何を意味するかの判定は行わず、判断は先生が行います。",
     graph:
       "これとは別に、心と生活のつながりを公開資料に照らして整理しています。睡眠・社会的ひきこもり・学業上の負荷の3領域について、気分や行動、学校での出来事などの概念どうしのつながりを知識グラフ（オントロジー）にまとめています。つながりの一本ずつに、裏付けとなる公開資料があるかどうかを記録しています。",
@@ -191,7 +196,7 @@ const COPY: Record<Locale, Copy> = {
   },
   en: {
     title: "Technology",
-    headline: "From each diary, we extract only what has changed.",
+    headline: ["From each diary, we extract only what has changed."],
     body: "What Blesc takes from a diary is not the text itself, but what has changed compared with that student’s own writing so far. It captures changes in wording and changes in how a student writes, such as hesitating before typing or rewriting. Because we extract only the change, teachers never see the diary itself. What reaches them is only the change that was observed, with its time and its basis. Blesc does not assess what a change means. That judgment is made by teachers.",
     graph:
       "Separately, we organize the links between mind and daily life, checking them against published sources. We compile the links between concepts such as mood, behavior, and events at school into a knowledge graph (an ontology), covering three areas: sleep, social withdrawal, and academic pressure. For each link, we record whether a published source supports it.",
@@ -289,7 +294,11 @@ export function Technology({ locale }: { locale: Locale }) {
           <p
             className={`text-[clamp(1.125rem,2vw,1.5rem)] font-medium ${type.headline} tracking-[-0.015em] text-ink`}
           >
-            {copy.headline}
+            {copy.headline.map((phrase) => (
+              <span key={phrase} className="inline-block">
+                {phrase}
+              </span>
+            ))}
           </p>
 
           <p className={`${type.prose} mt-5 text-[1rem] text-muted`}>
