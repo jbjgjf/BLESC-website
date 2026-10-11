@@ -1,6 +1,41 @@
 import { EvidencePanel } from "@/components/evidence/EvidencePanel";
 import { Reveal, RevealItem, Stagger } from "@/components/Reveal";
 import { Section } from "@/components/ui";
+import type { Locale } from "@/lib/i18n";
+
+/*
+ * The claim, in each language. The English is the Japanese and no more: the
+ * quotation marks are the Japanese sentence's own 「」.
+ */
+const COPY = {
+  ja: {
+    title: "危機が起きてからでは、遅い。",
+    lead: "生徒の不調に気づくのが「何かが起きた後」になってしまう。",
+  },
+  en: {
+    title: "After a crisis, it is too late.",
+    lead: "A student’s struggles end up being noticed only “after something has happened.”",
+  },
+} as const;
+
+/*
+ * How the two lines are set. Japanese is as it was. English breaks at
+ * spaces, so the heading — two lines on a phone, where the Japanese also
+ * turns — is balanced rather than left with "late." alone. The sentence
+ * under it drops measure-jp (1.9 leading, tuned for Japanese) for a Latin
+ * 1.65, and is balanced too: it is centred and runs to two lines on a wide
+ * screen, where an uneven pair reads as a mistake.
+ */
+const TYPE = {
+  ja: {
+    title: "type-head text-ink",
+    lead: "measure-jp mx-auto max-w-xl text-[1.0625rem] text-muted",
+  },
+  en: {
+    title: "type-head text-balance text-ink",
+    lead: "mx-auto max-w-xl text-balance text-[1.0625rem] leading-[1.65] text-muted",
+  },
+} as const;
 
 /*
  * The claim and its evidence, in one block.
@@ -37,8 +72,14 @@ import { Section } from "@/components/ui";
  * hidden would make the section a scroll container and trap anything that
  * later did. relative is what the absolutely positioned backdrop measures
  * against.
+ *
+ * A server component: the page hands it `locale`, and it hands the same on
+ * to the panel.
  */
-export function Problem() {
+export function Problem({ locale }: { locale: Locale }) {
+  const copy = COPY[locale];
+  const type = TYPE[locale];
+
   return (
     <Section
       id="problem"
@@ -52,7 +93,7 @@ export function Problem() {
     >
       <Stagger className="mx-auto max-w-3xl text-center" stagger={0.06}>
         <RevealItem>
-          <h2 className="type-head text-ink">危機が起きてからでは、遅い。</h2>
+          <h2 className={type.title}>{copy.title}</h2>
         </RevealItem>
 
         {/*
@@ -62,14 +103,12 @@ export function Problem() {
           sentences opening Blescは… read as a repeat.
         */}
         <RevealItem className="mt-6">
-          <p className="measure-jp mx-auto max-w-xl text-[1.0625rem] text-muted">
-            生徒の不調に気づくのが「何かが起きた後」になってしまう。
-          </p>
+          <p className={type.lead}>{copy.lead}</p>
         </RevealItem>
       </Stagger>
 
       <Reveal className="mt-14 md:mt-16">
-        <EvidencePanel />
+        <EvidencePanel locale={locale} />
       </Reveal>
     </Section>
   );

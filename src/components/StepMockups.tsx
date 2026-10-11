@@ -1,17 +1,21 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { useLocale } from "@/components/LocaleProvider";
 import { Logo } from "@/components/Logo";
 import { Chip, Composer, Screen } from "@/components/mock";
 import { Icon } from "@/components/ui";
+import type { Locale } from "@/lib/i18n";
 import {
   BASIS,
   BASELINE,
   CLASS,
   ENTRY,
-  ENTRY_LENGTH,
+  ENTRY_COUNT,
   ENTRY_TAIL,
+  OBSERVATION_LABEL,
   ROWS,
+  SCREEN_WORDS,
   STUDENT_BAR,
   TREND,
   TREND_TITLE,
@@ -37,8 +41,14 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
  * the claim reaches a screen reader, since every <Frame> is aria-hidden.
  *
  * Every string is sample data from @/lib/sample or a word the interface
- * itself says (a button, a title, a column head). Students are a class and a
+ * itself says (a button, a title, a column head), and that module holds
+ * each of them in Japanese and in English. Students are a class and a
  * roll number.
+ *
+ * The screens speak the page's language: each one asks useLocale() and
+ * picks its strings with it. The windows themselves — sizes, chrome,
+ * motion — are the same in both, with one exception, the diary's leading
+ * (ENTRY_TEXT below).
  *
  * Motion is one beat per screen at most, on view, ~0.5s on the expo curve,
  * and under prefers-reduced-motion each one lands on its end state without
@@ -54,6 +64,24 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
  * beat play when the screen is actually shown rather than while it was
  * stacked out of sight.
  */
+
+/**
+ * The entry as it sits on the writing surface. Written out in full for each
+ * language — Tailwind only generates classes it can read.
+ *
+ * The size is the same in both. The leading is not: 1.85 is the air kana
+ * and kanji need at this size, and on Latin type it reads as double
+ * spacing. It also costs height the English does not have — the same entry
+ * runs a line longer in English (four lines to the Japanese three on a
+ * 360px phone), and the surface is whatever the window has left. So English
+ * is set at 1.65, and 仕組み gives its windows a little more height on a
+ * phone (FRAME in HowItWorks), which together keep the counter under the
+ * entry inside the surface down to 320px.
+ */
+const ENTRY_TEXT: Record<Locale, string> = {
+  ja: "text-[0.78rem] leading-[1.85] text-ink lg:text-[0.85rem]",
+  en: "text-[0.78rem] leading-[1.65] text-ink lg:text-[0.85rem]",
+};
 
 /* -------------------------------------------------------------------------- */
 /* 01 — the class is the unit                                                 */
@@ -82,6 +110,7 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
  */
 export function ClassMock() {
   const reduce = useReducedMotion();
+  const locale = useLocale();
 
   const cell = {
     hidden: { opacity: 0.2 },
@@ -93,11 +122,13 @@ export function ClassMock() {
 
   return (
     <Screen
-      title={CLASS.label}
-      trailing={<Chip tone="accent">{CLASS.size}</Chip>}
+      title={CLASS[locale].label}
+      trailing={<Chip tone="accent">{CLASS[locale].size}</Chip>}
     >
       <div className="my-auto">
-        <p className="text-[0.66rem] text-muted lg:text-[0.7rem]">出席番号</p>
+        <p className="text-[0.66rem] text-muted lg:text-[0.7rem]">
+          {SCREEN_WORDS[locale].rollNumber}
+        </p>
         <motion.div
           className="mt-2 grid grid-cols-10 gap-1 sm:gap-1.5"
           initial="hidden"
@@ -139,31 +170,35 @@ export function ClassMock() {
  * they are the one who presses submit.
  */
 export function DiaryMock() {
+  const locale = useLocale();
+  const entry = ENTRY[locale];
+  const bar = STUDENT_BAR[locale];
+
   return (
     <Screen
       title={<Logo className="h-3 w-auto shrink-0" />}
       trailing={
         <span className="shrink-0 text-[0.7rem] tabular-nums text-muted">
-          {ENTRY.date}
+          {entry.date}
         </span>
       }
-      footer={<Composer note={STUDENT_BAR.note} action={STUDENT_BAR.action} />}
+      footer={<Composer note={bar.note} action={bar.action} />}
     >
       <p className="text-[0.78rem] font-medium tracking-[-0.01em] text-ink lg:text-[0.85rem]">
-        {ENTRY.prompt}
+        {entry.prompt}
       </p>
 
       {/* The writing surface takes whatever height is left: a diary is mostly
           the space to write in. */}
       <div className="mt-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg bg-inset p-2.5">
-        <p className="text-[0.78rem] leading-[1.85] text-ink lg:text-[0.85rem]">
-          {ENTRY.body}
+        <p className={ENTRY_TEXT[locale]}>
+          {entry.body}
           {/* Static, and the only thing here that is not type: the insertion
               point where the student stopped. */}
           <span className="ml-px inline-block h-[0.9em] w-px translate-y-[0.1em] bg-mark-1" />
         </p>
         <span className="mt-auto pt-1.5 text-right text-[0.66rem] tabular-nums text-muted">
-          {ENTRY_LENGTH}字
+          {ENTRY_COUNT[locale]}
         </span>
       </div>
     </Screen>
@@ -189,19 +224,21 @@ export function DiaryMock() {
  */
 export function ProbeMock() {
   const reduce = useReducedMotion();
+  const locale = useLocale();
+  const entry = ENTRY[locale];
 
   return (
     <Screen
       title={<Logo className="h-3 w-auto shrink-0" />}
       trailing={
         <span className="shrink-0 text-[0.7rem] tabular-nums text-muted">
-          {ENTRY.date}
+          {entry.date}
         </span>
       }
     >
       <div className="my-auto flex flex-col gap-2.5">
         <span className="ml-auto w-fit max-w-[78%] rounded-xl rounded-br-sm bg-inset px-3 py-2 text-[0.78rem] leading-relaxed text-muted lg:text-[0.85rem]">
-          {ENTRY_TAIL}
+          {ENTRY_TAIL[locale]}
         </span>
 
         <motion.div
@@ -224,10 +261,10 @@ export function ProbeMock() {
           */}
           <p className="flex items-center gap-1 text-[0.66rem] font-medium tracking-[0.06em] text-mark-1">
             <Icon name="auto_awesome" size={12} className="shrink-0" />
-            AIからの問いかけ
+            {SCREEN_WORDS[locale].question}
           </p>
           <p className="mt-1.5 text-[0.8rem] leading-relaxed text-ink lg:text-[0.9rem]">
-            {ENTRY.followUp}
+            {entry.followUp}
           </p>
         </motion.div>
       </div>
@@ -258,7 +295,8 @@ export function ProbeMock() {
  */
 export function TrendMock() {
   const reduce = useReducedMotion();
-  const latest = ROWS[0];
+  const locale = useLocale();
+  const latest = ROWS[locale][0];
 
   /* The same hidden state either way; reduced motion fades the bars in
      together and lands the 6px rise outright rather than playing it. */
@@ -275,7 +313,7 @@ export function TrendMock() {
 
   return (
     <Screen
-      title={TREND_TITLE}
+      title={TREND_TITLE[locale]}
       footer={
         /*
           No data-thread here, though this row is what the signal thread
@@ -293,7 +331,9 @@ export function TrendMock() {
             shortened one can say the opposite of the real one: cut at the
             card's width, 苦痛の表現（危険の明示なし） loses its なし. So the
             observation wraps instead of truncating; the chart above is
-            flex-1 and gives up the height.
+            flex-1 and gives up the height. In English it does wrap, to two
+            lines wherever the window is narrower than about 400px, and the
+            chart is that much shorter.
           */}
           <p className="flex min-w-0 items-baseline gap-2 text-[0.66rem] tabular-nums text-muted">
             <span className="shrink-0 text-ink">
@@ -304,9 +344,9 @@ export function TrendMock() {
             </span>
           </p>
           <p className="mt-0.5 text-[0.72rem] leading-snug text-ink">
-            観測: {latest.observation}
+            {OBSERVATION_LABEL[locale]}: {latest.observation}
           </p>
-          <p className="mt-0.5 text-[0.62rem] text-muted">└ {BASIS}</p>
+          <p className="mt-0.5 text-[0.62rem] text-muted">└ {BASIS[locale]}</p>
         </div>
       }
     >

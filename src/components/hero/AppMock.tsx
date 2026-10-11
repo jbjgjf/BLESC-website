@@ -3,22 +3,115 @@
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { useRef } from "react";
 import { Flower } from "@/components/Flower";
+import { useLocale } from "@/components/LocaleProvider";
 import { Logo } from "@/components/Logo";
 import { Icon } from "@/components/ui";
+import type { Locale } from "@/lib/i18n";
 import type { IconName } from "@/lib/icons";
 
-/** The three openers the app offers, as they appear in the product. */
-const PROMPTS = [
-  "今日あったことを話したい",
-  "最近ちょっとしんどい",
-  "考えを整理したい",
+/*
+ * The screen's words, in each language. The Japanese is the app's own
+ * interface; the English is that interface translated string for string —
+ * the same three tabs, the same three openers — and nothing the app does
+ * not have. The name is lower-case in the Japanese, as the app writes it,
+ * and capitalised in the English, as the rest of the English site has it.
+ */
+const COPY = {
+  ja: {
+    /** The three openers the app offers, as they appear in the product. */
+    prompts: [
+      "今日あったことを話したい",
+      "最近ちょっとしんどい",
+      "考えを整理したい",
+    ],
+    greeting: "こんにちは、blescです",
+    invitation: "気になっていること、そのまま話してください。",
+    placeholder: "blescに話す…",
+    disclaimer: "blescは診断や緊急対応を行うものではありません。",
+  },
+  en: {
+    prompts: [
+      "I want to talk about today",
+      "It’s been a bit hard lately",
+      "I want to sort out my thoughts",
+    ],
+    greeting: "Hello, this is Blesc",
+    invitation: "Say what’s on your mind, just as it is.",
+    placeholder: "Talk to Blesc…",
+    disclaimer: "Blesc does not diagnose or provide emergency response.",
+  },
+} as const;
+
+const TABS: {
+  icon: IconName;
+  label: Record<Locale, string>;
+  active?: boolean;
+}[] = [
+  { icon: "home", label: { ja: "今日", en: "Today" } },
+  { icon: "edit_note", label: { ja: "日記", en: "Diary" } },
+  { icon: "chat_bubble", label: { ja: "相談", en: "Talk" }, active: true },
 ];
 
-const TABS: { icon: IconName; label: string; active?: boolean }[] = [
-  { icon: "home", label: "今日" },
-  { icon: "edit_note", label: "日記" },
-  { icon: "chat_bubble", label: "相談", active: true },
-];
+/*
+ * Where the English needs its own classes. Whole strings, because Tailwind
+ * only generates what it can read. The widths are from this markup laid out
+ * in headless Chrome, in Helvetica Neue and in Inter (what Android and
+ * Windows fall back to); where two numbers are given they are in that
+ * order.
+ *
+ * The tabs. A two-character Japanese label is 20px wide at this size, and
+ * "Today", "Diary" and "Talk" are 27, 23 and 18px (29, 25 and 19): the
+ * three are 8–13px longer, and a 360px phone's bar — 266px between its
+ * paddings, 84 of them the wordmark's and the menu's — has none to give.
+ * 360px is the usual Android width, so that phone is an Inter one. So below
+ * md an English tab gives up 4px on each side and 2px of the gap to its
+ * icon, which brings the three to 165px (171px) and leaves 8px (5.5px)
+ * either side of them there. At 2px a side instead, the Inter row was a
+ * pixel longer than the bar: the active tab's tint ran into the menu icon
+ * and the icon was squeezed. A few pixels under 360px even this row no
+ * longer fits (a 344px screen's bar is 250px, and the row is 255px in
+ * Inter), so there the tabs drop their icons rather than run into the
+ * menu: the labels are the tabs, and the icons come back at 22.5rem. From
+ * md there is room, and the two languages share one setting.
+ *
+ * The openers. As chips they are 134–159px (140–166px), each inside the
+ * 210px a 320px phone leaves; on the narrower phones they sit one to a row
+ * where the Japanese sit two and one, and the screen, whose height is its
+ * content's there, is a row taller. From md they are meant to be one row,
+ * and at md itself the screen is at its narrowest for that setting — 618px
+ * across, at 768px — where the Japanese three need 533px and the English
+ * three, at the same 20px of padding, 607px (630px): in Inter the third
+ * dropped to a second row and the screen was 54px taller for it. So from
+ * md to lg an English chip has 16px a side, which is 583px (606px) and one
+ * row, and from lg, where the screen is over 870px across, it has the same
+ * 20px as the Japanese.
+ *
+ * The disclaimer is 227px at this size (240px) where the Japanese is 206px,
+ * and a 320px phone leaves 226px. text-balance makes that two even lines
+ * rather than a line and the word "response."
+ *
+ * Nothing else needed it. The invitation is 191px (200px) in the 210px a
+ * 320px phone leaves.
+ */
+const TAB = {
+  ja: "flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.62rem] md:px-3.5 md:text-[0.8rem]",
+  en: "flex items-center gap-1 rounded-full px-1.5 py-1.5 text-[0.62rem] md:gap-1.5 md:px-3.5 md:text-[0.8rem]",
+} as const;
+
+const TAB_ICON = {
+  ja: "shrink-0",
+  en: "hidden shrink-0 min-[22.5rem]:block",
+} as const;
+
+const CHIP = {
+  ja: "rounded-full border border-mark-1/35 px-3 py-1.5 text-[0.62rem] text-muted md:px-5 md:py-2.5 md:text-[0.8rem]",
+  en: "rounded-full border border-mark-1/35 px-3 py-1.5 text-[0.62rem] text-muted md:px-4 md:py-2.5 md:text-[0.8rem] lg:px-5",
+} as const;
+
+const DISCLAIMER = {
+  ja: "mt-2.5 text-center text-[0.55rem] text-muted md:mt-4 md:text-[0.72rem]",
+  en: "mt-2.5 text-center text-balance text-[0.55rem] text-muted md:mt-4 md:text-[0.72rem]",
+} as const;
 
 /**
  * Bar heights for the waveform, as fractions of the track.
@@ -34,15 +127,25 @@ const BARS = [
 /**
  * The product, as a picture of itself.
  *
- * Everything here is the app's own interface and its own words. It is
- * decorative for assistive tech — the surrounding copy carries every claim —
- * so the whole screen is aria-hidden and nothing in it is focusable.
+ * Everything here is the app's own interface and its own words — in
+ * Japanese as the app has them, and on the English pages translated (see
+ * COPY). It is decorative for assistive tech — the surrounding copy carries
+ * every claim — so the whole screen is aria-hidden and nothing in it is
+ * focusable.
+ *
+ * The language is the hero's, handed down as `locale`, so the screen can
+ * never be in one language under a headline in the other; rendered on its
+ * own it asks useLocale(), like any client component.
  *
  * The microphone starts listening when the screen scrolls into view, which
  * is the one moment the reader is looking at it, and stops when it leaves so
  * an off-screen loop is not burning frames.
  */
-export function AppMock() {
+export function AppMock({ locale: fromHero }: { locale?: Locale }) {
+  const fromLayout = useLocale();
+  const locale = fromHero ?? fromLayout;
+  const t = COPY[locale];
+
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const inView = useInView(ref, { amount: 0.45 });
@@ -61,15 +164,15 @@ export function AppMock() {
         <div className="flex items-center gap-1 md:gap-2">
           {TABS.map((tab) => (
             <span
-              key={tab.label}
-              className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[0.62rem] md:px-3.5 md:text-[0.8rem] ${
+              key={tab.icon}
+              className={`${TAB[locale]} ${
                 tab.active
                   ? "bg-accent/15 font-medium text-mark-1"
                   : "text-muted"
               }`}
             >
-              <Icon name={tab.icon} size={14} className="shrink-0" />
-              {tab.label}
+              <Icon name={tab.icon} size={14} className={TAB_ICON[locale]} />
+              {tab.label[locale]}
             </span>
           ))}
         </div>
@@ -96,18 +199,15 @@ export function AppMock() {
         </motion.div>
 
         <p className="mt-5 text-[0.95rem] font-semibold tracking-[-0.01em] text-ink md:mt-7 md:text-[1.3rem]">
-          こんにちは、blescです
+          {t.greeting}
         </p>
         <p className="mt-1.5 text-[0.72rem] text-muted md:mt-2.5 md:text-[0.95rem]">
-          気になっていること、そのまま話してください。
+          {t.invitation}
         </p>
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2 md:mt-7 md:gap-3">
-          {PROMPTS.map((prompt) => (
-            <span
-              key={prompt}
-              className="rounded-full border border-mark-1/35 px-3 py-1.5 text-[0.62rem] text-muted md:px-5 md:py-2.5 md:text-[0.8rem]"
-            >
+          {t.prompts.map((prompt) => (
+            <span key={prompt} className={CHIP[locale]}>
               {prompt}
             </span>
           ))}
@@ -126,7 +226,7 @@ export function AppMock() {
               <Waveform />
             ) : (
               <span className="flex-1 truncate text-[0.7rem] text-muted md:text-[0.9rem]">
-                blescに話す…
+                {t.placeholder}
               </span>
             )}
 
@@ -159,9 +259,7 @@ export function AppMock() {
             </span>
           </div>
 
-          <p className="mt-2.5 text-center text-[0.55rem] text-muted md:mt-4 md:text-[0.72rem]">
-            blescは診断や緊急対応を行うものではありません。
-          </p>
+          <p className={DISCLAIMER[locale]}>{t.disclaimer}</p>
         </div>
       </div>
     </div>

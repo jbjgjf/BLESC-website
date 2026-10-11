@@ -19,6 +19,12 @@
  * nothing in here invents content: the only strings these components contain
  * are the ones passed in, and the one component that would need a student's
  * name (<Row>) has no prop for one.
+ *
+ * That second rule is also why the kit is the same in Japanese and English:
+ * it has no words to translate. The caller picks its strings by locale
+ * (lib/sample holds each in both languages) and passes them in. <Caption>
+ * alone takes a `locale`, because how a caption's two halves are joined and
+ * set is a matter of language even though its words are the caller's.
  */
 export { Frame } from "./Frame";
 export { Screen } from "./Screen";

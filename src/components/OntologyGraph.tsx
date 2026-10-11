@@ -10,6 +10,7 @@ import {
   type KeyboardEvent,
   type PointerEvent,
 } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 import {
   AREAS,
   FRAME,
@@ -17,6 +18,7 @@ import {
   STANDING_LABELS,
   type Placement,
 } from "@/components/product/ontology";
+import { LOCALES, type Locale } from "@/lib/i18n";
 import {
   EDGES,
   EXAMPLE_PATH,
@@ -24,6 +26,7 @@ import {
   NODE_BY_ID,
   SUBGRAPHS,
   SUBGRAPH_ORDER,
+  labelOf,
   type SeedNode,
 } from "@/lib/ontologySeed";
 import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
@@ -83,7 +86,62 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
  * Server-rendered as it stands, with nothing swapped after hydration but
  * those attributes: the picture a reader without JavaScript gets is the same
  * one everyone gets, minus the hover.
+ *
+ * IN TWO LANGUAGES. The drawing is the same on / and /en — the same dots in
+ * the same places — and only its words change: the concepts' names (the
+ * seed's own label_ja and label_en), the areas' names, the legend and what a
+ * screen reader hears. The language comes from useLocale(), which the layout
+ * sets from the route, so the server and the browser render the same one.
+ * The English names are longer, so three of the five standing ones sit on a
+ * different side of their dot and the longest is set on two lines
+ * (product/ontology.ts says which, and how that was checked).
  */
+
+/* -------------------------------------------------------------------------- */
+/* Words                                                                      */
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Everything the figure says that is not a concept's or an area's name.
+ *
+ * The legend's wording follows the data in both languages (see Legend): a
+ * solid line is an association the seed records a published source for, and
+ * a dashed one is the authors' own judgement — "our own judgment", not an
+ * expert's. Nothing here says a source shows, proves or causes anything.
+ *
+ * `areas` and `concepts` join a list of names. English separates concepts
+ * with a semicolon because one of upstream's labels has a comma in it
+ * ("futoko — administrative non-attendance category, 30+ days per school
+ * year"), and a comma between names would cut that one in two.
+ */
+const COPY = {
+  ja: {
+    figure: (concepts: number) =>
+      `知識グラフの図。概念${concepts}。矢印キーで概念をひとつずつ選ぶと、名前とつながりを表示します。`,
+    spoken: (name: string, areas: string, linked: string) =>
+      `${name}（${areas}）。つながる概念：${linked}`,
+    areas: "・",
+    concepts: "、",
+    shared: "複数の領域",
+    supported: "公開資料を出典とする関連",
+    unsupported: "公開資料の裏付けなし（社内の判断）",
+    path: "例示したつながり",
+    hint: "点を指すか、図を選んで矢印キーを押すと、概念の名前が出ます。",
+  },
+  en: {
+    figure: (concepts: number) =>
+      `Knowledge graph figure. ${concepts} concepts. Use the arrow keys to select concepts one at a time and show each one’s name and links.`,
+    spoken: (name: string, areas: string, linked: string) =>
+      `${name} (${areas}). Linked concepts: ${linked}`,
+    areas: ", ",
+    concepts: "; ",
+    shared: "More than one area",
+    supported: "Association with a published source",
+    unsupported: "Not supported by a published source (our own judgment)",
+    path: "The example links",
+    hint: "Point at a dot, or select the figure and press the arrow keys, to see a concept’s name.",
+  },
+} as const;
 
 /* -------------------------------------------------------------------------- */
 /* Geometry, derived once                                                     */
@@ -148,10 +206,10 @@ const dotColor = (node: SeedNode) =>
 const leftOf = (id: string) => `${(POSITIONS[id][0] / FRAME.width) * 100}%`;
 const topOf = (id: string) => `${(POSITIONS[id][1] / FRAME.height) * 100}%`;
 
-const areaNames = (node: SeedNode) =>
+const areaNames = (node: SeedNode, locale: Locale) =>
   SUBGRAPH_ORDER.filter((s) => node.subgraphs.includes(s))
-    .map((s) => SUBGRAPHS[s].label)
-    .join("・");
+    .map((s) => SUBGRAPHS[s].label[locale])
+    .join(COPY[locale].areas);
 
 /**
  * The keyboard's order: left to right across the frame, top to bottom where
@@ -167,17 +225,26 @@ const KEY_ORDER = NODES.map((n) => n.id).sort(
  * neighbours. And where it sits in the keyboard's order — the options are
  * drawn in seed order, which is not the order the arrows take, so the
  * position is stated rather than left to be counted from the markup.
+ *
+ * Built once for each language, so a render only looks its sentence up.
  */
-const SPOKEN: Record<string, string> = Object.fromEntries(
-  NODES.map((node) => [
-    node.id,
-    `${node.label_ja}（${areaNames(node)}）。つながる概念：${KEY_ORDER.filter((id) =>
-      NEIGHBOURS[node.id].has(id),
-    )
-      .map((id) => NODE_BY_ID[id].label_ja)
-      .join("、")}`,
+const SPOKEN = Object.fromEntries(
+  LOCALES.map((locale) => [
+    locale,
+    Object.fromEntries(
+      NODES.map((node) => [
+        node.id,
+        COPY[locale].spoken(
+          labelOf(node, locale),
+          areaNames(node, locale),
+          KEY_ORDER.filter((id) => NEIGHBOURS[node.id].has(id))
+            .map((id) => labelOf(NODE_BY_ID[id], locale))
+            .join(COPY[locale].concepts),
+        ),
+      ]),
+    ),
   ]),
-);
+) as Record<Locale, Record<string, string>>;
 const POSINSET: Record<string, number> = Object.fromEntries(
   KEY_ORDER.map((id, i) => [id, i + 1]),
 );
@@ -210,12 +277,19 @@ const useHydrated = () =>
  * offsets clear the largest dot plus the path's blue ring.
  *
  * Every string below is written out in full so Tailwind can see it.
+ *
+ * The last three are the English names' own (product/ontology.ts): a side
+ * of the dot with a nudge — 10px up, 6px down, 28px to the right — because
+ * the longer names clear their neighbours only there.
  */
 const PLACEMENT: Record<Placement, string> = {
   left: "-translate-x-[calc(100%+0.7rem)] -translate-y-1/2",
   aboveLeft: "-translate-x-[calc(100%+0.5rem)] -translate-y-[calc(100%+0.5rem)]",
   aboveRight: "translate-x-[0.5rem] -translate-y-[calc(100%+0.5rem)]",
   belowRight: "translate-x-[0.5rem] translate-y-[0.5rem]",
+  rightRaised: "translate-x-[0.875rem] -translate-y-[calc(50%+0.625rem)]",
+  leftLowered: "-translate-x-[calc(100%+0.875rem)] -translate-y-[calc(50%-0.375rem)]",
+  belowShifted: "-translate-x-[calc(50%-1.75rem)] translate-y-[0.75rem]",
 };
 
 /**
@@ -242,11 +316,37 @@ const PILL =
   "pointer-events-none absolute whitespace-nowrap rounded-full bg-surface/90 px-1.5 py-[0.2rem] leading-none";
 
 /**
+ * The same pill for a name set on two lines, which only an English one is
+ * (product/ontology.ts, `firstLine`): a fully rounded end would be a
+ * half-circle 18px deep on a box that tall, so the corners take the hover
+ * label's radius, and the two lines get a little leading between them.
+ */
+const PILL_TWO_LINES =
+  "pointer-events-none absolute whitespace-nowrap rounded-[0.6rem] bg-surface/90 px-1.5 py-1 leading-[1.15]";
+
+/** A name as its first `words` words and the rest, for the two lines. */
+const splitAfter = (name: string, words: number) => {
+  const all = name.split(" ");
+  return [all.slice(0, words).join(" "), all.slice(words).join(" ")] as const;
+};
+
+/**
  * The hover label's anchoring. Centred over its dot in the middle fifth of
  * the frame, and started or ended at the dot outside it, so that — capped at
  * 60% of the frame's width, and wrapping inside that on the narrowest phone —
  * it can never run out of the frame on either side. Under the dot for the
  * few concepts at the very top.
+ *
+ * English wraps more often — its longest name, 不登校's, is 73 characters —
+ * and a label over its dot grows upward as it does. Worked out from the
+ * faces' advance widths for every concept: on a 390px phone's 308px frame
+ * that name takes three lines and its label is 75px tall, with 23px of the
+ * frame still above it, and from a 278px frame (a 360px phone) up every
+ * label stays inside. Only narrower than that does it not: on a 320px
+ * phone the same name takes five lines and its label rises 32px past the
+ * frame's top, 16px past the panel's edge, into the gap above the panel,
+ * where there is nothing for it to cover. Sideways the 60% cap holds in
+ * either language.
  */
 const TIP_X = {
   start: "-translate-x-3",
@@ -271,6 +371,8 @@ function tipClasses(id: string) {
 /* -------------------------------------------------------------------------- */
 
 export function OntologyGraph() {
+  const locale = useLocale();
+  const copy = COPY[locale];
   const reduce = useReducedMotion();
   const [active, setActive] = useState<string | null>(null);
   // The last value handed to setActive, so a pointer moving across the same
@@ -376,7 +478,7 @@ export function OntologyGraph() {
             ? {
                 role: "listbox",
                 tabIndex: 0,
-                "aria-label": `知識グラフの図。概念${NODES.length}。矢印キーで概念をひとつずつ選ぶと、名前とつながりを表示します。`,
+                "aria-label": copy.figure(NODES.length),
                 "aria-activedescendant": active ? idOf(active) : undefined,
                 onKeyDown,
                 onBlur,
@@ -499,7 +601,7 @@ export function OntologyGraph() {
                 data-node={node.id}
                 role="option"
                 aria-selected={active === node.id}
-                aria-label={SPOKEN[node.id]}
+                aria-label={SPOKEN[locale][node.id]}
                 aria-posinset={POSINSET[node.id]}
                 aria-setsize={KEY_ORDER.length}
                 className={`motion-safe:transition-opacity motion-safe:duration-200 ${
@@ -531,13 +633,13 @@ export function OntologyGraph() {
           panel, all clear of AA at this size.
         */}
         <span aria-hidden className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 text-[11px] font-medium leading-none text-mark-1 @min-[30rem]:text-[12px]">
-          {SUBGRAPHS.sleep.label}
+          {SUBGRAPHS.sleep.label[locale]}
         </span>
         <span aria-hidden className="pointer-events-none absolute bottom-0 left-0 text-[11px] font-medium leading-none text-mark-3 @min-[30rem]:text-[12px]">
-          {SUBGRAPHS.academic_pressure.label}
+          {SUBGRAPHS.academic_pressure.label[locale]}
         </span>
         <span aria-hidden className="pointer-events-none absolute bottom-0 right-0 text-[11px] font-medium leading-none text-mark-2 @min-[30rem]:text-[12px]">
-          {SUBGRAPHS.social_withdrawal.label}
+          {SUBGRAPHS.social_withdrawal.label[locale]}
         </span>
 
         {/*
@@ -546,18 +648,31 @@ export function OntologyGraph() {
           appears only from the frame width its placement was checked at
           (STANDING_SIZE above; product/ontology.ts for why).
         */}
-        {STANDING_LABELS.map(({ id, placement, minWidth }) => (
-          <span
-            key={id}
-            aria-hidden
-            style={{ left: leftOf(id), top: topOf(id) }}
-            className={`${PILL} ${PLACEMENT[placement]} ${STANDING_SIZE[minWidth]} motion-safe:transition-opacity motion-safe:duration-200 ${
-              active ? "opacity-0" : "opacity-100"
-            }`}
-          >
-            {NODE_BY_ID[id].label_ja}
-          </span>
-        ))}
+        {STANDING_LABELS.map(({ id, placement, minWidth, firstLine }) => {
+          const name = labelOf(NODE_BY_ID[id], locale);
+          const words = firstLine?.[locale];
+          const lines = words ? splitAfter(name, words) : null;
+          return (
+            <span
+              key={id}
+              aria-hidden
+              style={{ left: leftOf(id), top: topOf(id) }}
+              className={`${lines ? PILL_TWO_LINES : PILL} ${PLACEMENT[placement[locale]]} ${STANDING_SIZE[minWidth]} motion-safe:transition-opacity motion-safe:duration-200 ${
+                active ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              {lines ? (
+                <>
+                  {lines[0]}
+                  <br />
+                  {lines[1]}
+                </>
+              ) : (
+                name
+              )}
+            </span>
+          );
+        })}
 
         {/*
           The pointed-at concept's name and the areas it belongs to. Only
@@ -576,14 +691,16 @@ export function OntologyGraph() {
             className={`pointer-events-none absolute flex w-max max-w-[60cqw] flex-col gap-1 rounded-[0.6rem] bg-surface px-2 py-1.5 leading-tight shadow-[var(--shadow-card)] ring-1 ring-line ${tipClasses(active)}`}
           >
             <span className="text-[12px] font-medium text-ink">
-              {NODE_BY_ID[active].label_ja}
+              {labelOf(NODE_BY_ID[active], locale)}
             </span>
-            <span className="text-[11px] text-muted">{areaNames(NODE_BY_ID[active])}</span>
+            <span className="text-[11px] text-muted">
+              {areaNames(NODE_BY_ID[active], locale)}
+            </span>
           </span>
         )}
       </motion.div>
 
-      <Legend />
+      <Legend locale={locale} />
     </figure>
   );
 }
@@ -601,8 +718,13 @@ export function OntologyGraph() {
  * published source the seed records for the pair (what the source itself
  * bears out is the curator's reading — see lib/ontologySeed.ts), and the
  * dashed lines are the ones the seed records as having no published
- * source — "社内の判断" because upstream defines expert_judgement as the
- * authors' judgement, not an expert panel's.
+ * source — "社内の判断", and "our own judgment" in English, because upstream
+ * defines expert_judgement as the authors' judgement, not an expert panel's.
+ *
+ * English runs longer; the rows wrap (flex-wrap) and an entry's own text
+ * wraps beside its swatch, so the longest — the dashed line's, about 335px
+ * with its swatch — takes two lines on a phone and one once the frame is
+ * that wide.
  *
  * Hidden from assistive tech with the rest of the drawing: it explains
  * swatches a screen reader never meets. The last line is how to use the
@@ -610,7 +732,8 @@ export function OntologyGraph() {
  * answers a pointer or a key, and the line would promise what does not
  * happen.
  */
-function Legend() {
+function Legend({ locale }: { locale: Locale }) {
+  const copy = COPY[locale];
   return (
     <div
       aria-hidden
@@ -620,31 +743,29 @@ function Legend() {
         {SUBGRAPH_ORDER.map((s) => (
           <span key={s} className="flex items-center gap-1.5">
             <Dot color={AREAS[s].color} />
-            {SUBGRAPHS[s].label}
+            {SUBGRAPHS[s].label[locale]}
           </span>
         ))}
         <span className="flex items-center gap-1.5">
           <Dot color="var(--color-text)" />
-          複数の領域
+          {copy.shared}
         </span>
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
         <span className="flex items-center gap-1.5">
           <Stroke />
-          公開資料を出典とする関連
+          {copy.supported}
         </span>
         <span className="flex items-center gap-1.5">
           <Stroke dashed />
-          公開資料の裏付けなし（社内の判断）
+          {copy.unsupported}
         </span>
         <span className="flex items-center gap-1.5">
           <Stroke path />
-          例示したつながり
+          {copy.path}
         </span>
       </div>
-      <p className="hidden js:block">
-        点を指すか、図を選んで矢印キーを押すと、概念の名前が出ます。
-      </p>
+      <p className="hidden js:block">{copy.hint}</p>
     </div>
   );
 }

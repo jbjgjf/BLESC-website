@@ -1,6 +1,7 @@
 import { Counter } from "@/components/Counter";
 import { SatisfactionChart } from "@/components/evidence/SatisfactionChart";
 import { StudentCrowd } from "@/components/evidence/StudentCrowd";
+import type { Locale } from "@/lib/i18n";
 import { RC16 } from "@/lib/wellbeing";
 
 /**
@@ -27,8 +28,35 @@ import { RC16 } from "@/lib/wellbeing";
  * (see SatisfactionChart) — and the crowd is scattered and receding rather
  * than a lattice (see StudentCrowd). Each of the three is the same argument
  * as the number it belongs to, made in a second way.
+ *
+ * The panel is a server component, so its language is the `locale` the
+ * section hands it. The chart inside is a client component and reads the
+ * same language for itself; the crowd has no words.
  */
 
+/*
+ * The words around the two figures. Japanese writes a counter after each
+ * number — 位, 人 — and English does not: the rank takes its ordinal ending
+ * and "of 38" where the Japanese has "/ 38", and 350,000 is followed by the
+ * plus alone. The "th" is typed, not derived: it is the ending of the one
+ * rank this prints, RC16.japanMentalRank, and has to change with it.
+ */
+const COPY = {
+  ja: {
+    rankLabel: "日本の子どもの精神的幸福度",
+    rankUnit: "位",
+    rankOf: `/ ${RC16.countriesRanked}`,
+    absentLabel: "不登校児童・生徒",
+    absentUnit: "人",
+  },
+  en: {
+    rankLabel: "Mental well-being of children in Japan",
+    rankUnit: "th",
+    rankOf: `of ${RC16.countriesRanked}`,
+    absentLabel: "Students not attending school",
+    absentUnit: null,
+  },
+} as const;
 
 /*
  * Both figures are set at one size, so neither reads as the larger claim.
@@ -49,7 +77,58 @@ const FIGURE =
 const UNIT =
   "text-[clamp(1.5rem,3.2vw,2.25rem)] font-normal leading-none tracking-[-0.02em]";
 
-export function EvidencePanel() {
+/*
+ * What follows the digits. Japanese puts a full-width counter there, which
+ * brings its own side bearing. English puts "th" and "+" straight against
+ * the last digit, and the figure's -0.045em tracking pulls whatever follows
+ * it in by that much — enough to close Helvetica's 7 onto the t with nothing
+ * between them. 0.12em of the unit's own size is that tracking given back.
+ */
+const AFTER_DIGITS = {
+  ja: UNIT,
+  en: `ml-[0.12em] ${UNIT}`,
+} as const;
+const PLUS = {
+  ja: `text-muted ${UNIT}`,
+  en: `ml-[0.12em] text-muted ${UNIT}`,
+} as const;
+
+/*
+ * The labels over the figures. The Japanese ones are as they were. The
+ * English ones are longer — the rank's wraps on a small phone and in the
+ * narrow cell just above md — so they ask for even lines rather than a last
+ * word alone, and take a Latin leading for the second line.
+ */
+const LABEL = {
+  ja: "text-[0.95rem] text-muted",
+  en: "text-balance text-[0.95rem] leading-[1.4] text-muted",
+} as const;
+
+/*
+ * The two cells. All that differs is the padding: English keeps the phone's
+ * 2rem until lg. Its chart needs a wider name column ("Republic of Korea";
+ * see SatisfactionChart), and in the 286px-wide cell at 768px the Japanese
+ * 3rem would leave the bars a 26px track. With 2rem the track is 58px there,
+ * against 42px for Japanese, and from lg both languages sit on the same
+ * 3rem. Written out whole per language because Tailwind only generates the
+ * class names it can read.
+ */
+const CELL = {
+  ja: {
+    rank: "p-8 md:p-12",
+    absent:
+      "relative flex flex-col justify-center overflow-hidden border-t border-line p-8 md:border-t-0 md:border-l md:p-12",
+  },
+  en: {
+    rank: "p-8 lg:p-12",
+    absent:
+      "relative flex flex-col justify-center overflow-hidden border-t border-line p-8 md:border-t-0 md:border-l lg:p-12",
+  },
+} as const;
+
+export function EvidencePanel({ locale }: { locale: Locale }) {
+  const copy = COPY[locale];
+
   return (
     <div className="overflow-hidden rounded-[1.25rem] border border-line bg-surface shadow-[var(--shadow-card)]">
       {/*
@@ -57,16 +136,17 @@ export function EvidencePanel() {
         ten, so at one figure size the long one ran past its cell and clipped
         the 人 against the panel edge. The split is weighted to the number
         that needs the room, which also stops the short figure floating in a
-        half-empty box.
+        half-empty box. The English pair, "37th of 38" and "350,000+", is
+        short and long the same way round, so it keeps the split.
       */}
       <div className="grid md:grid-cols-[5fr_7fr]">
-        <div className="p-8 md:p-12">
-          <p className="text-[0.95rem] text-muted">日本の子どもの精神的幸福度</p>
+        <div className={CELL[locale].rank}>
+          <p className={LABEL[locale]}>{copy.rankLabel}</p>
 
           <p className="mt-5 flex items-baseline text-ink">
             <Counter to={RC16.japanMentalRank} className={FIGURE} />
-            <span className={UNIT}>位</span>
-            <span className={`ml-2 text-muted ${UNIT}`}>/ {RC16.countriesRanked}</span>
+            <span className={AFTER_DIGITS[locale]}>{copy.rankUnit}</span>
+            <span className={`ml-2 text-muted ${UNIT}`}>{copy.rankOf}</span>
           </p>
 
           <SatisfactionChart />
@@ -77,16 +157,16 @@ export function EvidencePanel() {
           top border while the cells are stacked, a left border once they sit
           side by side.
         */}
-        <div className="relative flex flex-col justify-center overflow-hidden border-t border-line p-8 md:border-t-0 md:border-l md:p-12">
+        <div className={CELL[locale].absent}>
           <StudentCrowd />
 
           <div className="relative">
-            <p className="text-[0.95rem] text-muted">不登校児童・生徒</p>
+            <p className={LABEL[locale]}>{copy.absentLabel}</p>
 
             <p className="mt-5 flex items-baseline text-ink">
               <Counter to={350000} className={FIGURE} />
-              <span className={UNIT}>人</span>
-              <span className={`text-muted ${UNIT}`}>+</span>
+              {copy.absentUnit && <span className={UNIT}>{copy.absentUnit}</span>}
+              <span className={PLUS[locale]}>+</span>
             </p>
           </div>
         </div>

@@ -70,9 +70,22 @@
  * cites it for (sleep_deprivation → cognitive_impairment, → irritability).
  * NICE blocks automated fetches, so NG134 was not checked. The page
  * therefore says what the seed RECORDS — 「公開資料を出典として関連を記録」,
- * 「出典：」 — and never that WHO or NICE "reports" a relation. Fixing the
+ * 「出典：」, and in English "association recorded with a published source",
+ * "Source:" — and never that WHO or NICE "reports" a relation. Fixing the
  * citations is upstream's job; when it happens, regenerate this file.
+ *
+ * THE TWO LANGUAGES. Every concept carries upstream's own two labels,
+ * label_ja and label_en, and the English page prints label_en as it stands:
+ * lower case, and with upstream's spelling ("counsellor"), because a label
+ * reworded here would be a second, uncurated reading of the concept. All 28
+ * pairs were compared with the three YAML files on main on 2026-10-11 and
+ * match character for character; every node upstream has both labels. What
+ * upstream does not carry in two languages — the three areas' names, the
+ * short names of the sources and the gloss of the one Japanese title — is
+ * written here, on the entry it belongs to.
  */
+
+import type { Locale } from "@/lib/i18n";
 
 /* -------------------------------------------------------------------------- */
 /* Vocabulary                                                                 */
@@ -129,13 +142,26 @@ export type SeedEdge = {
 /* Subgraphs                                                                  */
 /* -------------------------------------------------------------------------- */
 
+/*
+ * The areas' names are the page's, in both languages: upstream names a
+ * subgraph by its id and a sentence of description, not by a label.
+ */
 export const SUBGRAPHS: Record<
   SubgraphId,
-  { upstreamId: string; label: string }
+  { upstreamId: string; label: Record<Locale, string> }
 > = {
-  sleep: { upstreamId: "sleep_deprivation", label: "睡眠" },
-  social_withdrawal: { upstreamId: "social_withdrawal", label: "社会的ひきこもり" },
-  academic_pressure: { upstreamId: "academic_pressure", label: "学業上の負荷" },
+  sleep: {
+    upstreamId: "sleep_deprivation",
+    label: { ja: "睡眠", en: "Sleep" },
+  },
+  social_withdrawal: {
+    upstreamId: "social_withdrawal",
+    label: { ja: "社会的ひきこもり", en: "Social withdrawal" },
+  },
+  academic_pressure: {
+    upstreamId: "academic_pressure",
+    label: { ja: "学業上の負荷", en: "Academic pressure" },
+  },
 };
 
 /** Page order: the chain the page illustrates lives in 睡眠, so it leads. */
@@ -151,15 +177,25 @@ export const SUBGRAPH_ORDER: readonly SubgraphId[] = [
 
 export type PublishedSource = {
   id: PublishedSourceId;
+  /** In Japanese. Not printed: the page cites by `short` and its own prefix. */
   publisher: string;
+  /** The document's own title, in the language it was published in. */
   title: string;
-  /** What kind of document, where the title does not already say. */
+  /** The language of the document, and so of `title`. */
+  lang: Locale;
+  /**
+   * An English gloss of a title that is not in English, for the English
+   * page. A gloss, not the document's name: the title a reader can search
+   * for is still `title`, and the page keeps it in the link's name.
+   */
+  title_en?: string;
+  /** What kind of document, where the title does not already say. In Japanese; not printed. */
   kind?: string;
   /** Publication year, or the year of the version consulted. */
   year: number;
   url: string;
-  /** How a relation's citation is written beside it. */
-  short: string;
+  /** How a relation's citation is written beside it, in each language. */
+  short: Record<Locale, string>;
 };
 
 /**
@@ -191,20 +227,22 @@ export const SOURCES: readonly PublishedSource[] = [
     id: "who_adolescent_mh",
     publisher: "世界保健機関（WHO）",
     title: "Mental health of adolescents",
+    lang: "en",
     kind: "ファクトシート",
     year: 2025,
     url: "https://www.who.int/news-room/fact-sheets/detail/adolescent-mental-health",
-    short: "WHO ファクトシート",
+    short: { ja: "WHO ファクトシート", en: "WHO fact sheet" },
   },
   {
     id: "nice_ng134",
     publisher: "英国国立医療技術評価機構（NICE）",
     title:
       "Depression in children and young people: identification and management",
+    lang: "en",
     kind: "NICEガイドライン NG134",
     year: 2019,
     url: "https://www.nice.org.uk/guidance/ng134",
-    short: "NICE NG134",
+    short: { ja: "NICE NG134", en: "NICE NG134" },
   },
   {
     id: "who_mhgap",
@@ -212,17 +250,21 @@ export const SOURCES: readonly PublishedSource[] = [
     // The full title, as WHO's page gives it (heading and subtitle).
     title:
       "mhGAP Intervention Guide for mental, neurological and substance use disorders in non-specialized health settings, version 2.0",
+    lang: "en",
     year: 2016,
     url: "https://www.who.int/publications/i/item/9789241549790",
-    short: "WHO mhGAP",
+    short: { ja: "WHO mhGAP", en: "WHO mhGAP" },
   },
   {
     id: "mext_seitoshido",
     publisher: "文部科学省",
     title: "生徒指導提要（改訂版）",
+    lang: "ja",
+    title_en: "Student Guidance Guidelines (revised)",
     year: 2022,
     url: "https://www.mext.go.jp/a_menu/shotou/seitoshidou/1404008_00001.htm",
-    short: "生徒指導提要",
+    // "MEXT" in the English one: the title alone does not say whose it is.
+    short: { ja: "生徒指導提要", en: "MEXT Student Guidance Guidelines" },
   },
 ];
 
@@ -323,6 +365,10 @@ export const EDGES: readonly SeedEdge[] = [
 export const NODE_BY_ID = Object.fromEntries(
   NODES.map((n) => [n.id, n]),
 ) as Record<string, SeedNode>;
+
+/** A concept's name in the page's language: upstream's label, unaltered. */
+export const labelOf = (node: SeedNode, locale: Locale): string =>
+  locale === "en" ? node.label_en : node.label_ja;
 
 /* -------------------------------------------------------------------------- */
 /* What the page may say, derived                                             */

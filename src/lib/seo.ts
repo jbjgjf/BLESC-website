@@ -6,6 +6,16 @@
  * structured data.
  */
 
+import type { Metadata } from "next";
+import { FAQ_EN } from "@/lib/faqEn";
+import {
+  HTML_LANG,
+  LOCALES,
+  OG_LOCALE,
+  localePath,
+  otherLocale,
+  type Locale,
+} from "@/lib/i18n";
 import { CONTACT_EMAIL, CONTACT_PATH } from "@/lib/site";
 
 /**
@@ -34,6 +44,50 @@ export const TAGLINE = "生徒のSOSを可視化する";
 
 /** English display headline, kept in step with the hero. */
 export const TAGLINE_EN = "Hearing the unspoken. Preventing the unseen.";
+
+/**
+ * TAGLINE in each language, for titles and cards. The English is the
+ * Japanese line translated, not the display headline above: TAGLINE_EN is a
+ * second line of its own that the hero sets in English on both sites, and a
+ * title has to say what the Japanese title says.
+ *
+ * No full stop, as TAGLINE has none: these sit inside titles.
+ */
+export const TAGLINES: Record<Locale, string> = {
+  ja: TAGLINE,
+  en: "Making students’ unspoken SOS visible",
+};
+
+/**
+ * The home page's <title>, and the template every other page's title is
+ * set in.
+ *
+ * Japanese: ~26 full-width characters. An earlier title ran to 35 against a
+ * desktop limit near 30, so Google cut it at 「…メンタルヘルス …」 and lost
+ * プラットフォーム entirely. Shortened by dropping the em dash and the longer
+ * category noun rather than メンタルヘルス, which is the term worth ranking
+ * for.
+ *
+ * English: the same title translated, category first. It runs to 78
+ * characters where a desktop result shows about 60, so what is cut is the
+ * end of the tagline and what survives is the name and "Mental health AI
+ * for schools" — the same order of sacrifice as the Japanese.
+ *
+ * Sub-pages set only their own name and take the brand from the template,
+ * so no page can ship a title that omits it and none has to repeat it. The
+ * separator is each language's own: a full-width bar in Japanese, a spaced
+ * ASCII one in English.
+ */
+export const SITE_TITLE: Record<Locale, string> = {
+  ja: `${SITE_NAME}｜${TAGLINE}学校向けメンタルヘルスAI`,
+  en: `${SITE_NAME} | Mental health AI for schools that makes students’ unspoken SOS visible`,
+};
+
+const TITLE_SEPARATOR: Record<Locale, string> = { ja: "｜", en: " | " };
+
+/** A sub-page's full title: its name, the separator, the brand. */
+export const pageTitle = (locale: Locale, name: string) =>
+  `${name}${TITLE_SEPARATOR[locale]}${SITE_NAME}`;
 
 /**
  * Budgeted to what Google actually renders, not to what the field allows.
@@ -68,9 +122,46 @@ export const TAGLINE_EN = "Hearing the unspoken. Preventing the unseen.";
 export const DESCRIPTION =
   "Blescは、生徒が自分のタイミングで綴る日記から書きぶりの変化を可視化する学校向けメンタルヘルスプラットフォーム。日記の本文が教員に公開されることはなく、心理的リスクの判定も行いません。";
 
+/**
+ * DESCRIPTION in English, for /en's meta description.
+ *
+ * Every claim of the Japanese and nothing more: what Blesc is, what it
+ * makes visible, that teachers do not see the diary text, and that it does
+ * not assess psychological risk. The two negations are the glossary's own
+ * wording and stay negations.
+ *
+ * Budgeted the way the Japanese is. An English desktop snippet shows about
+ * 155–160 characters; this is 190, and the first sentence is kept to 109 so
+ * that "Teachers never see the diary text" ends at 144 — inside the cut —
+ * for the reason given above: it is the line a school cares about most.
+ * What paid for it is 自分のタイミングで ("in their own time"), which the
+ * page itself says in several places. With it the first sentence alone is
+ * 139 characters and the cut lands in the middle of the privacy line.
+ */
+export const DESCRIPTION_EN =
+  "Blesc is a mental health platform for schools that makes changes in how students write their diaries visible. Teachers never see the diary text, and Blesc does not assess psychological risk.";
+
 /** Shorter variant for social cards, where the card itself truncates hard. */
 export const DESCRIPTION_SHORT =
   "声にならないSOSに、気づける社会へ。生徒の早期のサインをAIが捉え、孤立する前に可視化します。";
+
+/**
+ * DESCRIPTION_SHORT in English. 捉え is "captures", the verb the English
+ * FAQ uses for it (lib/faqEn.ts) — never "detects", which docs/claims.md
+ * rules out in either language.
+ */
+export const DESCRIPTION_SHORT_EN =
+  "Toward a society that notices the SOS no one says aloud. AI captures students’ early signs and makes them visible before they become isolated.";
+
+export const DESCRIPTIONS: Record<Locale, string> = {
+  ja: DESCRIPTION,
+  en: DESCRIPTION_EN,
+};
+
+export const DESCRIPTIONS_SHORT: Record<Locale, string> = {
+  ja: DESCRIPTION_SHORT,
+  en: DESCRIPTION_SHORT_EN,
+};
 
 /**
  * Terms are a weak direct signal at best, but they cost nothing and some
@@ -96,6 +187,24 @@ export const KEYWORDS = [
 ];
 
 /**
+ * KEYWORDS in English, term for term, less ブレスク — the name's reading in
+ * katakana, which has no English counterpart. 教育DX is spelled out, since
+ * "DX" for digital transformation is Japanese usage.
+ */
+export const KEYWORDS_EN = [
+  "Blesc",
+  "student mental health",
+  "school mental health",
+  "making SOS visible",
+  "AI diary",
+  "AI for schools",
+  "digital transformation in education",
+  "support for school counselors",
+  "support for student guidance",
+  "watching over students",
+];
+
+/**
  * Every profile Blesc actually controls. Google reads `sameAs` to resolve the
  * site and the accounts as one entity rather than several — which is what
  * lets an Instagram result and the site reinforce each other instead of
@@ -118,6 +227,209 @@ export const X_HANDLE = "@blescinc";
 
 export const absoluteUrl = (path = "/") =>
   `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+
+/**
+ * A page's absolute URL in a language. `path` is the Japanese (bare) path,
+ * as everywhere in lib/i18n.
+ *
+ * The Japanese home page is the origin itself, with no trailing slash —
+ * the form its canonical and og:url have always been written in — so it is
+ * not put through absoluteUrl, which would add one.
+ */
+const pageUrl = (locale: Locale, path: string) => {
+  const localized = localePath(locale, path);
+  return localized === "/" ? SITE_URL : absoluteUrl(localized);
+};
+
+/* -------------------------------------------------------------------------- */
+/* Metadata                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The share card: app/opengraph-image.tsx in Japanese and
+ * app/en/opengraph-image.tsx in English, each re-exported as the X card
+ * beside it. Both files take their size and alt text from here, so the
+ * tags a page emits and the image the route serves cannot disagree.
+ */
+export const CARD_SIZE = { width: 1200, height: 630 } as const;
+export const CARD_TYPE = "image/png";
+export const CARD_ALT: Record<Locale, string> = {
+  ja: `${SITE_NAME} — ${TAGLINES.ja}`,
+  en: `${SITE_NAME} — ${TAGLINES.en}`,
+};
+
+/**
+ * The card, named outright in every page's metadata.
+ *
+ * Next would inject the image by file convention, but only into the segment
+ * the file sits in, and a page that sets `openGraph` of its own replaces the
+ * whole object — image included. /contact shipped without an og:image for
+ * exactly that reason. So nothing here leans on the injection: each page
+ * names its card, and the URL resolves against metadataBase.
+ */
+const cardImage = (locale: Locale, route: "opengraph-image" | "twitter-image") => ({
+  url: localePath(locale, `/${route}`),
+  ...CARD_SIZE,
+  alt: CARD_ALT[locale],
+  type: CARD_TYPE,
+});
+
+/**
+ * hreflang for a page: itself in each language, and x-default.
+ *
+ * Every page exists in both languages at the same path under /en, so the
+ * pair is derived, not listed. x-default is the Japanese page — the site's
+ * default language and the one a reader of neither is best sent to. Google
+ * honours the annotation only when both ends carry it; both ends are built
+ * by this one function, so they always do.
+ */
+export const languageAlternates = (path: string) => ({
+  ja: localePath("ja", path),
+  en: localePath("en", path),
+  "x-default": localePath("ja", path),
+});
+
+/**
+ * Everything about one page that a crawler or a card reads, in one
+ * language: title, description, canonical, hreflang, Open Graph and X.
+ *
+ * `path` is the Japanese (bare) path — "/", "/contact", "/safety" — and
+ * the page's own URL is that path in `locale`.
+ *
+ * `title` is the page's name; the layout's template adds the brand. The
+ * home page passes none and takes the layout's default title, and its card
+ * is titled with the brand and the tagline.
+ *
+ * `socialDescription` is for a page whose meta description is too long for
+ * a card, which truncates hard. Without it the card says what the snippet
+ * says.
+ *
+ * openGraph and twitter are written out whole every time. Metadata merges
+ * shallowly — a page's `openGraph` replaces the layout's, it does not add
+ * to it — and X reads its own tags before it falls back to Open Graph, so
+ * a page that left either to inherit would be carded as the home page.
+ */
+export function pageMetadata({
+  locale,
+  path,
+  title,
+  description,
+  socialDescription = description,
+}: {
+  locale: Locale;
+  path: string;
+  title?: string;
+  description: string;
+  socialDescription?: string;
+}): Metadata {
+  const cardTitle = title ? pageTitle(locale, title) : CARD_ALT[locale];
+
+  return {
+    ...(title ? { title } : null),
+    description,
+    alternates: {
+      canonical: localePath(locale, path),
+      languages: languageAlternates(path),
+    },
+    openGraph: {
+      type: "website",
+      locale: OG_LOCALE[locale],
+      alternateLocale: [OG_LOCALE[otherLocale(locale)]],
+      url: pageUrl(locale, path),
+      siteName: SITE_NAME,
+      title: cardTitle,
+      description: socialDescription,
+      images: [cardImage(locale, "opengraph-image")],
+    },
+    twitter: {
+      card: "summary_large_image",
+      /*
+       * Puts "@blescinc" on every card of this site anyone posts, wherever
+       * it is posted from. X reads it off the page, so it needs no account
+       * link.
+       */
+      site: X_HANDLE,
+      creator: X_HANDLE,
+      title: cardTitle,
+      description: socialDescription,
+      images: [cardImage(locale, "twitter-image")],
+    },
+  };
+}
+
+/** The home page's metadata in a language: "/" and "/en". */
+export const homeMetadata = (locale: Locale): Metadata =>
+  pageMetadata({
+    locale,
+    path: "/",
+    description: DESCRIPTIONS[locale],
+    socialDescription: DESCRIPTIONS_SHORT[locale],
+  });
+
+/**
+ * The root layout's metadata for a language: what is true of every page,
+ * and under it the home page's own, so a route that sets nothing still has
+ * a title, a description and a card.
+ *
+ * Each language has its own root layout (app/(ja) and app/en), and each
+ * calls this with its language.
+ */
+export function siteMetadata(locale: Locale): Metadata {
+  return {
+    /*
+     * Every relative URL in the metadata — canonicals, hreflang, the card
+     * images — is resolved against this. Without it Next emits relative
+     * og:image paths, which most crawlers and every social scraper drop.
+     */
+    metadataBase: new URL(SITE_URL),
+    ...homeMetadata(locale),
+    title: {
+      default: SITE_TITLE[locale],
+      template: `%s${TITLE_SEPARATOR[locale]}${SITE_NAME}`,
+    },
+    keywords: locale === "ja" ? KEYWORDS : KEYWORDS_EN,
+    applicationName: SITE_NAME,
+    authors: [{ name: SITE_NAME, url: SITE_URL }],
+    creator: SITE_NAME,
+    publisher: SITE_NAME,
+    category: "education",
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        /*
+         * The defaults truncate: Google clips the snippet and shows only a
+         * thumbnail. Opening all three lets a snippet run to full length
+         * and the OG card render large in Discover.
+         */
+        "max-snippet": -1,
+        "max-image-preview": "large",
+        "max-video-preview": -1,
+      },
+    },
+    /*
+     * iOS Safari otherwise linkifies anything that looks like a phone
+     * number or a date, which mangles the copy and injects unwanted <a>s
+     * into the crawled markup. (The one number meant to be dialled, on
+     * /safety, is a tel: link of its own — see TrustSections.)
+     */
+    formatDetection: { telephone: false, date: false, address: false },
+    /*
+     * No `icons` block: app/favicon.ico, app/icon.png and app/apple-icon.png
+     * are picked up by file convention for every route, and naming any of
+     * them here as well emits the link twice.
+     */
+    /*
+     * Paste the token from Search Console → 設定 → 所有権の確認 → HTML タグ.
+     * Left unset rather than blank: an empty string emits an empty meta tag.
+     */
+    verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+      : undefined,
+  };
+}
 
 /* -------------------------------------------------------------------------- */
 /* JSON-LD                                                                    */
@@ -166,7 +478,11 @@ export function siteJsonLd() {
         url: SITE_URL,
         name: `${SITE_NAME} — ${TAGLINE}`,
         description: DESCRIPTION,
-        inLanguage: "ja",
+        /*
+         * The site, not this page: every page exists in both languages
+         * (lib/i18n), and this one node is emitted on all of them.
+         */
+        inLanguage: LOCALES.map((locale) => HTML_LANG[locale]),
         publisher: { "@id": orgId },
       },
       {
@@ -215,18 +531,34 @@ export function siteJsonLd() {
   };
 }
 
-/** Breadcrumbs for any page below the root. */
-export function breadcrumbJsonLd(trail: { name: string; path: string }[]) {
+const HOME_CRUMB: Record<Locale, string> = { ja: "ホーム", en: "Home" };
+
+/**
+ * Breadcrumbs for any page below the root, in the page's language.
+ *
+ * Each crumb's `path` is the Japanese (bare) path and its `name` is already
+ * in `locale`; the trail starts from that language's home page, so the
+ * English trail reads "Home > Contact" and stays under /en.
+ */
+export function breadcrumbJsonLd(
+  trail: { name: string; path: string }[],
+  locale: Locale = "ja",
+) {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "ホーム", item: SITE_URL },
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: HOME_CRUMB[locale],
+        item: pageUrl(locale, "/"),
+      },
       ...trail.map((crumb, i) => ({
         "@type": "ListItem",
         position: i + 2,
         name: crumb.name,
-        item: absoluteUrl(crumb.path),
+        item: pageUrl(locale, crumb.path),
       })),
     ],
   };
@@ -321,14 +653,23 @@ export const FAQ: { q: string; a: string }[] = [
   },
 ];
 
-/** FAQPage for the home page, derived from the array the page renders. */
-export function faqJsonLd() {
+/**
+ * FAQPage for the home page in a language, derived from the array that
+ * page renders: FAQ above on "/", and FAQ_EN (lib/faqEn.ts) on "/en".
+ *
+ * Two nodes with two ids, one per page, each in its own language — not one
+ * node listing both, which would claim on each page questions it does not
+ * show.
+ */
+export function faqJsonLd(locale: Locale = "ja") {
+  const entries = locale === "ja" ? FAQ : FAQ_EN;
+
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "@id": `${SITE_URL}/#faq`,
-    inLanguage: "ja",
-    mainEntity: FAQ.map(({ q, a }) => ({
+    "@id": `${absoluteUrl(localePath(locale, "/"))}#faq`,
+    inLanguage: HTML_LANG[locale],
+    mainEntity: entries.map(({ q, a }) => ({
       "@type": "Question",
       name: q,
       acceptedAnswer: { "@type": "Answer", text: a },

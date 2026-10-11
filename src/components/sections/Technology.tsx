@@ -1,6 +1,7 @@
 import { OntologyGraph } from "@/components/OntologyGraph";
 import { Reveal } from "@/components/Reveal";
 import { Icon, Section, SectionTitle } from "@/components/ui";
+import type { Locale } from "@/lib/i18n";
 import {
   COUNTS,
   EDGES,
@@ -10,6 +11,7 @@ import {
   SUBGRAPHS,
   SUBGRAPH_ORDER,
   conceptsIn,
+  labelOf,
   publishedRefs,
   type PublishedSourceId,
   type Relation,
@@ -62,12 +64,192 @@ import {
  *   - No collaborating institution is named here. docs/claims.md §3 keeps
  *     the one that may be named to its own section, and not beside this
  *     one, where it would read as having built or checked the graph.
+ *
+ * IN TWO LANGUAGES. `locale` comes down from the page, and every sentence
+ * is in COPY below, the English beside the Japanese it has to agree with.
+ * The bounds above bind both: the English says "links", says a link is
+ * "recorded with a published source" and an "association", and never that a
+ * source shows, proves or causes anything. scripts/check-claims.mjs looks
+ * for Japanese wording in this section, so the English keeps to the bounds
+ * by hand. The concepts' names are upstream's own label_en, unaltered
+ * (lib/ontologySeed.ts), and the figure takes its language from the layout
+ * (OntologyGraph).
  */
-export function Technology() {
+
+/**
+ * The section's words.
+ *
+ * A function where a sentence carries a number or a name from the seed, so
+ * the count is still read from the data and each language puts it where its
+ * grammar wants it.
+ *
+ * How the English was chosen, where it was a choice:
+ *   - つながり is "link" and 関連 is "association", kept apart as the
+ *     Japanese keeps them: a link is a line in the graph, an association is
+ *     what a source is recorded as reporting.
+ *   - 社内の判断 is "our own judgment" — the authors', not an expert's.
+ *   - 参照 is "consulted", against 出典, "source": a guideline that was read
+ *     for a link and does not state it is not that link's source.
+ *   - 準備しています is "we are preparing": the clinical review has not
+ *     happened, and the English must not read as if it had.
+ */
+type Copy = {
+  title: string;
+  headline: string;
+  body: string;
+  counts: { subgraphs: string; concepts: string; relations: string };
+  sourced: (supported: number) => string;
+  exampleHeading: string;
+  /**
+   * The citation under a step of the example path, in three parts: what is
+   * shown before the clause only a screen reader hears, that clause (which
+   * two concepts the citation is for), and what is shown after it.
+   */
+  exampleSource: (
+    from: string,
+    to: string,
+    refs: readonly string[],
+  ) => readonly [before: string, hidden: string, after: string];
+  exampleNote: string;
+  sourcesHeading: string;
+  disclaimer: string;
+  /** Publisher and year, over a source's title. */
+  byline: (by: string, year: number) => string;
+  /** Between an English gloss and the title it glosses, for a screen reader. */
+  glossed: string;
+  newTab: string;
+  listSummary: (relations: number) => string;
+  membershipHeading: string;
+  /** A heading with its count: an area and its concepts. */
+  counted: (label: string, n: number) => string;
+  /** Between the names in a list of concepts. */
+  conceptJoin: string;
+  totals: (c: typeof COUNTS) => string;
+  supportedHeading: (n: number) => string;
+  unsupportedHeading: (n: number) => string;
+  unsupportedNote: (citing: number, consulted: readonly string[]) => string;
+  /** The sources beside a relation: its own, or the ones only consulted. */
+  refs: (refs: readonly string[], supported: boolean) => string;
+  directionNote: string;
+};
+
+const COPY: Record<Locale, Copy> = {
+  ja: {
+    title: "テクノロジー",
+    headline: "心と生活のつながりを、公開資料に照らして整理しています。",
+    body: "睡眠・社会的ひきこもり・学業上の負荷の3領域について、気分や行動、学校での出来事などの概念どうしのつながりを知識グラフ（オントロジー）にまとめています。つながりの一本ずつに、裏付けとなる公開資料があるかどうかを記録しています。",
+    counts: { subgraphs: "領域", concepts: "概念", relations: "つながり" },
+    sourced: (supported) =>
+      `このうち${supported}のつながりは、公開資料を出典として記録しています。出典のないつながりは社内の判断として区別して明記し、臨床の専門家によるレビューを準備しています。`,
+    exampleHeading: "つながりの一例",
+    exampleSource: (from, to, refs) => [
+      "",
+      `${from}と${to}の関連の`,
+      `出典：${refs.join("・")}`,
+    ],
+    exampleNote:
+      "いずれも関連として記録したもので、どちらが原因かを示すものではありません。",
+    sourcesHeading: "参照している公開資料",
+    disclaimer: "掲載の各機関は、Blescを推奨・承認するものではありません。",
+    byline: (by, year) => `${by}・${year}`,
+    glossed: "",
+    newTab: "（新しいタブで開きます）",
+    listSummary: (relations) => `${relations}のつながりと、それぞれの出典`,
+    membershipHeading: "領域ごとの概念",
+    counted: (label, n) => `${label}（${n}）`,
+    conceptJoin: "、",
+    totals: (c) =>
+      `3領域の概念を合わせると延べ${c.conceptsDeclared}、つながりは延べ${c.relationsDeclared}です。複数の領域に含まれる概念（${c.sharedConcepts}）とつながり（${c.sharedRelations}）を領域ごとに数えているためで、重複を除くと概念${c.concepts}、つながり${c.relations}です。`,
+    supportedHeading: (n) => `公開資料を出典として関連を記録（${n}）`,
+    unsupportedHeading: (n) => `公開資料の裏付けなし（${n}）`,
+    unsupportedNote: (citing, consulted) =>
+      `社内の判断によるつながりです。うち${citing}件は${consulted.join("・")}を参照していますが、つながりそのものを示す記述ではないため、こちらに含めています。`,
+    refs: (refs, supported) =>
+      supported ? refs.join("・") : `参照：${refs.join("・")}`,
+    directionNote:
+      "矢印はグラフ上の向きです。どの出典も、向き（どちらが原因か）までは裏付けていません。",
+  },
+  en: {
+    title: "Technology",
+    headline:
+      "We organize the links between mind and daily life, checking them against published sources.",
+    body: "We gather the links between concepts such as mood, behavior and events at school into a knowledge graph (an ontology), covering three areas: sleep, social withdrawal and academic pressure. For each link, we record whether a published source supports it.",
+    counts: { subgraphs: "Areas", concepts: "Concepts", relations: "Links" },
+    sourced: (supported) =>
+      `Of these, ${supported} links are recorded with a published source. Links without a source are marked separately as our own judgment, and we are preparing a review by clinical experts.`,
+    exampleHeading: "An example of these links",
+    exampleSource: (from, to, refs) => [
+      refs.length > 1 ? "Sources" : "Source",
+      ` for the association between “${from}” and “${to}”`,
+      `: ${refs.join(", ")}`,
+    ],
+    exampleNote:
+      "Each is recorded as an association, and does not show which one is the cause.",
+    sourcesHeading: "Published sources we refer to",
+    disclaimer: "The organizations listed do not recommend or endorse Blesc.",
+    byline: (by, year) => `${by} · ${year}`,
+    glossed: ", ",
+    newTab: " (opens in a new tab)",
+    listSummary: (relations) => `The ${relations} links and their sources`,
+    membershipHeading: "Concepts by area",
+    counted: (label, n) => `${label} (${n})`,
+    conceptJoin: "; ",
+    totals: (c) =>
+      `Added up area by area, the three areas hold ${c.conceptsDeclared} concepts and ${c.relationsDeclared} links. That is because the concepts (${c.sharedConcepts}) and links (${c.sharedRelations}) that belong to more than one area are counted in each of them. With the duplicates removed, there are ${c.concepts} concepts and ${c.relations} links.`,
+    supportedHeading: (n) =>
+      `Association recorded with a published source (${n})`,
+    unsupportedHeading: (n) => `Not supported by a published source (${n})`,
+    unsupportedNote: (citing, consulted) =>
+      `These links are our own judgment. For ${citing} of them we consulted ${consulted.join(", ")}, but nothing there states the link itself, so they are included here.`,
+    refs: (refs, supported) =>
+      supported ? refs.join(", ") : `Consulted: ${refs.join(", ")}`,
+    directionNote:
+      "Arrows show the direction in the graph. No source goes as far as supporting the direction (which one is the cause).",
+  },
+};
+
+/**
+ * Type that differs by language. Each value is a whole run of classes.
+ *
+ * `prose` is a paragraph's leading. Japanese takes .measure-jp, which opens
+ * the lines to 1.9 and tracks them out — right for kana and kanji, too
+ * loose for Latin, which reads best nearer 1.65 and can ask the browser for
+ * better line endings (text-pretty), there being spaces to break at.
+ *
+ * `headline` likewise: the Japanese line is two lines at 1.55; the English
+ * one is about three, so it is balanced and set tighter.
+ *
+ * `disclaimer`: break-keep is what stops the Japanese line breaking inside
+ * a phrase. English already breaks only at its spaces, so it takes
+ * text-balance alone.
+ *
+ * `mark` is the verb drawn on a relation's arrow. Japanese may break inside
+ * it, as it always could; an English one has spaces in it ("─seen together
+ * with─") and must not be split from its arrow, so it does not wrap.
+ */
+const TYPE = {
+  ja: {
+    headline: "leading-[1.55]",
+    prose: "measure-jp",
+    disclaimer: "text-balance break-keep",
+    mark: "mx-1.5 text-muted",
+  },
+  en: {
+    headline: "text-balance leading-[1.35]",
+    prose: "text-pretty leading-[1.65]",
+    disclaimer: "text-balance",
+    mark: "mx-1.5 whitespace-nowrap text-muted",
+  },
+} as const;
+
+export function Technology({ locale }: { locale: Locale }) {
+  const copy = COPY[locale];
+  const type = TYPE[locale];
+
   return (
     <Section id="technology">
       <Reveal>
-        <SectionTitle>テクノロジー</SectionTitle>
+        <SectionTitle>{copy.title}</SectionTitle>
       </Reveal>
 
       {/*
@@ -85,14 +267,17 @@ export function Technology() {
             「公開資料に照らして」, not 「公開資料から」: most of the relations
             are not from a published source (the count two paragraphs down
             says how many), but every one was checked against the source
-            registry and recorded as supported or not.
+            registry and recorded as supported or not. In English that is
+            "checking them against", not "drawn from" or "based on".
           */}
-          <p className="text-[clamp(1.125rem,2vw,1.5rem)] font-medium leading-[1.55] tracking-[-0.015em] text-ink">
-            心と生活のつながりを、公開資料に照らして整理しています。
+          <p
+            className={`text-[clamp(1.125rem,2vw,1.5rem)] font-medium ${type.headline} tracking-[-0.015em] text-ink`}
+          >
+            {copy.headline}
           </p>
 
-          <p className="measure-jp mt-5 text-[1rem] text-muted">
-            睡眠・社会的ひきこもり・学業上の負荷の3領域について、気分や行動、学校での出来事などの概念どうしのつながりを知識グラフ（オントロジー）にまとめています。つながりの一本ずつに、裏付けとなる公開資料があるかどうかを記録しています。
+          <p className={`${type.prose} mt-5 text-[1rem] text-muted`}>
+            {copy.body}
           </p>
 
           {/*
@@ -109,9 +294,9 @@ export function Technology() {
           <dl className="mt-8 grid grid-cols-3 gap-4 border-t border-line pt-6">
             {(
               [
-                ["領域", COUNTS.subgraphs],
-                ["概念", COUNTS.concepts],
-                ["つながり", COUNTS.relations],
+                [copy.counts.subgraphs, COUNTS.subgraphs],
+                [copy.counts.concepts, COUNTS.concepts],
+                [copy.counts.relations, COUNTS.relations],
               ] as const
             ).map(([label, n]) => (
               <div key={label} className="flex flex-col-reverse gap-1.5">
@@ -139,9 +324,8 @@ export function Technology() {
             and the exact split for every relation is one click below, in
             the full list.
           */}
-          <p className="measure-jp mt-5 text-[0.9rem] text-muted">
-            このうち{COUNTS.supported}
-            のつながりは、公開資料を出典として記録しています。出典のないつながりは社内の判断として区別して明記し、臨床の専門家によるレビューを準備しています。
+          <p className={`${type.prose} mt-5 text-[0.9rem] text-muted`}>
+            {copy.sourced(COUNTS.supported)}
           </p>
 
           {/*
@@ -158,14 +342,26 @@ export function Technology() {
             The dots repeat the figure's path marker — ink in a ring of the
             logo's blue — which is what ties the list to the picture; the
             names stay ink, so nothing depends on the colour.
+
+            The sr-only clause sits where each language's sentence wants it:
+            before 「出典：」 in Japanese, and in English after the word,
+            "Source for the association between … and …: …", so what is on
+            screen still reads "Source: …". "Sources" when a step cites two.
           */}
           <h3 className="mt-9 text-[0.8rem] font-medium tracking-[0.02em] text-muted">
-            つながりの一例
+            {copy.exampleHeading}
           </h3>
           {/* role="list": see Stagger — WebKit drops unmarked lists. */}
           <ol className="mt-4" role="list">
             {EXAMPLE_PATH.nodes.map((node, i) => {
               const leg = EXAMPLE_PATH.legs[i];
+              const [before, hidden, after] = leg
+                ? copy.exampleSource(
+                    labelOf(node, locale),
+                    labelOf(NODE_BY_ID[leg.to], locale),
+                    publishedRefs(leg.source_refs).map((s) => s.short[locale]),
+                  )
+                : [];
               return (
                 <li key={node.id} className="flex gap-3.5">
                   <span aria-hidden className="flex flex-col items-center pt-[0.45rem]">
@@ -174,17 +370,13 @@ export function Technology() {
                   </span>
                   <div className={leg ? "pb-5" : ""}>
                     <span className="text-[0.95rem] font-medium text-ink">
-                      {node.label_ja}
+                      {labelOf(node, locale)}
                     </span>
                     {leg && (
                       <p className="mt-1 text-[0.8rem] text-muted">
-                        <span className="sr-only">
-                          {node.label_ja}と{NODE_BY_ID[leg.to].label_ja}の関連の
-                        </span>
-                        出典：
-                        {publishedRefs(leg.source_refs)
-                          .map((s) => s.short)
-                          .join("・")}
+                        {before}
+                        <span className="sr-only">{hidden}</span>
+                        {after}
                       </p>
                     )}
                   </div>
@@ -192,8 +384,8 @@ export function Technology() {
               );
             })}
           </ol>
-          <p className="measure-jp mt-4 text-[0.8rem] text-muted">
-            いずれも関連として記録したもので、どちらが原因かを示すものではありません。
+          <p className={`${type.prose} mt-4 text-[0.8rem] text-muted`}>
+            {copy.exampleNote}
           </p>
         </Reveal>
 
@@ -229,7 +421,7 @@ export function Technology() {
         hundred pixels tall is not set off by more space than it takes.
       */}
       <Reveal className="mt-12 border-t border-line pt-8 md:mt-16">
-        <Sources />
+        <Sources locale={locale} />
       </Reveal>
     </Section>
   );
@@ -252,23 +444,49 @@ export function Technology() {
  * `mark` is drawn and hidden from assistive tech; `spoken` is what a screen
  * reader hears in its place, since "罫線 強める 右矢印" is what the drawn
  * one would be read as.
+ *
+ * The English verbs are the Japanese ones, not upstream's type names:
+ * 和らげる is "eases", 強める "intensifies", ともに見られる "seen together
+ * with"; 先立つ and 遠ざける come out as upstream's own "precedes" and
+ * "avoids". `causes` stays a bare arrow and is spoken as "to" — never
+ * "causes" or "leads to", which is the reading the note under the list
+ * rules out. English is subject–verb–object already, so `spoken` is the
+ * verb between two spaces.
  */
-const RELATION: Record<Relation, { mark: string; spoken: string }> = {
-  causes: { mark: "→", spoken: "から" },
-  escalates: { mark: "─強める→", spoken: "は次を強める：" },
-  precedes: { mark: "─先立つ→", spoken: "は次に先立つ：" },
-  buffers: { mark: "─和らげる→", spoken: "は次を和らげる：" },
-  co_occurs: { mark: "─ともに見られる─", spoken: "とともに見られる：" },
-  avoids: { mark: "─遠ざける→", spoken: "は次を遠ざける：" },
+const RELATION: Record<
+  Locale,
+  Record<Relation, { mark: string; spoken: string }>
+> = {
+  ja: {
+    causes: { mark: "→", spoken: "から" },
+    escalates: { mark: "─強める→", spoken: "は次を強める：" },
+    precedes: { mark: "─先立つ→", spoken: "は次に先立つ：" },
+    buffers: { mark: "─和らげる→", spoken: "は次を和らげる：" },
+    co_occurs: { mark: "─ともに見られる─", spoken: "とともに見られる：" },
+    avoids: { mark: "─遠ざける→", spoken: "は次を遠ざける：" },
+  },
+  en: {
+    causes: { mark: "→", spoken: " to " },
+    escalates: { mark: "─intensifies→", spoken: " intensifies " },
+    precedes: { mark: "─precedes→", spoken: " precedes " },
+    buffers: { mark: "─eases→", spoken: " eases " },
+    co_occurs: { mark: "─seen together with─", spoken: " is seen together with " },
+    avoids: { mark: "─avoids→", spoken: " avoids " },
+  },
 };
 
 const SUPPORTED = EDGES.filter((e) => e.evidence_strength === "association");
 const UNSUPPORTED = EDGES.filter((e) => e.evidence_strength === "expert_judgement");
 
 /** The guidelines the unsupported relations were checked against. */
-const CONSULTED = Array.from(
-  new Set(UNSUPPORTED.flatMap((e) => publishedRefs(e.source_refs).map((s) => s.short))),
-);
+const consulted = (locale: Locale) =>
+  Array.from(
+    new Set(
+      UNSUPPORTED.flatMap((e) =>
+        publishedRefs(e.source_refs).map((s) => s.short[locale]),
+      ),
+    ),
+  );
 
 /**
  * How each source is cited in the strip: who published it, and the opening
@@ -287,12 +505,38 @@ const CONSULTED = Array.from(
  * full title and the name it hears contains the words on screen (WCAG 2.5.3,
  * which is also what lets a voice-control user say the link). A reader
  * searching for the document can search for the words they see.
+ *
+ * In English `by` is the same name in English — "WHO fact sheet", and MEXT
+ * spelled out, since the abbreviation means little outside Japan — and the
+ * titles stay as they are: a document is cited under its own title. The one
+ * Japanese title is the exception a reader of English needs: the strip shows
+ * the seed's gloss of it (title_en) and the link keeps 生徒指導提要（改訂版）
+ * after it, visually hidden and marked as Japanese, so the name a screen
+ * reader hears still holds the words on screen and the title to search for.
+ * The short names the path and the list cite are findable the same way:
+ * "WHO fact sheet" and "NICE NG134" are prefixes, mhGAP is in its title,
+ * and "MEXT Student Guidance Guidelines" is its prefix and its gloss.
  */
-const CITE: Record<PublishedSourceId, { by: string; label: string }> = {
-  who_adolescent_mh: { by: "WHO ファクトシート", label: "Mental health of adolescents" },
-  nice_ng134: { by: "NICE NG134", label: "Depression in children and young people" },
-  who_mhgap: { by: "WHO", label: "mhGAP Intervention Guide" },
-  mext_seitoshido: { by: "文部科学省", label: "生徒指導提要（改訂版）" },
+const CITE: Record<
+  PublishedSourceId,
+  { by: Record<Locale, string>; label: string }
+> = {
+  who_adolescent_mh: {
+    by: { ja: "WHO ファクトシート", en: "WHO fact sheet" },
+    label: "Mental health of adolescents",
+  },
+  nice_ng134: {
+    by: { ja: "NICE NG134", en: "NICE NG134" },
+    label: "Depression in children and young people",
+  },
+  who_mhgap: {
+    by: { ja: "WHO", en: "WHO" },
+    label: "mhGAP Intervention Guide",
+  },
+  mext_seitoshido: {
+    by: { ja: "文部科学省", en: "MEXT (Japan’s Ministry of Education)" },
+    label: "生徒指導提要（改訂版）",
+  },
 };
 
 for (const s of SOURCES) {
@@ -328,12 +572,15 @@ for (const s of SOURCES) {
  * is the same mark-1, and the last word travels with it (whitespace-nowrap)
  * so a wrapped title never leaves the arrow alone on a line.
  */
-function Sources() {
+function Sources({ locale }: { locale: Locale }) {
+  const copy = COPY[locale];
+  const type = TYPE[locale];
+
   return (
     <div className="grid gap-5 lg:grid-cols-[5fr_7fr] lg:gap-12">
       <div>
         <h3 className="text-[0.8rem] font-medium tracking-[0.02em] text-muted">
-          参照している公開資料
+          {copy.sourcesHeading}
         </h3>
         {/*
           The non-endorsement line, word for word as the company set it. It
@@ -347,9 +594,16 @@ function Sources() {
           punctuation, and text-balance picks the break that evens the two
           lines: after 「推奨・」. Even from 「Blesc」 to the end, unbroken,
           it is about 250px, so a 320px screen cannot overflow.
+
+          The English line is about 330px in Helvetica Neue and 350 in
+          Inter: one line beside the strip, where the column is 373px at its
+          narrowest, and one line or two balanced ones on a phone. It needs
+          no break-keep (see TYPE).
         */}
-        <p className="mt-1.5 text-balance break-keep text-[0.75rem] leading-[1.6] text-muted">
-          掲載の各機関は、Blescを推奨・承認するものではありません。
+        <p
+          className={`mt-1.5 ${type.disclaimer} text-[0.75rem] leading-[1.6] text-muted`}
+        >
+          {copy.disclaimer}
         </p>
       </div>
 
@@ -360,21 +614,29 @@ function Sources() {
         >
           {SOURCES.map((s) => {
             const { by, label } = CITE[s.id];
-            const cut = label.lastIndexOf(" ") + 1;
+            /*
+              What the strip shows of the title: its opening words, or on
+              the English page the gloss of a title that is not in English.
+              hrefLang on that link too — the page it opens is Japanese.
+            */
+            const gloss = locale === "en" ? s.title_en : undefined;
+            const shown = gloss ?? label;
+            const cut = shown.lastIndexOf(" ") + 1;
             return (
               <li key={s.id} className="min-w-0 text-[0.875rem] leading-[1.45]">
                 <span className="block text-[0.75rem] leading-[1.5] tabular-nums text-muted">
-                  {by}・{s.year}
+                  {copy.byline(by[locale], s.year)}
                 </span>
                 <a
                   href={s.url}
+                  hrefLang={gloss ? s.lang : undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group/src text-mark-1 underline decoration-mark-1/40 underline-offset-2 transition-colors duration-300 hover:decoration-mark-1"
                 >
-                  {label.slice(0, cut)}
+                  {shown.slice(0, cut)}
                   <span className="whitespace-nowrap">
-                    {label.slice(cut)}
+                    {shown.slice(cut)}
                     <Icon
                       name="arrow_outward"
                       size={12}
@@ -382,7 +644,15 @@ function Sources() {
                     />
                   </span>
                   <span className="sr-only">
-                    {s.title.slice(label.length)}（新しいタブで開きます）
+                    {gloss ? (
+                      <>
+                        {copy.glossed}
+                        <span lang={s.lang}>{s.title}</span>
+                      </>
+                    ) : (
+                      s.title.slice(label.length)
+                    )}
+                    {copy.newTab}
                   </span>
                 </a>
               </li>
@@ -404,9 +674,7 @@ function Sources() {
         */}
         <details className="group mt-6">
           <summary className="flex cursor-pointer list-none items-baseline gap-4 py-2 text-[0.95rem] font-medium text-ink transition-opacity duration-300 hover:opacity-70 motion-reduce:transition-none">
-            <span className="flex-1">
-              {COUNTS.relations}のつながりと、それぞれの出典
-            </span>
+            <span className="flex-1">{copy.listSummary(COUNTS.relations)}</span>
             <span
               aria-hidden
               className="relative mt-2 h-[1px] w-4 shrink-0 bg-ink before:absolute before:inset-0 before:bg-ink before:transition-transform before:duration-300 motion-reduce:before:transition-none before:content-[''] before:[transform:rotate(90deg)] group-open:before:[transform:rotate(0deg)]"
@@ -420,17 +688,21 @@ function Sources() {
               "40 / 50" of older notes is accounted for: those are these
               per-area figures added up, and the overlap is the difference.
             */}
-            <h4 className="text-[0.8rem] font-medium text-ink">領域ごとの概念</h4>
+            <h4 className="text-[0.8rem] font-medium text-ink">
+              {copy.membershipHeading}
+            </h4>
             <dl className="mt-2 divide-y divide-line">
               {SUBGRAPH_ORDER.map((s) => {
                 const concepts = conceptsIn(s);
                 return (
                   <div key={s} className="py-2 text-[0.85rem] leading-snug">
                     <dt className="font-medium text-ink">
-                      {SUBGRAPHS[s].label}（{concepts.length}）
+                      {copy.counted(SUBGRAPHS[s].label[locale], concepts.length)}
                     </dt>
                     <dd className="mt-0.5 text-muted">
-                      {concepts.map((n) => n.label_ja).join("、")}
+                      {concepts
+                        .map((n) => labelOf(n, locale))
+                        .join(copy.conceptJoin)}
                     </dd>
                   </div>
                 );
@@ -441,32 +713,28 @@ function Sources() {
               because three of the nine are in all three areas. The sentence
               says why the totals differ, not by how much.
             */}
-            <p className="measure-jp mt-1.5 text-[0.8rem] text-muted">
-              3領域の概念を合わせると延べ{COUNTS.conceptsDeclared}
-              、つながりは延べ{COUNTS.relationsDeclared}
-              です。複数の領域に含まれる概念（{COUNTS.sharedConcepts}
-              ）とつながり（{COUNTS.sharedRelations}
-              ）を領域ごとに数えているためで、重複を除くと概念
-              {COUNTS.concepts}、つながり{COUNTS.relations}です。
+            <p className={`${type.prose} mt-1.5 text-[0.8rem] text-muted`}>
+              {copy.totals(COUNTS)}
             </p>
 
             <h4 className="mt-7 text-[0.8rem] font-medium text-ink">
-              公開資料を出典として関連を記録（{COUNTS.supported}）
+              {copy.supportedHeading(COUNTS.supported)}
             </h4>
-            <RelationList edges={SUPPORTED} />
+            <RelationList edges={SUPPORTED} locale={locale} />
 
             <h4 className="mt-7 text-[0.8rem] font-medium text-ink">
-              公開資料の裏付けなし（{COUNTS.unsupported}）
+              {copy.unsupportedHeading(COUNTS.unsupported)}
             </h4>
-            <p className="measure-jp mt-1.5 text-[0.8rem] text-muted">
-              社内の判断によるつながりです。うち{COUNTS.unsupportedCitingSource}
-              件は{CONSULTED.join("・")}
-              を参照していますが、つながりそのものを示す記述ではないため、こちらに含めています。
+            <p className={`${type.prose} mt-1.5 text-[0.8rem] text-muted`}>
+              {copy.unsupportedNote(
+                COUNTS.unsupportedCitingSource,
+                consulted(locale),
+              )}
             </p>
-            <RelationList edges={UNSUPPORTED} />
+            <RelationList edges={UNSUPPORTED} locale={locale} />
 
-            <p className="measure-jp mt-6 text-[0.8rem] text-muted">
-              矢印はグラフ上の向きです。どの出典も、向き（どちらが原因か）までは裏付けていません。
+            <p className={`${type.prose} mt-6 text-[0.8rem] text-muted`}>
+              {copy.directionNote}
             </p>
           </div>
         </details>
@@ -475,11 +743,20 @@ function Sources() {
   );
 }
 
-function RelationList({ edges }: { edges: readonly SeedEdge[] }) {
+function RelationList({
+  edges,
+  locale,
+}: {
+  edges: readonly SeedEdge[];
+  locale: Locale;
+}) {
+  const copy = COPY[locale];
+  const relation = RELATION[locale];
+
   return (
     <ul className="mt-2 divide-y divide-line" role="list">
       {edges.map((e) => {
-        const refs = publishedRefs(e.source_refs).map((s) => s.short);
+        const refs = publishedRefs(e.source_refs).map((s) => s.short[locale]);
         const supported = e.evidence_strength === "association";
         return (
           <li
@@ -487,16 +764,16 @@ function RelationList({ edges }: { edges: readonly SeedEdge[] }) {
             className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2 text-[0.85rem] leading-snug"
           >
             <span className="text-ink">
-              {NODE_BY_ID[e.from].label_ja}
-              <span aria-hidden className="mx-1.5 text-muted">
-                {RELATION[e.relation].mark}
+              {labelOf(NODE_BY_ID[e.from], locale)}
+              <span aria-hidden className={TYPE[locale].mark}>
+                {relation[e.relation].mark}
               </span>
-              <span className="sr-only">{RELATION[e.relation].spoken}</span>
-              {NODE_BY_ID[e.to].label_ja}
+              <span className="sr-only">{relation[e.relation].spoken}</span>
+              {labelOf(NODE_BY_ID[e.to], locale)}
             </span>
             {refs.length > 0 && (
               <span className="text-[0.8rem] text-muted">
-                {supported ? refs.join("・") : `参照：${refs.join("・")}`}
+                {copy.refs(refs, supported)}
               </span>
             )}
           </li>

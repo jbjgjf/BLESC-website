@@ -1,14 +1,20 @@
 /** Single source of truth for nav targets and contact destinations. */
 
+import { localePath, type Locale } from "@/lib/i18n";
+
 /**
  * Section ids, not hrefs.
  *
- * The site is one scrolling page plus /contact, so a nav link has to render
- * two ways: bare `#how` on the home page, where Lenis intercepts it and
- * smooth-scrolls, and `/#how` anywhere else, where it has to actually
- * navigate. Storing the id keeps both derivable — and the scroll-spy needs
- * the raw id regardless, since `querySelector("/#how")` is not a valid
- * selector and throws.
+ * The site is one scrolling page plus two short ones (/contact, /safety),
+ * in two languages, so a nav link has to render two ways: bare `#how` on
+ * the home page, where Lenis intercepts it and smooth-scrolls, and `/#how`
+ * (`/en#how` in English) anywhere else, where it has to actually navigate.
+ * Storing the id keeps both derivable — and the scroll-spy needs the raw id
+ * regardless, since `querySelector("/#how")` is not a valid selector and
+ * throws.
+ *
+ * These are the Japanese labels. NAV and FOOTER_NAV below are the same
+ * links in either language, and are what the nav and the footer render.
  */
 export const NAV_LINKS = [
   { id: "problem", label: "課題" },
@@ -32,8 +38,79 @@ export const FOOTER_LINKS = [
   { id: "faq", label: "よくあるご質問" },
 ] as const;
 
-export const sectionHref = (id: string, onHome: boolean) =>
-  onHome ? `#${id}` : `/#${id}`;
+export type SectionId = (typeof FOOTER_LINKS)[number]["id"];
+
+/**
+ * The sections' names in English, by id. Where a section's heading on /en
+ * is its name (How it works, Product, Technology, Team, News, FAQ) this is
+ * the same word, so a link and the heading it scrolls to agree; change one
+ * and change the other.
+ */
+const SECTION_LABELS_EN: Record<SectionId, string> = {
+  problem: "The problem",
+  how: "How it works",
+  product: "Product",
+  technology: "Technology",
+  team: "Team",
+  news: "News",
+  faq: "FAQ",
+};
+
+export type SectionLink = { readonly id: SectionId; readonly label: string };
+
+/**
+ * The nav's six links and the footer's seven, in each language.
+ *
+ * Built once, here, rather than per render: the nav hands its list to an
+ * effect as a dependency, and an array made on every render would restart
+ * the scroll-spy each time.
+ */
+export const NAV: Record<Locale, readonly SectionLink[]> = {
+  ja: NAV_LINKS,
+  en: NAV_LINKS.map(({ id }) => ({ id, label: SECTION_LABELS_EN[id] })),
+};
+
+export const FOOTER_NAV: Record<Locale, readonly SectionLink[]> = {
+  ja: FOOTER_LINKS,
+  en: FOOTER_LINKS.map(({ id }) => ({ id, label: SECTION_LABELS_EN[id] })),
+};
+
+/**
+ * `#id` on the page that holds the section, `<page>#id` from anywhere else.
+ *
+ * `page` is the home page of the language being rendered — "/" by default,
+ * and localePath(locale, "/") from the nav and the footer, so an English
+ * link reads `#how` on /en and `/en#how` from /en/contact.
+ */
+export const sectionHref = (id: string, onPage: boolean, page = "/") =>
+  onPage ? `#${id}` : `${page}#${id}`;
+
+/*
+ * The 安全とプライバシー page is not in either list. It is a page, not a
+ * section: its path and title are lib/trust.ts's (TRUST_PATH, TRUST_TITLE),
+ * beside every sentence on it, and a link to it is
+ * localePath(locale, TRUST_PATH). It is not in the top bar for the reason
+ * the FAQ is not — six links are what fits — so the footer and the home
+ * page's プロダクト section are where a visitor finds it.
+ */
+
+/**
+ * The language switch, keyed by the language it leads to.
+ *
+ * `short` is what the top bar shows — two letters on a Japanese page,
+ * because six section links leave room for nothing longer — and `label` is
+ * the name the footer has room for, which also names the two-letter switch
+ * to a screen reader. `lang` is the language the label itself is written
+ * in, so "English" is not read out by a Japanese voice, nor 日本語 by an
+ * English one.
+ *
+ * No href: the switch leads to the same page in the other language, which
+ * depends on the page it is on — switchLocalePath(pathname) in lib/i18n.
+ */
+export const LANGUAGE_SWITCH = {
+  en: { lang: "en", short: "EN", label: "English" },
+  ja: { lang: "ja", short: "日本語", label: "日本語" },
+} as const satisfies Record<Locale, { lang: Locale; short: string; label: string }>;
 
 /**
  * Brand mark: the dark wordmark, for the site's white ground.
@@ -101,3 +178,47 @@ export const CTA = {
     href: `${CONTACT_PATH}?type=consult`,
   },
 } as const;
+
+/**
+ * The two enquiries' names in each language. ENQUIRY_TYPES above is the
+ * Japanese pair; this is the same pair for either language, and the labels
+ * on every call-to-action button come from here so a button and the option
+ * it pre-selects on the form are always the same words.
+ */
+export const ENQUIRY_LABELS: Record<Locale, Record<EnquiryType, string>> = {
+  ja: ENQUIRY_TYPES,
+  en: { document: "Request information", consult: "Book a consultation" },
+};
+
+/**
+ * The two calls to action for a page in `locale`: the label in that
+ * language, and the contact form in that language with the enquiry
+ * pre-selected. Sections call this rather than CTA so the English page's
+ * buttons lead to the English form.
+ */
+export const ctaFor = (locale: Locale) =>
+  ({
+    document: {
+      label: ENQUIRY_LABELS[locale].document,
+      href: localePath(locale, `${CONTACT_PATH}?type=document`),
+    },
+    consult: {
+      label: ENQUIRY_LABELS[locale].consult,
+      href: localePath(locale, `${CONTACT_PATH}?type=consult`),
+    },
+  }) as const;
+
+/**
+ * The top bar's call to action, where the full label does not fit.
+ *
+ * The bar's button is ctaFor(locale).consult. In English that label is
+ * "Book a consultation", 172px of button, and on a phone the mark, the
+ * language switch and that button together are wider than the screen (see
+ * the budget in components/Nav). Below sm the English button therefore
+ * reads "Contact" — the name of the page it opens — and takes its full
+ * label from sm up. Japanese fits at every width and has no short form.
+ */
+export const NAV_CTA_SHORT: Record<Locale, string | null> = {
+  ja: null,
+  en: "Contact",
+};

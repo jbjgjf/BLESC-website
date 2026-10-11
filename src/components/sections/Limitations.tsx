@@ -6,15 +6,29 @@ import { PhotoFrame } from "@/components/evidence/PhotoFrame";
 import { Drift } from "@/components/flourish/Drift";
 import { Reveal } from "@/components/Reveal";
 import { Section, SectionTitle } from "@/components/ui";
+import type { Locale } from "@/lib/i18n";
 
 type Limitation = {
   n: string;
   photo: string;
-  title: string;
-  body: string;
+  /** The row's sentence and its one line of support, in each language. */
+  title: Record<Locale, string>;
+  body: Record<Locale, string>;
   /** Which mechanism this row's figure draws. See LimitationFigure. */
   figure: FigureKind;
 };
+
+/* The section's own heading and the question under it. */
+const COPY = {
+  ja: {
+    title: "構造的な限界",
+    lead: "なぜ、これまでの方法では気づけないのか。",
+  },
+  en: {
+    title: "Structural limits",
+    lead: "Why the methods used so far fail to notice.",
+  },
+} as const;
 
 /*
  * Bodies are condensed to one sentence each. Nothing is added and nothing is
@@ -34,30 +48,88 @@ type Limitation = {
  * 02 is an empty corridor on purpose: the row is about students who
  * disappear from view, and it puts no real child's face beside a line about
  * serious cases.
+ *
+ * The English is the Japanese, sentence for sentence, and says nothing the
+ * Japanese does not. Row 01 quotes the survey's two answers as “Yes/No”
+ * because those are the words its figure draws (LimitationFigure).
  */
 const ITEMS: Limitation[] = [
   {
     n: "01",
     photo: "/photos/classroom-survey.jpg",
-    title: "アンケートでは本音が表れない。",
-    body: "「はい／いいえ」形式では、生徒は大人が望む無難な回答を選びます。",
+    title: {
+      ja: "アンケートでは本音が表れない。",
+      en: "Surveys do not show true feelings.",
+    },
+    body: {
+      ja: "「はい／いいえ」形式では、生徒は大人が望む無難な回答を選びます。",
+      en: "In a “Yes/No” format, students choose the safe answer that adults want.",
+    },
     figure: "binary",
   },
   {
     n: "02",
     photo: "/photos/classroom-corridor.jpg",
-    title: "深刻なケースほど見えなくなる。",
-    body: "追い詰められた生徒ほど周囲を拒み孤立するため、SOSを待つ仕組みでは間に合いません。",
+    title: {
+      ja: "深刻なケースほど見えなくなる。",
+      en: "The more serious the case, the harder it is to see.",
+    },
+    body: {
+      ja: "追い詰められた生徒ほど周囲を拒み孤立するため、SOSを待つ仕組みでは間に合いません。",
+      en: "The more cornered a student is, the more they push others away and become isolated, so a system that waits for an SOS comes too late.",
+    },
     figure: "isolating",
   },
   {
     n: "03",
     photo: "/photos/classroom-room.jpg",
-    title: "教員のリソースには限界がある。",
-    body: "40名一人ひとりの心の機微まで捉えるのは現実的ではありません。教員の熱意ではなく、構造の問題です。",
+    title: {
+      ja: "教員のリソースには限界がある。",
+      en: "Teachers’ resources have limits.",
+    },
+    body: {
+      ja: "40名一人ひとりの心の機微まで捉えるのは現実的ではありません。教員の熱意ではなく、構造の問題です。",
+      en: "It is not realistic to grasp the subtle feelings of each of 40 students. The problem is one of structure, not of teachers’ dedication.",
+    },
     figure: "attention",
   },
 ];
+
+/*
+ * The section's type, per language: the question under the heading, and each
+ * row's title and body. The sizes are shared; what differs is how a line is
+ * set and broken.
+ *
+ * measure-jp is the site's Japanese paragraph setting — 1.9 leading and a
+ * hair of tracking — and is too open for Latin, so English body copy takes
+ * 1.65 and text-pretty in its place. (measure-jp is an unlayered class and
+ * would outrank a leading utility beside it, so the English strings leave it
+ * out rather than override it.)
+ *
+ * The English titles run longer than the Japanese and break at spaces. Beside
+ * the photograph they are one or two lines — three for the longest at 768px,
+ * where the copy column is at its narrowest, 254px — and on a phone the
+ * longest is two. text-balance evens those lines so none ends on a word
+ * alone, and the leading comes in to 1.25, which is what stacked lines of
+ * Latin at this size want. The giant numeral hangs from the top of the copy
+ * column and the copy is laid over it, so a longer title never meets it: it
+ * only makes the column taller, and the row centres the photograph beside
+ * whatever height that is.
+ */
+const TYPE = {
+  ja: {
+    lead: "measure-jp max-w-2xl text-[1.0625rem] text-muted",
+    title:
+      "mt-3 text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink",
+    body: "measure-jp mt-4 text-[1.0625rem] text-muted",
+  },
+  en: {
+    lead: "max-w-2xl text-pretty text-[1.0625rem] leading-[1.65] text-muted",
+    title:
+      "mt-3 text-balance text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.25] tracking-[-0.025em] text-ink",
+    body: "mt-4 text-pretty text-[1.0625rem] leading-[1.65] text-muted",
+  },
+} as const;
 
 /**
  * One reason per row, photograph and copy swapping sides as you go down.
@@ -78,8 +150,17 @@ const ITEMS: Limitation[] = [
  * look like one reason restated, and the figures are what tells them apart at
  * a glance — each is a different drawing because each row argues differently.
  */
-function Row({ item, index }: { item: Limitation; index: number }) {
+function Row({
+  item,
+  index,
+  locale,
+}: {
+  item: Limitation;
+  index: number;
+  locale: Locale;
+}) {
   const flipped = index % 2 === 1;
+  const type = TYPE[locale];
 
   return (
     <Reveal>
@@ -130,11 +211,9 @@ function Row({ item, index }: { item: Limitation; index: number }) {
               {item.n}
             </p>
 
-            <h3 className="mt-3 text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink">
-              {item.title}
-            </h3>
+            <h3 className={type.title}>{item.title[locale]}</h3>
 
-            <p className="measure-jp mt-4 text-[1.0625rem] text-muted">{item.body}</p>
+            <p className={type.body}>{item.body[locale]}</p>
 
             <LimitationFigure kind={item.figure} />
           </div>
@@ -144,7 +223,9 @@ function Row({ item, index }: { item: Limitation; index: number }) {
   );
 }
 
-export function Limitations() {
+export function Limitations({ locale }: { locale: Locale }) {
+  const copy = COPY[locale];
+
   return (
     /*
      * overflow-x-clip is a precaution, not a fix: the giant numerals hang off
@@ -155,15 +236,13 @@ export function Limitations() {
      */
     <Section className="overflow-x-clip">
       <Reveal>
-        <SectionTitle>構造的な限界</SectionTitle>
-        <p className="measure-jp max-w-2xl text-[1.0625rem] text-muted">
-          なぜ、これまでの方法では気づけないのか。
-        </p>
+        <SectionTitle>{copy.title}</SectionTitle>
+        <p className={TYPE[locale].lead}>{copy.lead}</p>
       </Reveal>
 
       <div className="mt-16 space-y-20 md:mt-20 md:space-y-28">
         {ITEMS.map((item, i) => (
-          <Row key={item.n} item={item} index={i} />
+          <Row key={item.n} item={item} index={i} locale={locale} />
         ))}
       </div>
     </Section>

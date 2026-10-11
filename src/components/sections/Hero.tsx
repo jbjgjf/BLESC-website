@@ -4,18 +4,56 @@ import { useInView } from "motion/react";
 import { useRef } from "react";
 import { AppMock } from "@/components/hero/AppMock";
 import { DeviceScroll } from "@/components/hero/DeviceScroll";
+import { useLocale } from "@/components/LocaleProvider";
 import { IntroFade, WordReveal } from "@/components/Reveal";
 import { ShaderBackground } from "@/components/ShaderBackground";
 import { getLenis } from "@/components/SmoothScroll";
 import { WebGLFallback } from "@/components/webgl/WebGLErrorBoundary";
 import { ButtonLink, Container } from "@/components/ui";
-import { CTA } from "@/lib/site";
+import type { Locale } from "@/lib/i18n";
+import { ctaFor } from "@/lib/site";
 import { LIGHT_PALETTE } from "@/lib/sky";
 
+/*
+ * The couplet is the company's line and is English in both languages. What
+ * changes with the page's language is the line under it, the two buttons
+ * (lib/site's ctaFor) and the figure's caption.
+ */
 const HEADLINE_LINES = [
   "Hearing the unspoken.",
   "Preventing the unseen.",
 ];
+
+const COPY = {
+  ja: {
+    tagline: "生徒のSOSを可視化する。",
+    figcaption: "Blescアプリの画面イメージ。",
+  },
+  en: {
+    tagline: "Making students’ unspoken SOS visible.",
+    figcaption: "Illustration of the Blesc app screen.",
+  },
+} as const;
+
+/*
+ * The line under the couplet, per language: whole class strings, because
+ * Tailwind only generates what it can read.
+ *
+ * The Japanese line is thirteen characters and fits any phone at 18px. The
+ * English one is 18.06em in Helvetica Neue and 18.93em in Inter (worked out
+ * from the faces' advance widths, not measured in a browser) — 325px and
+ * 341px at 18px, against the 342px a 390px phone leaves and the 312px a
+ * 360px one does. Left at 18px it would wrap on a 360px phone in either
+ * face — the usual Android width — and drop "visible." onto a line of its
+ * own. So below md its size follows the screen: 4.4vw holds it on one line
+ * from 320px up in either face, and it reaches the Japanese line's 18px at
+ * 410px wide. text-balance is for a face wider still: two even lines
+ * rather than a line and an orphan.
+ */
+const TAGLINE = {
+  ja: "mt-7 block text-lg font-normal leading-normal tracking-normal text-ink md:text-xl",
+  en: "mt-7 block text-balance text-[clamp(0.875rem,4.4vw,1.125rem)] font-normal leading-normal tracking-normal text-ink md:text-xl",
+} as const;
 
 // Words per line, so the second line picks up where the first left off.
 const LINE_OFFSETS = HEADLINE_LINES.reduce<number[]>((acc, line, i) => {
@@ -41,7 +79,20 @@ const TOTAL_WORDS = HEADLINE_LINES.join(" ").split(" ").length;
 const AFTER_HEADLINE =
   HEADLINE_START + (TOTAL_WORDS - 1) * STAGGER + WORD_DURATION + 0.15;
 
-export function Hero() {
+export function Hero({ locale: fromPage }: { locale?: Locale }) {
+  /*
+   * The page hands every section its language, and the layout sets the same
+   * one in context for client components like this. The prop is used when it
+   * is there, so a section answers to the page that rendered it; the two
+   * cannot differ, both being the route's. The app mock below is handed
+   * the one settled on here, so the screen and the headline over it are
+   * always in the same language.
+   */
+  const fromLayout = useLocale();
+  const locale = fromPage ?? fromLayout;
+  const t = COPY[locale];
+  const cta = ctaFor(locale);
+
   const section = useRef<HTMLElement>(null);
   const headline = useRef<HTMLHeadingElement>(null);
 
@@ -146,11 +197,16 @@ export function Hero() {
             queries for. It is a span so the heading still contains only
             phrasing content.
 
-            The Japanese line is ink, not muted: size and weight carry the
-            hierarchy. It sits in the open middle of the sky with no wash
-            behind it, and muted over the sky's deepest blue falls to about
-            4:1 there (3.4:1 against the darkest pixel read back off the
-            canvas, #95c3f0) — under AA for 18–20px type.
+            On /en that line is the same statement in English, in the same
+            place for the same reason: the couplet says nothing about
+            students or schools, and the line under it does. Its type is its
+            own below md (see TAGLINE).
+
+            The line is ink in either language, not muted: size and weight
+            carry the hierarchy. It sits in the open middle of the sky with
+            no wash behind it, and muted over the sky's deepest blue falls to
+            about 4:1 there (3.4:1 against the darkest pixel read back off
+            the canvas, #95c3f0) — under AA for 18–20px type.
           */}
           <h1 ref={headline} className="type-hero text-ink">
             {HEADLINE_LINES.map((line, i) => (
@@ -170,19 +226,26 @@ export function Hero() {
               as="span"
               play={play}
               delay={AFTER_HEADLINE}
-              className="mt-7 block text-lg font-normal leading-normal tracking-normal text-ink md:text-xl"
+              className={TAGLINE[locale]}
             >
-              生徒のSOSを可視化する。
+              {t.tagline}
             </IntroFade>
           </h1>
 
+          {/*
+            The same row in either language. The English labels run to about
+            150px each where the Japanese are 62px and 93px, and the pair is
+            still only some 430px across — inside the 592px the narrowest
+            side-by-side layout (sm, 640px) leaves. Below sm the two stack at
+            the column's full width.
+          */}
           <IntroFade play={play} delay={AFTER_HEADLINE + 0.08}>
             <div className="mt-11 flex flex-col gap-4 sm:flex-row sm:justify-center">
-              <ButtonLink variant="secondary" href={CTA.document.href}>
-                {CTA.document.label}
+              <ButtonLink variant="secondary" href={cta.document.href}>
+                {cta.document.label}
               </ButtonLink>
-              <ButtonLink variant="primary" href={CTA.consult.href}>
-                {CTA.consult.label}
+              <ButtonLink variant="primary" href={cta.consult.href}>
+                {cta.consult.label}
               </ButtonLink>
             </div>
           </IntroFade>
@@ -196,11 +259,9 @@ export function Hero() {
       */}
       <figure className="relative z-10 m-0">
         <DeviceScroll>
-          <AppMock />
+          <AppMock locale={locale} />
         </DeviceScroll>
-        <figcaption className="sr-only">
-          Blescアプリの画面イメージ。
-        </figcaption>
+        <figcaption className="sr-only">{t.figcaption}</figcaption>
       </figure>
     </section>
   );

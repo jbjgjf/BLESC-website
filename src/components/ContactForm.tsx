@@ -2,12 +2,15 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 import { SPOTLIGHT } from "@/components/SpotlightCard";
+import type { Locale } from "@/lib/i18n";
 import { EXPO_OUT } from "@/lib/motion";
 import { HoverSwap, Icon } from "@/components/ui";
 import {
   CONTACT_EMAIL,
+  ENQUIRY_LABELS,
   ENQUIRY_TYPES,
   type EnquiryType,
   isEnquiryType,
@@ -52,6 +55,153 @@ const TIMEOUT_MS = 15_000;
  * empty field and arrive as an enquiry from no one.
  */
 const NOT_BLANK = ".*\\S.*";
+
+/** A sentence with the contact address set inside it as a link. */
+type AroundAddress = { before: string; after: string };
+
+type Copy = {
+  /** Set after the label of a field that may be left empty. */
+  optional: string;
+  /** The legend over the two enquiry options. */
+  enquiry: string;
+  org: { label: string; placeholder: string };
+  name: { label: string; placeholder: string };
+  email: { label: string; placeholder: string };
+  phone: { label: string; placeholder: string };
+  message: { label: string; placeholder: string };
+  submit: string;
+  sending: string;
+  /** Shown beside the button while the form still opens a mail client. */
+  mailNote: readonly string[];
+  sent: { title: string; body: string };
+  unconfirmed: AroundAddress;
+  error: AroundAddress;
+  /** The sender name on the notification Web3Forms delivers. */
+  fromName: string;
+  subject: (enquiry: string, org: string) => string;
+};
+
+/**
+ * Every word the form says, in both languages.
+ *
+ * The two enquiry options are not here: their names are ENQUIRY_LABELS in
+ * lib/site, the same strings the call-to-action buttons carry, so the button
+ * a visitor pressed and the option it pre-selects cannot come to differ.
+ *
+ * The labels do double duty. They head the fields on screen, and they are
+ * also the line labels of the composed mail and the field names Web3Forms
+ * lists in its notification — so an enquiry written on the English form
+ * arrives labelled in English, and one from the Japanese form in Japanese,
+ * with no second set of strings to keep in step.
+ *
+ * `mailNote` is a list of lines. Japanese has two, with an authored break
+ * between them on wide screens (br-wide); English is one sentence pair left
+ * to wrap at its spaces, so it is a single entry and gets no break.
+ *
+ * Validation messages are not here either, because the form has none of its
+ * own: `required`, `type="email"` and the not-blank pattern are checked by
+ * the browser, which words its bubble in its own interface language — the
+ * visitor's, whichever page they are on.
+ *
+ * English is American in spelling ("inquiry"); the identifiers in this file
+ * keep the British "enquiry" lib/site already uses.
+ */
+const COPY: Record<Locale, Copy> = {
+  ja: {
+    optional: "（任意）",
+    enquiry: "ご用件",
+    org: { label: "学校名・団体名", placeholder: "〇〇高等学校" },
+    name: { label: "お名前", placeholder: "山田 太郎" },
+    email: { label: "メールアドレス", placeholder: "name@school.ac.jp" },
+    phone: { label: "電話番号", placeholder: "03-0000-0000" },
+    message: {
+      label: "ご相談内容",
+      placeholder: "ご検討中の背景や、お聞きになりたい点をご記入ください。",
+    },
+    submit: "送信する",
+    sending: "送信中…",
+    mailNote: [
+      "送信を押すとメールソフトが開きます。",
+      "内容をご確認のうえ送信してください。",
+    ],
+    sent: {
+      title: "お問い合わせを受け付けました。",
+      body: "内容を確認のうえ、担当者より数営業日以内にご返信いたします。",
+    },
+    unconfirmed: {
+      before:
+        "送信を確認できませんでした。お問い合わせが届いている可能性があるため、再度送信する前に",
+      after: "までご連絡ください。入力内容はそのまま残っています。",
+    },
+    error: {
+      before:
+        "送信できませんでした。入力内容はそのまま残っています。時間をおいて再度お試しいただくか、",
+      after: "まで直接ご連絡ください。",
+    },
+    fromName: "Blesc ウェブサイト",
+    subject: (enquiry, org) =>
+      org ? `Blesc ${enquiry}｜${org}` : `Blesc ${enquiry}`,
+  },
+  en: {
+    optional: "(optional)",
+    enquiry: "Inquiry type",
+    org: { label: "School or organization", placeholder: "Example High School" },
+    name: { label: "Name", placeholder: "Taro Yamada" },
+    email: { label: "Email address", placeholder: "name@school.ac.jp" },
+    phone: { label: "Phone number", placeholder: "03-0000-0000" },
+    message: {
+      label: "Message",
+      placeholder:
+        "Tell us the background to your interest and anything you would like to ask.",
+    },
+    submit: "Send",
+    sending: "Sending…",
+    mailNote: [
+      "Pressing Send opens your email app. Please check the message there, then send it.",
+    ],
+    sent: {
+      title: "We have received your inquiry.",
+      body: "We will review it, and a member of our team will reply within a few business days.",
+    },
+    unconfirmed: {
+      before:
+        "We could not confirm that your message was sent. It may have reached us, so before sending it again, please contact us at ",
+      after: ". What you entered is still here.",
+    },
+    error: {
+      before:
+        "Your message could not be sent. What you entered is still here. Please try again later, or contact us directly at ",
+      after: ".",
+    },
+    fromName: "Blesc website",
+    subject: (enquiry, org) =>
+      org ? `Blesc: ${enquiry} (${org})` : `Blesc: ${enquiry}`,
+  },
+};
+
+/**
+ * Running text, per language. Whole class strings, because Tailwind only
+ * generates what it can read.
+ *
+ * measure-jp (globals.css) is the Japanese paragraph setting — 1.9 leading
+ * and a hair of tracking — and far too open for Latin, so English names its
+ * own leading instead. It is an unlayered class and would outrank a leading
+ * utility set beside it, which is why the English strings leave it out
+ * rather than adding to it. text-pretty keeps a short English paragraph from
+ * ending on a single word.
+ */
+const PROSE = {
+  ja: {
+    sentBody: "measure-jp mt-3 text-[0.95rem] text-muted",
+    mailNote: "measure-jp text-[0.8rem] text-muted",
+    alert: "measure-jp text-[0.9rem] text-ink",
+  },
+  en: {
+    sentBody: "mt-3 text-pretty text-[0.95rem] leading-[1.65] text-muted",
+    mailNote: "text-pretty text-[0.8rem] leading-[1.6] text-muted",
+    alert: "text-[0.9rem] leading-[1.65] text-ink",
+  },
+} as const;
 
 /**
  * "unconfirmed" is its own outcome, not a kind of "error". A timeout only
@@ -122,12 +272,16 @@ function Field({
   optional?: boolean;
   children: React.ReactNode;
 }) {
+  const locale = useLocale();
+
   return (
     <div>
       <label htmlFor={id} className={LABEL_CLASS}>
         {label}
         {optional && (
-          <span className="ml-2 font-normal text-muted">（任意）</span>
+          <span className="ml-2 font-normal text-muted">
+            {COPY[locale].optional}
+          </span>
         )}
       </label>
       <div className="mt-2.5">{children}</div>
@@ -151,8 +305,18 @@ function Field({
  * Until WEB3FORMS_ACCESS_KEY is set in lib/site, it falls back to what it
  * did before: composing the message and opening the visitor's own mail
  * client, with nothing leaving the browser until they press send.
+ *
+ * It speaks the page's language, which it asks useLocale() for: the same
+ * form is /contact's and /en/contact's. ?type= is read the same way on
+ * both, so a button on the English page arrives with its enquiry selected
+ * exactly as one on the Japanese page does.
  */
 export function ContactForm() {
+  const locale = useLocale();
+  const t = COPY[locale];
+  const prose = PROSE[locale];
+  const enquiries = ENQUIRY_LABELS[locale];
+
   const params = useSearchParams();
   const typeParam = params.get("type");
 
@@ -184,19 +348,19 @@ export function ContactForm() {
     if (sending) return;
 
     const orgName = org.trim();
-    const subject = orgName
-      ? `Blesc ${ENQUIRY_TYPES[type]}｜${orgName}`
-      : `Blesc ${ENQUIRY_TYPES[type]}`;
+    const subject = t.subject(enquiries[type], orgName);
 
     if (!viaApi) {
+      // Each line is headed by the field's own label, in the language the
+      // form was filled in.
       const body = [
-        `ご用件: ${ENQUIRY_TYPES[type]}`,
-        `学校名・団体名: ${orgName}`,
-        `お名前: ${name.trim()}`,
-        `メールアドレス: ${email.trim()}`,
-        `電話番号: ${phone.trim() || "—"}`,
+        `${t.enquiry}: ${enquiries[type]}`,
+        `${t.org.label}: ${orgName}`,
+        `${t.name.label}: ${name.trim()}`,
+        `${t.email.label}: ${email.trim()}`,
+        `${t.phone.label}: ${phone.trim() || "—"}`,
         "",
-        "ご相談内容:",
+        `${t.message.label}:`,
         message.trim() || "—",
         "",
       ].join("\n");
@@ -219,17 +383,19 @@ export function ContactForm() {
 
     // Appended in the order the notification should read. Web3Forms lists
     // fields as they arrive, and the labels are the form's own so the
-    // email needs no translating back.
+    // email needs no translating back — Japanese from the Japanese form,
+    // English from the English one. `email` is Web3Forms' own field name
+    // (it becomes Reply-To), so it is the same in both.
     const data = new FormData();
     data.append("access_key", WEB3FORMS_ACCESS_KEY);
     data.append("subject", subject);
-    data.append("from_name", "Blesc ウェブサイト");
-    data.append("ご用件", ENQUIRY_TYPES[type]);
-    data.append("学校名・団体名", orgName);
-    data.append("お名前", name.trim());
+    data.append("from_name", t.fromName);
+    data.append(t.enquiry, enquiries[type]);
+    data.append(t.org.label, orgName);
+    data.append(t.name.label, name.trim());
     data.append("email", email.trim());
-    data.append("電話番号", phone.trim() || "—");
-    data.append("ご相談内容", message.trim() || "—");
+    data.append(t.phone.label, phone.trim() || "—");
+    data.append(t.message.label, message.trim() || "—");
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -257,6 +423,9 @@ export function ContactForm() {
     }
   };
 
+  // Which of the two failure messages applies; read only when one does.
+  const failure = status === "unconfirmed" ? t.unconfirmed : t.error;
+
   if (status === "sent") {
     return (
       /*
@@ -270,11 +439,9 @@ export function ContactForm() {
           tabIndex={-1}
           className="mt-6 text-[clamp(1.25rem,2.4vw,1.5rem)] font-medium tracking-[-0.015em] text-ink focus:outline-none"
         >
-          お問い合わせを受け付けました。
+          {t.sent.title}
         </h2>
-        <p className="measure-jp mt-3 text-[0.95rem] text-muted">
-          内容を確認のうえ、担当者より数営業日以内にご返信いたします。
-        </p>
+        <p className={prose.sentBody}>{t.sent.body}</p>
       </div>
     );
   }
@@ -286,11 +453,20 @@ export function ContactForm() {
       className={`${PANEL} flex flex-col gap-8`}
     >
       <fieldset>
-        <legend className={LABEL_CLASS}>ご用件</legend>
+        <legend className={LABEL_CLASS}>{t.enquiry}</legend>
         {/*
           Radios rather than a select: there are only two, and which one the
           visitor arrived with is worth showing rather than hiding in a
           collapsed control.
+
+          The English names are longer — "Book a consultation" against
+          導入のご相談 — and still sit on one line each wherever the pair is
+          side by side. The tightest case is the two-column page at 1024px,
+          where a label has about 150px for some 135px of text in Helvetica
+          Neue (nearer 145px in Inter). Worked out from the faces' advance
+          widths, not measured in a browser. Should a fallback face run
+          wider, the name wraps inside its box and items-center keeps the
+          radio centred against both lines; nothing here is fixed in height.
         */}
         <div className="mt-3 flex flex-col gap-3 sm:flex-row">
           {(Object.keys(ENQUIRY_TYPES) as EnquiryType[]).map((key) => {
@@ -322,7 +498,7 @@ export function ContactForm() {
                     <span className="size-2.5 rounded-full bg-accent" />
                   )}
                 </span>
-                {ENQUIRY_TYPES[key]}
+                {enquiries[key]}
               </label>
             );
           })}
@@ -330,65 +506,65 @@ export function ContactForm() {
       </fieldset>
 
       <div className="grid gap-8 sm:grid-cols-2">
-        <Field id="org" label="学校名・団体名">
+        <Field id="org" label={t.org.label}>
           <input
             id="org"
             required
             pattern={NOT_BLANK}
             value={org}
             onChange={(e) => setOrg(e.target.value)}
-            placeholder="〇〇高等学校"
+            placeholder={t.org.placeholder}
             autoComplete="organization"
             className={FIELD_CLASS}
           />
         </Field>
 
-        <Field id="name" label="お名前">
+        <Field id="name" label={t.name.label}>
           <input
             id="name"
             required
             pattern={NOT_BLANK}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="山田 太郎"
+            placeholder={t.name.placeholder}
             autoComplete="name"
             className={FIELD_CLASS}
           />
         </Field>
 
-        <Field id="email" label="メールアドレス">
+        <Field id="email" label={t.email.label}>
           <input
             id="email"
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@school.ac.jp"
+            placeholder={t.email.placeholder}
             autoComplete="email"
             className={FIELD_CLASS}
           />
         </Field>
 
-        <Field id="phone" label="電話番号" optional>
+        <Field id="phone" label={t.phone.label} optional>
           <input
             id="phone"
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="03-0000-0000"
+            placeholder={t.phone.placeholder}
             autoComplete="tel"
             className={FIELD_CLASS}
           />
         </Field>
       </div>
 
-      <Field id="message" label="ご相談内容" optional>
+      <Field id="message" label={t.message.label} optional>
         <textarea
           id="message"
           rows={6}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="ご検討中の背景や、お聞きになりたい点をご記入ください。"
+          placeholder={t.message.placeholder}
           className={`${FIELD_CLASS} resize-y`}
         />
       </Field>
@@ -425,19 +601,22 @@ export function ContactForm() {
                 size={18}
                 className="animate-spin motion-reduce:animate-none"
               />
-              送信中…
+              {t.sending}
             </span>
           ) : (
             /* send, not an arrow: it is the semantically right icon here. */
-            <HoverSwap icon="send">送信する</HoverSwap>
+            <HoverSwap icon="send">{t.submit}</HoverSwap>
           )}
         </button>
 
         {!viaApi && (
-          <p className="measure-jp text-[0.8rem] text-muted">
-            送信を押すとメールソフトが開きます。
-            <br className="br-wide" />
-            内容をご確認のうえ送信してください。
+          <p className={prose.mailNote}>
+            {t.mailNote.map((line, i) => (
+              <Fragment key={line}>
+                {i > 0 && <br className="br-wide" />}
+                {line}
+              </Fragment>
+            ))}
           </p>
         )}
       </div>
@@ -449,30 +628,21 @@ export function ContactForm() {
             size={20}
             className="mt-0.5 shrink-0 text-error"
           />
-          <p className="measure-jp text-[0.9rem] text-ink">
-            {status === "unconfirmed" ? (
-              <>
-                送信を確認できませんでした。お問い合わせが届いている可能性があるため、再度送信する前に
-                <a
-                  href={`mailto:${CONTACT_EMAIL}`}
-                  className="text-mark-1 underline decoration-mark-1/40 underline-offset-4"
-                >
-                  {CONTACT_EMAIL}
-                </a>
-                までご連絡ください。入力内容はそのまま残っています。
-              </>
-            ) : (
-              <>
-                送信できませんでした。入力内容はそのまま残っています。時間をおいて再度お試しいただくか、
-                <a
-                  href={`mailto:${CONTACT_EMAIL}`}
-                  className="text-mark-1 underline decoration-mark-1/40 underline-offset-4"
-                >
-                  {CONTACT_EMAIL}
-                </a>
-                まで直接ご連絡ください。
-              </>
-            )}
+          {/*
+            The same shape for either failure: words, the address as a link,
+            words. Both halves come from COPY, where the English ones carry
+            their own spaces — Japanese runs straight into the link and out
+            of it, English does not.
+          */}
+          <p className={prose.alert}>
+            {failure.before}
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="text-mark-1 underline decoration-mark-1/40 underline-offset-4"
+            >
+              {CONTACT_EMAIL}
+            </a>
+            {failure.after}
           </p>
         </div>
       )}

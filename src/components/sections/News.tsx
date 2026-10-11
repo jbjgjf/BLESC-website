@@ -4,17 +4,22 @@ import { Flower } from "@/components/Flower";
 import { NewsPhotoCursor, type FollowPhoto } from "@/components/NewsPhotoCursor";
 import { Reveal } from "@/components/Reveal";
 import { Container, SectionTitle } from "@/components/ui";
+import type { Locale } from "@/lib/i18n";
 import { NEWS, formatNewsDate, type NewsPhoto } from "@/lib/news";
 
 /**
  * A dated register, closed until asked.
  *
- * The entries, their order and the date display live in lib/news.ts; this
- * file is only the layout. Each entry is a full-width row whose rules run
- * edge to edge of the viewport — wider than the page measure — so a row
- * reads as a line in a register rather than as a block waiting for a
- * neighbour. Inside the rules the content keeps to the ordinary 68rem
- * measure, which is what ties the rows back to the rest of the page.
+ * The entries, their order and the date display live in lib/news.ts, in both
+ * of the site's languages; this file is only the layout, and the one string
+ * it owns is the section's title. It is a server component, so the language
+ * arrives as the `locale` prop from the page (see lib/i18n).
+ *
+ * Each entry is a full-width row whose rules run edge to edge of the
+ * viewport — wider than the page measure — so a row reads as a line in a
+ * register rather than as a block waiting for a neighbour. Inside the rules
+ * the content keeps to the ordinary 68rem measure, which is what ties the
+ * rows back to the rest of the page.
  *
  * That is why this is a hand-rolled <section> and not <Section>. Section
  * wraps everything it is given in the Container, and a rule drawn inside the
@@ -52,10 +57,16 @@ import { NEWS, formatNewsDate, type NewsPhoto } from "@/lib/news";
  * HTML for a crawler whether or not anyone opens it. Any number of rows can
  * be open at once; they are independent entries, not tabs.
  *
- * Opened, a row shows its sentence under the name — several open with a
- * particle that continues the name (に登壇し, で、), so name → sentence has
- * to read straight on — and its photo, when there is one, in a column of its
- * own at the right. Below md the photo follows the sentence.
+ * Opened, a row shows its sentence under the name — in Japanese several open
+ * with a particle that continues the name (に登壇し, で、), so name →
+ * sentence has to read straight on; the English ones are whole sentences
+ * that read on from the name as their heading — and its photo, when there
+ * is one, in a column of its own at the right. Below md the photo follows
+ * the sentence.
+ *
+ * There is no "open" or "close" label to translate: the summary is the
+ * control, the browser announces it and its expanded state in the reader's
+ * own language, and the plus is decoration.
  *
  * With a mouse, a closed row with a photo also shows that photo in place of
  * the cursor while the pointer is over it (NewsPhotoCursor, which wraps the
@@ -65,6 +76,23 @@ import { NEWS, formatNewsDate, type NewsPhoto } from "@/lib/news";
  */
 const LEDGER_RULE =
   "bg-[linear-gradient(color-mix(in_srgb,var(--color-text)_4%,transparent),color-mix(in_srgb,var(--color-text)_4%,transparent))]";
+
+const COPY = {
+  ja: { title: "ニュース" },
+  en: { title: "News" },
+} as const;
+
+/**
+ * The opened row's sentence, per language. measure-jp is the site's Japanese
+ * paragraph setting — 1.9 leading and a hair of tracking — which sets an
+ * English sentence as if it were double-spaced, so English takes the Latin
+ * leading the 安全とプライバシー pages use. Whole class strings, because
+ * Tailwind only generates what it can read.
+ */
+const BODY_TYPE = {
+  ja: "measure-jp",
+  en: "text-pretty leading-[1.65]",
+} as const;
 
 /** Literal classes for the crop — Tailwind cannot see an interpolated one. */
 const PHOTO_POSITION: Record<NonNullable<NewsPhoto["position"]>, string> = {
@@ -120,7 +148,7 @@ const FOLLOW_PHOTOS: FollowPhoto[] = NEWS.flatMap(({ photo }) =>
     : [],
 );
 
-export function News() {
+export function News({ locale }: { locale: Locale }) {
   return (
     <section
       id="news"
@@ -137,7 +165,7 @@ export function News() {
 
       <Container>
         <Reveal>
-          <SectionTitle>ニュース</SectionTitle>
+          <SectionTitle>{COPY[locale].title}</SectionTitle>
         </Reveal>
       </Container>
 
@@ -169,11 +197,14 @@ export function News() {
           role="list" for the same reason Stagger sets it: the preflight
           removes list markers, and WebKit then stops announcing an unmarked
           list as one.
+
+          The key is the Japanese name in either language: it identifies the
+          entry, and is not what the row shows.
         */}
         <ol role="list">
           {NEWS.map((item) => (
             <li
-              key={`${item.date ?? "undated"}-${item.name}`}
+              key={`${item.date ?? "undated"}-${item.name.ja}`}
               className="relative"
             >
               <Reveal>
@@ -236,9 +267,20 @@ export function News() {
                         enough that the 1fr column cannot be pushed wider by
                         it. text-balance evens the lines out so a two-line
                         name does not end on a lone "2026".
+
+                        The English names take the same classes. An English
+                        name already breaks only at its spaces, so break-keep
+                        changes nothing for it, and palt is a feature of the
+                        Japanese faces that the Latin ones do not have. Its
+                        longest word ("Business", about 160px at the 2.5rem
+                        floor) is narrower than the 194px the name column has
+                        on a 320px phone, so wrap-anywhere never has to split
+                        one. The one name that differs, "… Tokyo qualifier"
+                        for 「… Tokyo予選」, is a word longer and takes the
+                        same number of lines or one more.
                       */}
                       <span className="col-start-2 row-start-1 block text-balance break-keep wrap-anywhere text-[clamp(2.5rem,5vw,3.75rem)] font-light leading-[1.05] tracking-[-0.02em] text-ink [font-feature-settings:'palt'_1] md:pl-4 lg:pl-8">
-                        {item.name}
+                        {item.name[locale]}
                       </span>
 
                       {/*
@@ -251,7 +293,7 @@ export function News() {
                             dateTime={item.date}
                             className="whitespace-nowrap text-[0.85rem] tabular-nums text-muted"
                           >
-                            {formatNewsDate(item.date)}
+                            {formatNewsDate(item.date, locale)}
                           </time>
                         </span>
                       )}
@@ -290,8 +332,10 @@ export function News() {
                   <div
                     className={`${ROW} grid-cols-[1.375rem_1fr] pb-10 opacity-0 transition-[opacity,translate] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-open:opacity-100 group-open:starting:opacity-0 motion-safe:-translate-y-2 motion-safe:group-open:translate-y-0 motion-safe:group-open:starting:-translate-y-2 motion-reduce:duration-200 md:grid-cols-[1.375rem_1fr_minmax(16rem,20rem)] md:pb-12`}
                   >
-                    <p className="measure-jp col-start-2 row-start-1 text-[1.0625rem] text-muted md:pl-4 lg:pl-8">
-                      {item.body}
+                    <p
+                      className={`${BODY_TYPE[locale]} col-start-2 row-start-1 text-[1.0625rem] text-muted md:pl-4 lg:pl-8`}
+                    >
+                      {item.body[locale]}
                     </p>
 
                     {/*
@@ -322,7 +366,7 @@ export function News() {
                         src={item.photo.src}
                         width={item.photo.width}
                         height={item.photo.height}
-                        alt={item.photo.alt}
+                        alt={item.photo.alt[locale]}
                         sizes="(min-width: 768px) 20rem, (min-width: 480px) 28rem, 100vw"
                         className={`col-start-2 mt-6 aspect-[3/2] h-auto w-full max-w-md rounded-2xl bg-line object-cover outline-1 -outline-offset-1 outline-ink/10 md:col-start-3 md:row-start-1 md:mt-0 ${PHOTO_POSITION[item.photo.position ?? "center"]}`}
                       />

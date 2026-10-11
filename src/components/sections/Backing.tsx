@@ -2,9 +2,11 @@
 
 import { motion, useScroll, useTransform, type Variants } from "motion/react";
 import Image from "next/image";
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 import { Container } from "@/components/ui";
 import { FLOWER_PATH, FLOWER_SPIN_VIEWBOX } from "@/lib/flower";
+import type { Locale } from "@/lib/i18n";
 import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
 import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 
@@ -27,14 +29,21 @@ type BackerLogo = {
 };
 
 type Backer = {
-  /** The organisation's own name, spelled the way it spells it. */
-  name: string;
+  /**
+   * The organisation's own name, spelled the way it spells it — in each of
+   * the site's languages, since a university has a name in both.
+   */
+  name: Record<Locale, string>;
   /**
    * What the relationship is, in the words the Blesc team confirmed and no
    * others. This line is the claim; the name above it is only who it is
    * about. See the note on BACKERS before adding a word to it.
+   *
+   * A line break written into a line (`\n`) is the one place it may wrap:
+   * each side of it is a phrase that holds together (see ScopeLine). A line
+   * without one is set as plain text, as the Japanese lines are.
    */
-  scope: string;
+  scope: Record<Locale, string>;
   logo?: BackerLogo;
 };
 
@@ -69,11 +78,74 @@ type Backer = {
  * before one is agreed would be the same failure as the 京都大学
  * collaboration line テクノロジー once carried, and had to drop, before any
  * permission existed.
+ *
+ * The English lines are the same two claims and nothing wider. 支援 is
+ * "Support"; 第2期 採択 is "Cohort 2 — selected". The claims check only
+ * knows a handful of English stems, so the rule is kept by hand here: no
+ * word beside either name that says more than these do.
  */
 const BACKERS: Backer[] = [
-  { name: "京都大学", scope: "支援" },
-  { name: "ANOBAKA", scope: "U-25 AI Accelerator 第2期 採択" },
+  {
+    name: { ja: "京都大学", en: "Kyoto University" },
+    scope: { ja: "支援", en: "Support" },
+  },
+  {
+    name: { ja: "ANOBAKA", en: "ANOBAKA" },
+    scope: {
+      ja: "U-25 AI Accelerator 第2期 採択",
+      en: "U-25 AI Accelerator,\nCohort 2 — selected",
+    },
+  },
 ];
+
+/**
+ * The band's label.
+ *
+ * "Backed by" is the name the site's English glossary gives this band. See
+ * the note on Backing for what that wording has to be kept beside.
+ */
+const COPY = {
+  ja: { label: "支援・採択" },
+  en: { label: "Backed by" },
+} as const;
+
+/**
+ * The scope line under a name, per language.
+ *
+ * English adds two width classes for the stretch from md to lg, where the
+ * row cannot hold ANOBAKA's line whole (the numbers are in the note on
+ * Backing): md:w-min sets the line at its min-content width, which is its
+ * longer phrase, so it stands as two lines; lg:w-auto lets it back out to
+ * one. On a one-word line such as "Support" neither changes anything.
+ *
+ * Whole class strings, picked by language — Tailwind only generates what
+ * it can read.
+ */
+const SCOPE_CLASS = {
+  ja: "mt-1.5 text-balance break-keep text-[0.875rem] leading-[1.5] text-muted",
+  en: "mt-1.5 text-balance break-keep text-[0.875rem] leading-[1.5] text-muted md:w-min lg:w-auto",
+} as const;
+
+/**
+ * A scope line, wrapping only where its author allowed.
+ *
+ * A line with a `\n` in it is set as phrases: each is an inline-block that
+ * does not wrap inside, with an ordinary space between them, so the line is
+ * read as one sentence and breaks only between two phrases. That is what
+ * keeps "U-25 AI Accelerator," whole — left to the browser the line can
+ * break after the hyphen of "U-25", or strand "selected" on a line of its
+ * own. A line without a `\n` is returned as the plain string it is.
+ */
+function ScopeLine({ text }: { text: string }) {
+  const phrases = text.split("\n");
+  if (phrases.length === 1) return text;
+  return phrases.map((phrase, i) => (
+    <Fragment key={phrase}>
+      {i > 0 && " "}
+      <span className="inline-block whitespace-nowrap">{phrase}</span>
+    </Fragment>
+  ));
+}
 
 /**
  * A Latin name is set larger than a Japanese one, so that the two read as
@@ -207,12 +279,22 @@ const FLOWER_TURN = 72;
  * in the document outline and in a screen reader's heading list — it is
  * only set at label size.
  *
- * The heading is 支援・採択 rather than "Backed by" or 支援 alone. In
- * English, "backed by" beside the name of a firm that runs a venture fund
- * reads as an investment, which is the one thing that must not be implied
- * about ANOBAKA. And 支援 alone would repeat 京都大学's own scope line word
- * for word. 支援・採択 is exactly the two relationships below it, and says
- * nothing they do not.
+ * The Japanese heading is 支援・採択 rather than 支援 alone, which would
+ * repeat 京都大学's own scope line word for word. 支援・採択 is exactly the
+ * two relationships below it, and says nothing they do not.
+ *
+ * The English heading is "Backed by", which is what the site's English
+ * glossary calls this band. It carries a caution that was written here
+ * when the same words were weighed, and turned down, as a heading for the
+ * Japanese page: beside the name of a firm that runs a venture fund,
+ * "backed by" can be read as an investment, and that is the one thing that
+ * must not be implied about ANOBAKA. What answers that reading is the line
+ * directly under the name, which says what the relationship is — a named
+ * programme, and "selected". So the English label is never to be shown
+ * without the scope lines, and nothing is to be added to it: no investor,
+ * partner or sponsor. If the reading is ever judged too close all the
+ * same, "Support & selection" is 支援・採択 word for word, and changing
+ * COPY.en.label to it changes nothing else here.
  *
  * The entries are a description list: an organisation, then what it is to
  * Blesc. That is the claim as a screen reader should hear it — "京都大学,
@@ -231,6 +313,24 @@ const FLOWER_TURN = 72;
  * break-keep: a Japanese name breaks only where it has a space, so 京都大学
  * is never split, and a Latin name still may wrap at its spaces rather than
  * run off a narrow screen.
+ *
+ * English layout. The label is the same width as the Japanese one (about
+ * 72px either way), but the entries are not: "Kyoto University" is a Latin
+ * wordmark of 201px at the 1.875rem floor where 京都大学 is 100px, and
+ * ANOBAKA's scope line is 260px against 195px. Those are Helvetica Neue;
+ * in Inter, which is what Android and Windows draw, they are 222px and
+ * 276px. At 768px the Container leaves 688px, and the row — label,
+ * hairline, both entries and the gaps between them — comes to 664px in
+ * Helvetica Neue and 702px in Inter, so on Inter the second entry would
+ * drop to a row of its own. From md to lg the English scope line is
+ * therefore set as two lines (SCOPE_CLASS, ScopeLine): the programme, then
+ * "Cohort 2 — selected". The row is then 540–568px, and the band is one
+ * 21px line taller there. From lg the line is whole again: 751px of the
+ * 944px the Container leaves at 1024px, in Inter. Below md nothing differs
+ * from the Japanese: side by side from sm (546px of 592px at 640px), and
+ * stacked below it, where the line fits whole down to about 325px and
+ * breaks between its two phrases under that. None of this applies to the
+ * Japanese page, whose classes are the ones it had.
  *
  * Motion is what keeps a band this small from sitting there. The pieces
  * close in on the hairline as it draws (see arrive and drawn), and the
@@ -252,9 +352,17 @@ const FLOWER_TURN = 72;
  * flower in mark-1 5.44:1 — both decorative, and both clear the 3:1
  * non-text line anyway.
  */
-export function Backing() {
+export function Backing({ locale: fromPage }: { locale?: Locale }) {
   const ref = useRef<HTMLElement>(null);
   const reduce = usePrefersReducedMotion();
+  /*
+   * The page hands every section its language as a prop, and the layout's
+   * provider holds the same one for client components. They cannot differ
+   * on a page; the prop is read first only so that the band can be rendered
+   * outside a provider and still be told what to say.
+   */
+  const fromLayout = useLocale();
+  const locale = fromPage ?? fromLayout;
 
   /*
    * The band's own box from entering the bottom of the viewport to leaving
@@ -317,7 +425,7 @@ export function Backing() {
               id="backing-title"
               className="whitespace-nowrap text-[0.85rem] font-medium tracking-[0.04em] text-muted"
             >
-              支援・採択
+              {COPY[locale].label}
             </h2>
           </motion.div>
 
@@ -338,44 +446,57 @@ export function Backing() {
           />
 
           <dl className="flex flex-col items-center gap-y-5 sm:flex-row sm:flex-wrap sm:items-start sm:justify-center sm:gap-x-12 md:justify-start md:gap-x-[clamp(2.5rem,5vw,4.5rem)]">
-            {BACKERS.map((backer, i) => (
-              <motion.div
-                key={backer.name}
-                variants={arrive(24, 0.2 + i * 0.1, reduce)}
-                className="flex flex-col items-center text-center md:items-start md:text-left"
-              >
-                <dt
-                  className={`flex items-center justify-center md:justify-start ${NAME_CELL}`}
+            {BACKERS.map((backer, i) => {
+              const name = backer.name[locale];
+              return (
+                /*
+                  Keyed by the Japanese name in either language: it is the
+                  entry's identity, not what the entry shows.
+                */
+                <motion.div
+                  key={backer.name.ja}
+                  variants={arrive(24, 0.2 + i * 0.1, reduce)}
+                  className="flex flex-col items-center text-center md:items-start md:text-left"
                 >
-                  {backer.logo ? (
-                    <Image
-                      src={backer.logo.src}
-                      width={backer.logo.width}
-                      height={backer.logo.height}
-                      alt={backer.name}
-                      className={`${LOGO_HEIGHT} w-auto`}
-                    />
-                  ) : (
-                    /*
-                      Weight 300: the hero's voice, which is Helvetica Neue
-                      Light on the Latin and Hiragino Sans W3 on the kanji.
-                    */
-                    <span
-                      className={`font-light leading-[1.1] tracking-[-0.015em] text-balance break-keep text-ink [font-feature-settings:'palt'_1] ${
-                        isLatin(backer.name)
-                          ? WORDMARK_SIZE.latin
-                          : WORDMARK_SIZE.japanese
-                      }`}
-                    >
-                      {backer.name}
-                    </span>
-                  )}
-                </dt>
-                <dd className="mt-1.5 text-balance break-keep text-[0.875rem] leading-[1.5] text-muted">
-                  {backer.scope}
-                </dd>
-              </motion.div>
-            ))}
+                  <dt
+                    className={`flex items-center justify-center md:justify-start ${NAME_CELL}`}
+                  >
+                    {backer.logo ? (
+                      <Image
+                        src={backer.logo.src}
+                        width={backer.logo.width}
+                        height={backer.logo.height}
+                        alt={name}
+                        className={`${LOGO_HEIGHT} w-auto`}
+                      />
+                    ) : (
+                      /*
+                        Weight 300: the hero's voice, which is Helvetica Neue
+                        Light on the Latin and Hiragino Sans W3 on the kanji.
+
+                        The size follows the name as it is written in this
+                        language, so "Kyoto University" is set as the Latin
+                        wordmark it is, at ANOBAKA's size. palt and
+                        break-keep are for the kanji and do nothing to a
+                        Latin name, which breaks only at its spaces anyway.
+                      */
+                      <span
+                        className={`font-light leading-[1.1] tracking-[-0.015em] text-balance break-keep text-ink [font-feature-settings:'palt'_1] ${
+                          isLatin(name)
+                            ? WORDMARK_SIZE.latin
+                            : WORDMARK_SIZE.japanese
+                        }`}
+                      >
+                        {name}
+                      </span>
+                    )}
+                  </dt>
+                  <dd className={SCOPE_CLASS[locale]}>
+                    <ScopeLine text={backer.scope[locale]} />
+                  </dd>
+                </motion.div>
+              );
+            })}
           </dl>
         </motion.div>
       </Container>

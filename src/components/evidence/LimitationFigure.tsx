@@ -1,6 +1,8 @@
 "use client";
 
 import { motion, useReducedMotion, type Variants } from "motion/react";
+import { useLocale } from "@/components/LocaleProvider";
+import type { Locale } from "@/lib/i18n";
 import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
 
 /**
@@ -20,8 +22,10 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
  * the same faint neutral marks, the same single accent, the same hairline.
  *
  * Every one is aria-hidden. The heading and the sentence beside them carry the
- * whole claim, and the only words inside a figure — はい and いいえ — are lifted
- * from the sentence they sit under.
+ * whole claim, and the only words inside a figure — はい and いいえ, or Yes and
+ * No on the English page — are lifted from the sentence they sit under. Those
+ * two labels are the only thing here that has a language; the figure reads it
+ * with useLocale.
  *
  * Each has exactly one beat, held back half a second so it plays as the row
  * settles rather than during its reveal, and each beat is the sentence's verb:
@@ -50,6 +54,17 @@ const LINK = "h-px shrink-0 bg-ink/20";
 
 const CHOICE = "px-5 py-1.5 text-center text-[0.8rem] font-medium whitespace-nowrap";
 
+/*
+ * The survey's two answers, as 構造的な限界's first sentence writes them in
+ * each language. The control sizes itself to the longer label — two equal
+ * columns, each as wide as いいえ or as Yes — so the shorter English pair
+ * makes a narrower pill and needs no classes of its own.
+ */
+const ANSWERS = {
+  ja: { yes: "はい", no: "いいえ" },
+  en: { yes: "Yes", no: "No" },
+} as const;
+
 /**
  * The survey itself: a two-answer control with the answer already given.
  *
@@ -64,7 +79,8 @@ const CHOICE = "px-5 py-1.5 text-center text-[0.8rem] font-medium whitespace-now
  * only one that changes colour. text-canvas, not text-ink: mark-1 is a mid blue,
  * and its label has to be the white page ground to clear AA (5.44:1).
  */
-function BinaryAnswer({ reduce }: { reduce: boolean }) {
+function BinaryAnswer({ reduce, locale }: { reduce: boolean; locale: Locale }) {
+  const { yes, no } = ANSWERS[locale];
   const fill: Variants = {
     rest: { x: reduce ? "0%" : "100%" },
     beat: { x: "0%", transition: settle() },
@@ -77,8 +93,8 @@ function BinaryAnswer({ reduce }: { reduce: boolean }) {
   return (
     <div className="relative inline-flex rounded-full border border-line bg-inset p-1">
       <div className="grid grid-cols-2">
-        <span className={`${CHOICE} text-muted`}>はい</span>
-        <span className={`${CHOICE} text-muted`}>いいえ</span>
+        <span className={`${CHOICE} text-muted`}>{yes}</span>
+        <span className={`${CHOICE} text-muted`}>{no}</span>
       </div>
 
       <motion.div
@@ -86,8 +102,8 @@ function BinaryAnswer({ reduce }: { reduce: boolean }) {
         variants={fill}
       >
         <motion.div className="grid w-[200%] grid-cols-2" variants={label}>
-          <span className={`${CHOICE} text-canvas`}>はい</span>
-          <span className={`${CHOICE} text-canvas`}>いいえ</span>
+          <span className={`${CHOICE} text-canvas`}>{yes}</span>
+          <span className={`${CHOICE} text-canvas`}>{no}</span>
         </motion.div>
       </motion.div>
     </div>
@@ -184,6 +200,7 @@ export type FigureKind = "binary" | "isolating" | "attention";
 
 export function LimitationFigure({ kind }: { kind: FigureKind }) {
   const reduce = useReducedMotion() ?? false;
+  const locale = useLocale();
 
   return (
     <motion.div
@@ -194,7 +211,7 @@ export function LimitationFigure({ kind }: { kind: FigureKind }) {
       viewport={VIEWPORT}
       variants={{ rest: {}, beat: {} }}
     >
-      {kind === "binary" && <BinaryAnswer reduce={reduce} />}
+      {kind === "binary" && <BinaryAnswer reduce={reduce} locale={locale} />}
       {kind === "isolating" && <Isolating reduce={reduce} />}
       {kind === "attention" && <Attention reduce={reduce} />}
     </motion.div>

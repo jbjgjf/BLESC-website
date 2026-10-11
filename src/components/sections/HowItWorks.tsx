@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 import { Frame, ViewLabel } from "@/components/mock";
 import { Reveal } from "@/components/Reveal";
 import {
@@ -10,9 +11,19 @@ import {
   TrendMock,
 } from "@/components/StepMockups";
 import { Section, SectionTitle } from "@/components/ui";
+import type { Locale } from "@/lib/i18n";
 
-type Step = {
-  n: string;
+/** The section's title and the line under it, in each language. */
+const COPY = {
+  ja: { title: "仕組み", lead: "日記を書いてから、先生に記録が届くまで。" },
+  en: {
+    title: "How it works",
+    lead: "From a diary entry to the record a teacher receives.",
+  },
+} as const;
+
+/** What a step says, in one language. */
+type StepCopy = {
   /** The step, in a few characters — not a summary of it. */
   title: string;
   /** One short, plain sentence. No new facts: this restates the old caption. */
@@ -26,6 +37,10 @@ type Step = {
    * Only the one row along its foot reaches the teacher.
    */
   view: string;
+};
+
+type Step = {
+  n: string;
   /**
    * The meaning mark for that point of view: it tints the panel and dots the
    * label, so the move from the student's screens to the analysis is seen
@@ -34,42 +49,139 @@ type Step = {
   mark: 1 | 2 | 3;
   /** The screen this step happens on. */
   mock: () => React.ReactElement;
-};
+} & Record<Locale, StepCopy>;
 
+/*
+ * The English beside each step is a translation of the Japanese above it,
+ * and claims no more than it does. Two of them are worded with care:
+ *
+ * - 03's 会話ではなく is "There is no back-and-forth." The point of the
+ *   sentence is that the AI does not hold an exchange with the student, and
+ *   this says so without calling the product, even in a denial, by the name
+ *   of the thing it is not.
+ * - 04 is 捉える, not 検知: "capture", and "a clue for telling … from …",
+ *   never a word for finding or measuring something in a student. Its last
+ *   sentence is a negation in both languages and has to stay one
+ *   (docs/claims.md §1).
+ */
 const STEPS: Step[] = [
   {
     n: "01",
-    title: "全生徒が対象",
-    body: "希望者だけでなく、クラス全員が使います。",
-    view: "クラス",
     mark: 3,
     mock: ClassMock,
+    ja: {
+      title: "全生徒が対象",
+      body: "希望者だけでなく、クラス全員が使います。",
+      view: "クラス",
+    },
+    en: {
+      title: "Every student is included",
+      body: "The whole class uses it, not only the students who choose to.",
+      view: "Class",
+    },
   },
   {
     n: "02",
-    title: "日記を書く",
-    body: "好きなときに、内容も長さも自由に書けます。",
-    view: "生徒の画面",
     mark: 1,
     mock: DiaryMock,
+    ja: {
+      title: "日記を書く",
+      body: "好きなときに、内容も長さも自由に書けます。",
+      view: "生徒の画面",
+    },
+    en: {
+      title: "Write a diary",
+      body: "Students can write in their own time, about anything and at any length.",
+      view: "Student’s screen",
+    },
   },
   {
     n: "03",
-    title: "AIが問いを返す",
-    body: "会話ではなく、短い問いをひとつだけ返します。",
-    view: "生徒の画面",
     mark: 1,
     mock: ProbeMock,
+    ja: {
+      title: "AIが問いを返す",
+      body: "会話ではなく、短い問いをひとつだけ返します。",
+      view: "生徒の画面",
+    },
+    en: {
+      title: "The AI replies with a question",
+      body: "There is no back-and-forth. The AI replies with just one short question.",
+      view: "Student’s screen",
+    },
   },
   {
     n: "04",
-    title: "変化を捉える",
-    body: "一日だけの落ち込みか、続いている変化かを見分ける手がかりになります。心理的リスクの判定は行いません。",
-    view: "Blescの分析",
     mark: 2,
     mock: TrendMock,
+    ja: {
+      title: "変化を捉える",
+      body: "一日だけの落ち込みか、続いている変化かを見分ける手がかりになります。心理的リスクの判定は行いません。",
+      view: "Blescの分析",
+    },
+    en: {
+      title: "Capture changes",
+      body: "This gives a clue for telling a one-day dip from a continuing change. Blesc does not assess psychological risk.",
+      view: "Blesc’s analysis",
+    },
   },
 ];
+
+/*
+ * Where English is set differently from Japanese. Each is a whole class
+ * string picked by locale — Tailwind only generates classes it can read —
+ * and the Japanese string is the one the markup always had.
+ */
+
+/**
+ * The line under the title. English breaks at spaces, so on a phone, where
+ * the line does not fit, an unbalanced wrap leaves its last word or two on
+ * a line of their own; text-balance splits it evenly instead.
+ */
+const LEAD: Record<Locale, string> = {
+  ja: "text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.5] tracking-[-0.02em] text-ink",
+  en: "text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.5] tracking-[-0.02em] text-balance text-ink",
+};
+
+/**
+ * A step's title. The pinned layout's column is 255px wide at 768px, where
+ * "The AI replies with a question" takes two lines and would leave
+ * "question" alone on the second; balanced, it breaks in the middle.
+ */
+const STEP_TITLE: Record<Locale, string> = {
+  ja: "mt-2 text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink transition-colors duration-500",
+  en: "mt-2 text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-balance text-ink transition-colors duration-500",
+};
+
+/**
+ * A step's sentence. measure-jp is the leading and tracking Japanese
+ * paragraphs want (1.9, 0.01em); Latin text at the same size is set
+ * tighter, with no added tracking. text-pretty, because English breaks at
+ * spaces and two of these otherwise end on a word by itself — "length." on
+ * a 320px phone, "question." in the pinned layout's 255px column at 768px.
+ */
+const STEP_BODY: Record<Locale, string> = {
+  ja: "measure-jp mt-3 max-w-[26rem] text-[1.0625rem] text-muted",
+  en: "mt-3 max-w-[26rem] text-[1.0625rem] leading-[1.7] text-pretty text-muted",
+};
+
+/**
+ * The panel's height in the list — below 768px, and at any width under
+ * prefers-reduced-motion or without a script. The pinned layout sets its
+ * own (PIN.frame), the same for both languages.
+ *
+ * English is 22rem from the narrowest phone rather than from 640px. The
+ * windows fill the panel, and what they hold is longer in English: the
+ * diary entry is four lines where the Japanese is three, and five on a
+ * 320px screen, and the observation along the foot of step 04 takes two
+ * lines where the Japanese takes one. At 20rem the fifth line pushes the
+ * character count out of the writing surface; the extra 2rem holds it, and
+ * gives step 04's chart back the height its foot took.
+ */
+const FRAME: Record<Locale, string> = {
+  ja: "h-[20rem] sm:h-[22rem]",
+  en: "h-[22rem]",
+};
 
 /**
  * When the pinned layout is on. The same three conditions as the `js:`,
@@ -158,8 +270,17 @@ const PIN = {
  * panel in the list — and it is the panel's width in both (the list's
  * max-w-2xl is on the box, not the panel), so the thread always leaves from
  * the middle of the panel's foot.
+ *
+ * The page hands every section its language, and the layout sets the same
+ * one in context for client components like this. The prop is used when it
+ * is there, so the section answers to the page that rendered it; the two
+ * cannot differ, both being the route's. The four screens ask the context
+ * themselves (StepMockups).
  */
-export function HowItWorks() {
+export function HowItWorks({ locale: fromPage }: { locale?: Locale }) {
+  const fromLayout = useLocale();
+  const locale = fromPage ?? fromLayout;
+  const copy = COPY[locale];
   const [state, setState] = useState({
     active: 0,
     plays: STEPS.map(() => 0),
@@ -221,13 +342,11 @@ export function HowItWorks() {
   return (
     <Section id="how">
       <Reveal>
-        <SectionTitle>仕組み</SectionTitle>
+        <SectionTitle>{copy.title}</SectionTitle>
       </Reveal>
 
       <Reveal className="max-w-2xl">
-        <p className="text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.5] tracking-[-0.02em] text-ink">
-          日記を書いてから、先生に記録が届くまで。
-        </p>
+        <p className={LEAD[locale]}>{copy.lead}</p>
       </Reveal>
 
       {/*
@@ -243,6 +362,7 @@ export function HowItWorks() {
       >
         {STEPS.map((step, i) => {
           const Mock = step.mock;
+          const text = step[locale];
           const active = i === state.active;
 
           return (
@@ -268,15 +388,13 @@ export function HowItWorks() {
                   {step.n}
                 </p>
                 <h3
-                  className={`mt-2 text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink transition-colors duration-500 ${
+                  className={`${STEP_TITLE[locale]} ${
                     active ? "" : "js:md:motion-safe:text-muted"
                   }`}
                 >
-                  {step.title}
+                  {text.title}
                 </h3>
-                <p className="measure-jp mt-3 max-w-[26rem] text-[1.0625rem] text-muted">
-                  {step.body}
-                </p>
+                <p className={STEP_BODY[locale]}>{text.body}</p>
               </Reveal>
 
               <div
@@ -289,8 +407,8 @@ export function HowItWorks() {
                   <Reveal>
                     <Frame
                       tint={step.mark}
-                      label={<ViewLabel mark={step.mark}>{step.view}</ViewLabel>}
-                      className={`h-[20rem] sm:h-[22rem] ${PIN.frame}`}
+                      label={<ViewLabel mark={step.mark}>{text.view}</ViewLabel>}
+                      className={`${FRAME[locale]} ${PIN.frame}`}
                     >
                       <Mock key={state.plays[i]} />
                     </Frame>

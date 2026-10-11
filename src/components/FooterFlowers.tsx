@@ -46,7 +46,11 @@ import { usePrefersReducedMotion } from "@/lib/reducedMotion";
  * side is (viewport − 768) / 2: 128px at 1024, 256px at 1280, 336px at 1440.
  * Every other row — the buttons, the nav line, the address, the copyright —
  * is narrower than the heading and centred, so the heading's box is the
- * bound. Each cluster is anchored 3vw in from its edge (3vw − 3.5rem at lg,
+ * bound. That holds in English as it does in Japanese: the English heading
+ * is on the same 768px measure (724px of type at its largest), its two
+ * buttons are about 425px together and its nav line 731px at the widest
+ * (see Footer), so the clusters need nothing of their own per language.
+ * Each cluster is anchored 3vw in from its edge (3vw − 3.5rem at lg,
  * which tucks it part-way off the page) and the figures below are how far
  * inward its marks reach from the page edge.
  *

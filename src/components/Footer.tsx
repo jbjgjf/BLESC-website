@@ -2,10 +2,24 @@
 
 import { FooterFlowers } from "@/components/FooterFlowers";
 import { GradientFooter } from "@/components/GradientFooter";
+import { useLocale } from "@/components/LocaleProvider";
 import { WordmarkReveal } from "@/components/WordmarkReveal";
 import { usePathname } from "next/navigation";
 import { ButtonLink, Container, Icon } from "@/components/ui";
-import { CONTACT_EMAIL, CTA, FOOTER_LINKS, sectionHref } from "@/lib/site";
+import {
+  localePath,
+  otherLocale,
+  switchLocalePath,
+  type Locale,
+} from "@/lib/i18n";
+import {
+  CONTACT_EMAIL,
+  FOOTER_NAV,
+  LANGUAGE_SWITCH,
+  ctaFor,
+  sectionHref,
+} from "@/lib/site";
+import { TRUST_PATH, TRUST_TITLE } from "@/lib/trust";
 
 /**
  * One treatment for every link in the utility line — the section links and
@@ -22,8 +36,70 @@ import { CONTACT_EMAIL, CTA, FOOTER_LINKS, sectionHref } from "@/lib/site";
 const QUIET_LINK =
   "text-[0.9rem] text-muted transition-colors duration-300 [@media(hover:hover)_and_(pointer:fine)]:hover:text-ink";
 
+/*
+ * The link row's layout, used twice: by the row itself, whose two items are
+ * the lists, and by the list of sections inside it, whose items are the
+ * links. The same gaps at both levels are what make two lists read as one
+ * line of type.
+ */
+const LINK_ROW =
+  "flex flex-wrap items-baseline justify-center gap-x-5 gap-y-3";
+
+/*
+ * The footer's own words, per language. The buttons' labels are ctaFor's,
+ * the section names FOOTER_NAV's and the page title TRUST_TITLE's, so what
+ * is left to say here is the invitation and the name of the link row.
+ *
+ * `headingClass` is a whole class string per language: the two headings
+ * share a measure and a size and differ in weight, tracking and palt.
+ */
+const COPY: Record<
+  Locale,
+  { heading: string; headingClass: string; navLabel: string }
+> = {
+  ja: {
+    heading: "導入について、お話ししませんか。",
+    headingClass:
+      "mx-auto max-w-3xl text-center text-[clamp(1.625rem,3.6vw,2.375rem)] font-medium leading-[1.3] tracking-[-0.025em] text-ink [font-feature-settings:'palt'_1]",
+    navLabel: "フッターナビゲーション",
+  },
+  en: {
+    heading: "Talk to us about bringing Blesc to your school.",
+    /*
+      The same invitation, on the same measure and the same size, set the
+      way the site sets Latin at display size: Helvetica Neue Light. At 500
+      this line is 769px at the top of its clamp, one pixel more than the
+      768px measure, and drops its last word alone onto a second line; at
+      300 it is 724px and sits on one. text-balance is for everything
+      narrower, and for a fallback face wide enough to wrap it (Inter is
+      782px) — two even lines rather than a line and an orphan. No palt:
+      it is a Japanese feature and there is no Japanese in the line.
+    */
+    headingClass:
+      "mx-auto max-w-3xl text-balance text-center text-[clamp(1.625rem,3.6vw,2.375rem)] font-light leading-[1.3] tracking-[-0.02em] text-ink",
+    navLabel: "Footer",
+  },
+};
+
 export function Footer() {
-  const onHome = usePathname() === "/";
+  const pathname = usePathname();
+
+  /*
+   * The language is the layout's, through LocaleProvider, as it is for the
+   * nav: the invitation, the two buttons and the link row are in it. The
+   * address, the copyright, the wordmark and the glow are the same in both.
+   *
+   * The path decides only what a path should: whether the section links
+   * scroll or navigate, which link is the current page, and where the
+   * language switch leads.
+   */
+  const locale = useLocale();
+  const t = COPY[locale];
+  const cta = ctaFor(locale);
+  const home = localePath(locale, "/");
+  const onHome = pathname === home;
+  const trustHref = localePath(locale, TRUST_PATH);
+  const toOther = LANGUAGE_SWITCH[otherLocale(locale)];
 
   /*
    * `relative` is the only positioning the footer gets. Nothing else — no
@@ -73,24 +149,28 @@ export function Footer() {
             reasons from exactly that figure, so widening this would need the
             clusters re-checked.
           */}
-          <h2 className="mx-auto max-w-3xl text-center text-[clamp(1.625rem,3.6vw,2.375rem)] font-medium leading-[1.3] tracking-[-0.025em] text-ink [font-feature-settings:'palt'_1]">
-            導入について、お話ししませんか。
-          </h2>
+          <h2 className={t.headingClass}>{t.heading}</h2>
 
           {/*
             The only route to the form the footer now needs: both hrefs are
-            CONTACT_PATH with the enquiry pre-selected, so the separate
+            the contact page with the enquiry pre-selected, so the separate
             お問い合わせフォーム text link was a third door onto the same page.
 
             items-center keeps the stacked buttons at their own width and
             centred on a phone, rather than stretched to the column.
+
+            The same two in either language, each leading to that language's
+            form (ctaFor). The English pair is the wider — about 206px a
+            button against 118px and 150px — and still a row from sm: about
+            425px with the gap, of the 592px a 640px screen leaves. Stacked
+            on a phone, the wider is 210px of the 272px at 320px.
           */}
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <ButtonLink variant="secondary" href={CTA.document.href}>
-              {CTA.document.label}
+            <ButtonLink variant="secondary" href={cta.document.href}>
+              {cta.document.label}
             </ButtonLink>
-            <ButtonLink variant="primary" href={CTA.consult.href}>
-              {CTA.consult.label}
+            <ButtonLink variant="primary" href={cta.consult.href}>
+              {cta.consult.label}
             </ButtonLink>
           </div>
 
@@ -106,17 +186,76 @@ export function Footer() {
               Kept, but laid down as one wrapping line instead of a titled
               column. The nav hides its own link list below md with no menu
               behind it, so these are the only links to the sections on a
-              phone — six items on two lines rather than six stacked rows.
+              phone.
+
+              Two lists on that one line: the sections of the page, then the
+              links that leave it — the 安全とプライバシー page and this page
+              in the other language. They are separate lists because they
+              have to wrap differently. The sections may break anywhere; the
+              pair may not be split. In a single list there is a band of
+              widths just under the one where everything fits — 782 to
+              848px, and a 10- or 11-inch iPad held upright is 810 to 834 —
+              in which the line has room for 安全とプライバシー and not for
+              "English", and the switch sits alone on a second line. As one
+              flex item the pair moves down together or not at all, which on
+              a phone makes it the third line.
+
+              gap-x-5, where this was gap-x-6. Nine labels are 608px of type
+              (Hiragino Sans at 0.9rem is 14.4px a character; "English" is
+              47), and at 24px apart the line ran to 800px. FooterFlowers
+              lays its clusters out against the 768px heading on the
+              understanding that no row under it is wider; at 20px the line
+              is 768px, the heading's own width, so the heading is still the
+              bound.
+
+              The English row is the same nine links and the narrower: 541px
+              of type in Helvetica Neue and 571px in Inter, so 701px and
+              731px with the gaps — under the 768px bound in either face,
+              with nothing changed for it. Its labels have spaces in them
+              and still do not break inside: each link is a flex item, which
+              is laid out at its full width and moves to the next line whole
+              (the widest, "Safety & Privacy", is 112px in Inter).
             */}
-            <nav aria-label="フッターナビゲーション">
-              <ul className="flex flex-wrap items-baseline justify-center gap-x-6 gap-y-3">
-                {FOOTER_LINKS.map(({ id, label }) => (
+            <nav aria-label={t.navLabel} className={LINK_ROW}>
+              <ul className={LINK_ROW}>
+                {FOOTER_NAV[locale].map(({ id, label }) => (
                   <li key={id}>
-                    <a href={sectionHref(id, onHome)} className={QUIET_LINK}>
+                    <a
+                      href={sectionHref(id, onHome, home)}
+                      className={QUIET_LINK}
+                    >
                       {label}
                     </a>
                   </li>
                 ))}
+              </ul>
+
+              <ul className="flex shrink-0 items-baseline gap-x-5">
+                <li>
+                  <a
+                    href={trustHref}
+                    aria-current={pathname === trustHref ? "page" : undefined}
+                    className={QUIET_LINK}
+                  >
+                    {TRUST_TITLE[locale]}
+                  </a>
+                </li>
+                {/*
+                  The language switch: this page in the other language. lang
+                  is the language the label is written in and hrefLang that
+                  of the page it opens, so the one link on the page that is
+                  in another language is not read in the wrong voice.
+                */}
+                <li>
+                  <a
+                    href={switchLocalePath(pathname)}
+                    lang={toOther.lang}
+                    hrefLang={toOther.lang}
+                    className={QUIET_LINK}
+                  >
+                    {toOther.label}
+                  </a>
+                </li>
               </ul>
             </nav>
 

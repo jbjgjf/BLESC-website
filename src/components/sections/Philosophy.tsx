@@ -7,22 +7,111 @@ import {
   useScroll,
   useTransform,
 } from "motion/react";
-import { useLayoutEffect, useRef } from "react";
+import { Fragment, useLayoutEffect, useRef } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 import { ShaderBackground } from "@/components/ShaderBackground";
 import { WebGLFallback } from "@/components/webgl/WebGLErrorBoundary";
 import { EXPO_OUT } from "@/lib/motion";
 import { FLOWER_NOTCH, FLOWER_PATH, FLOWER_SPIN_VIEWBOX } from "@/lib/flower";
+import type { Locale } from "@/lib/i18n";
 import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 import { LIGHT_PALETTE } from "@/lib/sky";
+import { ABOUT } from "@/lib/trust";
+
+/*
+ * The statement in each language, as the phrases a line may end on. The
+ * paragraph under it is not here: it is lib/trust's ABOUT, which already
+ * holds both languages side by side.
+ */
+const COPY = {
+  ja: { statement: ["声にならないSOSに、", "気づける社会へ。"] },
+  en: {
+    statement: [
+      "Toward a society",
+      "that notices",
+      "the SOS",
+      "no one says aloud.",
+    ],
+  },
+} as const;
+
+/*
+ * Where the English statement breaks: after each phrase but the last, on a
+ * phone or from md. It is three lines on a phone — society / SOS / aloud —
+ * and two from md, broken after "notices", and those two sets of breaks do
+ * not nest. So they are <br>s that each show at one width or the other,
+ * rather than the block spans the Japanese gets by with, whose one break
+ * simply goes away at md.
+ */
+const EN_BREAKS = ["md:hidden", "hidden md:inline", "md:hidden"] as const;
+
+/*
+ * The type of the two blocks of words, per language. Whole class strings,
+ * because Tailwind only generates what it can read. The Japanese cuts are
+ * explained where they are used, below; these are the reasons the English
+ * ones differ. The widths are worked out from the faces' advance widths —
+ * Helvetica Neue, and Inter, which Android and Windows fall back to and
+ * which runs about 8% wider — not measured in a browser.
+ *
+ * The statement. The Japanese line is 15.86em and spans the screen on one
+ * line; the English is 23.9em (25.7em in Inter) and cannot, at any size
+ * that still reads as a statement. So:
+ *
+ * - From md it is two lines, "Toward a society that notices" over "the SOS
+ *   no one says aloud.", 12.07em and 11.52em (13.09em and 12.30em in
+ *   Inter). At 5.4vw the longer is 65–71vw, inside the column at every
+ *   width, and the type stands 69px on a 1280px laptop, where the Japanese
+ *   stands 71px. Two lines are twice as tall as one, so the size also
+ *   answers to the height — 10svh — which only bites on a window that is
+ *   wide and short (63px at 1366×633), and keeps the paragraph on screen
+ *   there; 2rem is the floor under both. No whitespace-nowrap: nothing
+ *   needs it, and a face wider than Inter should wrap rather than run off
+ *   a stage that clips.
+ * - On a phone it is three lines, the longest "that notices the SOS" at
+ *   8.53em (9.04em in Inter). 8vw keeps that inside the column — the screen
+ *   less 48px — down to 320px in either face, and keeps three lines from
+ *   costing much more height than the Japanese two: 98px against 75px on a
+ *   390px phone.
+ *
+ * No palt: it is a Japanese feature, and there is no Japanese in the line.
+ *
+ * The paragraph. Latin text wraps at its spaces, so it needs neither
+ * break-keep nor wrap-anywhere, and it wants less leading than Japanese:
+ * 1.6 on a phone and 1.7 from md, against 1.75 and 1.9. At the same sizes
+ * and the same 42rem it is five lines from md (six in Inter) and nine or
+ * ten on a phone, where the Japanese is five and ten. text-pretty keeps a
+ * lone "teachers." off the last line on a phone, where ten lines are more
+ * than text-balance will take on; from md, balance evens the five or six.
+ *
+ * So the English column is 450–480px tall on a 1280×800 laptop and 392–421px
+ * on a 768×1024 tablet, against 640px and 864px between the nav and the
+ * matching clearance at the foot; and 460px on a 390×844 phone, 444px on an
+ * iPhone SE, the same as the Japanese to within a line.
+ */
+const TYPE = {
+  ja: {
+    statement:
+      "mt-[clamp(0.75rem,6svh,2rem)] text-[clamp(1.9rem,9.2vw,3.25rem)] font-light leading-[1.05] tracking-[-0.02em] text-ink [font-feature-settings:'palt'_1] md:mt-[clamp(0.75rem,6svh,2.5rem)] md:text-[5.55vw] md:whitespace-nowrap",
+    paragraph:
+      "mt-[clamp(0.75rem,4svh,1.5rem)] max-w-[42rem] text-balance break-keep wrap-anywhere text-[clamp(0.8rem,4vw,1rem)] leading-[1.75] text-ink md:mt-[clamp(0.75rem,5svh,2rem)] md:text-[1.0625rem] md:leading-[1.9]",
+  },
+  en: {
+    statement:
+      "mt-[clamp(0.75rem,6svh,2rem)] text-[clamp(1.6rem,8vw,3.25rem)] font-light leading-[1.05] tracking-[-0.02em] text-ink md:mt-[clamp(0.75rem,6svh,2.5rem)] md:text-[max(2rem,min(5.4vw,10svh))]",
+    paragraph:
+      "mt-[clamp(0.75rem,4svh,1.5rem)] max-w-[42rem] text-pretty text-[clamp(0.8rem,4vw,1rem)] leading-[1.6] text-ink md:mt-[clamp(0.75rem,5svh,2rem)] md:text-balance md:text-[1.0625rem] md:leading-[1.7]",
+  },
+} as const;
 
 /*
  * The pinned stretch, in fractions of its own scroll. The statement is
  * already there when the page opens, so the flower starts almost at once:
  * it drifts to the centre of the screen, grows and turns once, and the
- * statement fades as the petals pass over it. The flower's blue fills the
- * screen, and then the whole stage fades away over the hero, which has been
- * sitting underneath it the whole time — so the pin ends on the hero, with
- * nothing left to scroll.
+ * words — the statement and the paragraph under it, on one window — fade as
+ * the petals pass over them. The flower's blue fills the screen, and then
+ * the whole stage fades away over the hero, which has been sitting
+ * underneath it the whole time — so the pin ends on the hero, with nothing
+ * left to scroll.
  *
  * The short hold before DIVE is the first flick of a wheel or a thumb: the
  * statement should not start moving the instant a trackpad twitches.
@@ -57,9 +146,18 @@ const window01 = (p: number, [from, to]: readonly [number, number]) =>
  *
  * The page opens on the company's line under the sky, with the brand flower
  * breathing above it: the app's own greeting-screen composition, mark above
- * words. The line is the only text, and it is a paragraph rather than a
- * heading — the hero below still carries the page's h1, so the heading
- * outline starts where the argument does.
+ * words. Under the line is one paragraph that says what Blesc is — ABOUT in
+ * lib/trust, the company's wording, rendered as written — so a first-time
+ * visitor knows what the product is from the first screen, before anything
+ * has been scrolled. Both are paragraphs rather than headings — the hero
+ * below still carries the page's h1, so the heading outline starts where
+ * the argument does.
+ *
+ * Both are in the page's language: the same line and the same paragraph on
+ * / and on /en, each set in its own type (see TYPE). Nothing else differs —
+ * the stage, the flower and the dive are one piece of code, and the dive's
+ * geometry is measured off the laid-out column, so it follows whichever
+ * language's words made the column the height it is.
  *
  * Then the flower is the transition. The band pins, and the flower drifts to
  * the centre of the screen, turns once and grows until its blue is all
@@ -69,11 +167,21 @@ const window01 = (p: number, [from, to]: readonly [number, number]) =>
  * scroll.
  *
  * Reduced motion, or a page without JavaScript, gets one still screen: the
- * sky, the flower and the line at rest, and a hero that simply follows. The
- * dive runs on every pointer, phones included, because the dive is the
- * point.
+ * sky, the flower, the line and the paragraph at rest, and a hero that
+ * simply follows. The dive runs on every pointer, phones included, because
+ * the dive is the point.
  */
-export function Philosophy() {
+export function Philosophy({ locale: fromPage }: { locale?: Locale }) {
+  /*
+   * The page hands every section its language, and the layout sets the same
+   * one in context for client components like this. The prop is used when it
+   * is there, so a section answers to the page that rendered it; the two
+   * cannot differ, both being the route's.
+   */
+  const fromLayout = useLocale();
+  const locale = fromPage ?? fromLayout;
+  const type = TYPE[locale];
+
   const track = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const flower = useRef<HTMLDivElement>(null);
@@ -141,7 +249,12 @@ export function Philosophy() {
   /*
    * The drift to the centre finishes early in the dive, while the flower is
    * still small enough for the move to read as a move rather than as the
-   * whole screen sliding.
+   * whole screen sliding. It is a real journey: the column is centred as a
+   * whole, so with the paragraph in it the flower rests well above the
+   * stage's centre — about 155px on a laptop and 200px on a phone — and
+   * comes down across the words to get there. In English the column is
+   * taller on a laptop, two lines of statement for one, and the journey is
+   * 180–195px there; on a phone it is the same 200px.
    */
   const flowerY = useTransform(
     () => Math.min(1, dive.get() / 0.35) * toCentre.get(),
@@ -183,7 +296,10 @@ export function Philosophy() {
     /*
      * The column can change height without the window changing size — the
      * web fonts swapping in can move the statement between one line and two
-     * on a phone — and the drift to centre is worked out from that height.
+     * on a phone, or rewrap the paragraph under it — and the drift to centre
+     * is worked out from that height. The English paragraph is the likelier
+     * of the two to do it: it is five lines in Helvetica Neue and six in
+     * Inter.
      */
     const observer = new ResizeObserver(measure);
     const column = flower.current?.closest("[data-statement-column]");
@@ -233,13 +349,27 @@ export function Philosophy() {
           height the viewport grows to, and overflow-hidden clips the rest
           while the toolbar is still showing.
 
+          Still, it is one small viewport at least, and a minimum rather
+          than a height: this element clips, so the still screen has to be
+          able to grow with its words. The column is about 460px on a phone —
+          the paragraph runs to ten lines there — which the old 72svh, with
+          the nav over its top, could not hold.
+
+          py-20 is the fixed nav's height, kept clear at the top and matched
+          at the foot, and the column is centred by its own auto margins
+          (my-auto, below) rather than by items-center. Where the column
+          fits, the two are the same thing. Where it does not — a phone on
+          its side — auto margins fall to nothing, so the column starts
+          under the nav and runs off the foot, where items-center would have
+          pushed the flower up under the nav's links as well.
+
           pointer-events-none: nothing in the stage is interactive, and at
           the end of the pin it is a transparent layer over the hero's
           buttons, which have to take the click.
         */}
         <motion.div
           ref={stage}
-          className="pointer-events-none sticky top-0 flex min-h-[72svh] items-center justify-center overflow-hidden px-6 md:h-[100svh] md:px-10 motion-safe:js:h-[100lvh]"
+          className="pointer-events-none sticky top-0 flex min-h-[100svh] items-start justify-center overflow-hidden px-6 py-20 md:px-10 motion-safe:js:h-[100lvh]"
           style={{ opacity: reduce ? 1 : stageOpacity }}
         >
           {/*
@@ -259,20 +389,24 @@ export function Philosophy() {
               still screen hands over to the hero. The middle is left open,
               which is where the type sits — and it needs no ground of its
               own there: the sky's darkest pixel under the line read back off
-              the canvas as #95c3f0, and ink over that is 10.5:1.
+              the canvas as #95c3f0, and ink over that is 10.5:1. Over the
+              palette's deepest stop, #90bfed, which is as dark as the sky
+              can get, it is still 10.05:1.
             */}
             <div className="absolute inset-0 bg-[linear-gradient(180deg,var(--scrim-strong)_0%,var(--scrim-soft)_28%,var(--scrim-soft)_72%,var(--scrim-strong)_100%)]" />
           </div>
 
           {/*
             The entrance: the page's first frame, so it arrives on load
-            rather than on scroll — a short rise out of nothing, flower and
-            line together. The layout's noscript rule shows it at once
-            without a script, and reduced motion gets the fade alone.
+            rather than on scroll — a short rise out of nothing, flower,
+            line and paragraph together. The layout's noscript rule shows it
+            at once without a script, and reduced motion gets the fade alone.
+
+            my-auto is the vertical centring (see the stage, above).
           */}
           <motion.div
             data-statement-column
-            className="relative flex flex-col items-center text-center"
+            className="relative my-auto flex flex-col items-center text-center"
             initial={reduce ? { opacity: 0 } : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={
@@ -289,6 +423,15 @@ export function Philosophy() {
               box centred on the flower itself, so it turns in place rather
               than swinging about the artwork's off-centre box. It sits above
               the line, so the petals pass over the statement as it grows.
+
+              Its size, and the two gaps under it, are set in svh with their
+              usual values as the ceiling: the flower is its full 56px from
+              560px of height and its full 88px, from md, from about 630px —
+              in practice every phone held upright and every laptop window.
+              Below that the ornament and the air give way before the words
+              do, which is what keeps the paragraph's last line on a screen
+              390px tall. svh, not lvh: what has to fit is what shows before
+              the toolbar collapses.
             */}
             <motion.div
               aria-hidden
@@ -302,7 +445,7 @@ export function Philosophy() {
             >
               <motion.div
                 ref={flower}
-                className="size-14 text-accent md:size-22"
+                className="size-[clamp(2.25rem,10svh,3.5rem)] text-accent md:size-[clamp(2.5rem,14svh,5.5rem)]"
                 /*
                   No will-change here, deliberately. A promised layer is
                   rasterised once at the flower's resting size and then
@@ -331,13 +474,86 @@ export function Philosophy() {
               and palt. From md the statement is one line set in vw — 15.86em
               in Helvetica Neue Light and Hiragino Sans W3, so 5.55vw lands it
               at 88vw — and below md it breaks at the comma into two lines.
+
+              That is the Japanese. The English line is half as long again
+              and is set smaller, on two lines from md and three below it;
+              see TYPE and EN_BREAKS. The space before each <br> is the one
+              between the words when that break is not showing.
             */}
             <motion.p
               style={{ opacity: reduce ? 1 : lineOpacity }}
-              className="mt-8 text-[clamp(1.9rem,9.2vw,3.25rem)] font-light leading-[1.05] tracking-[-0.02em] text-ink [font-feature-settings:'palt'_1] md:mt-10 md:text-[5.55vw] md:whitespace-nowrap"
+              className={type.statement}
             >
-              <span className="block md:inline">声にならないSOSに、</span>
-              <span className="block md:inline">気づける社会へ。</span>
+              {locale === "ja"
+                ? COPY.ja.statement.map((phrase) => (
+                    <span key={phrase} className="block md:inline">
+                      {phrase}
+                    </span>
+                  ))
+                : COPY.en.statement.map((phrase, i) => (
+                    <Fragment key={phrase}>
+                      {phrase}
+                      {i < EN_BREAKS.length && (
+                        <>
+                          {" "}
+                          <br className={EN_BREAKS[i]} />
+                        </>
+                      )}
+                    </Fragment>
+                  ))}
+            </motion.p>
+
+            {/*
+              What Blesc is, in one paragraph, on the first screen: the
+              statement says what the company is for and nothing about what
+              the product does, and the page's plain description of it
+              (Intro) is several sections down. The words are lib/trust's
+              ABOUT, in the page's language — the paragraph the
+              安全とプライバシー page opens with too — rendered as written,
+              never reworded here.
+
+              It leaves with the statement, on the same motion value, and
+              arrives with it, inside the column's entrance.
+
+              Ink, in the regular weight. It sits straight on the sky like
+              the line above it: ink is 10.05:1 over the sky's deepest blue,
+              where the muted grey the site sets its other paragraphs in is
+              3.23:1, under AA at this size.
+
+              break-keep, so it only breaks after 、 and 。 — Japanese has no
+              spaces, and a centred paragraph left to itself breaks wherever
+              the width runs out, in the middle of a word. Every line then
+              ends where a clause does. Two numbers follow from that:
+
+              - From md it is five lines, and the longest of them is 38
+                characters, 646px at 17px. Hence 42rem: at 40rem that line
+                does not fit and the paragraph resets as six ragged ones.
+              - On a phone it is ten lines, one or two clauses each, and the
+                longest clause is 21 characters. The size is 4vw so that
+                clause fits the column — the screen less the stage's 48px of
+                padding — down to a 320px phone: 14.4px at 360px wide, 16px
+                from 400px. If it ever does not fit — a reader's own larger
+                text size — wrap-anywhere lets it break rather than run off
+                the screen.
+
+              text-balance evens the lines where the browser will (up to six
+              in Chrome), which is what stops a stranded last clause on the
+              widths just under md.
+
+              With this in it the column is 396px tall on a 1280×800 laptop,
+              which has 720px under the nav, and 445–460px on a phone, where
+              Safari with its toolbars showing leaves about 470px (an iPhone
+              SE) to 580px (an iPhone 14).
+
+              All of that is the Japanese setting. The English paragraph
+              breaks at its spaces and takes less leading; TYPE has its
+              classes and the heights they come to.
+            */}
+            <motion.p
+              style={{ opacity: reduce ? 1 : lineOpacity }}
+              className={type.paragraph}
+            >
+              {ABOUT[locale]}
             </motion.p>
           </motion.div>
 

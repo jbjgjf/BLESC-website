@@ -34,6 +34,7 @@
  * the discs at the narrowest width.
  */
 
+import type { Locale } from "@/lib/i18n";
 import type { SubgraphId } from "@/lib/ontologySeed";
 
 export const FRAME = { width: 720, height: 660 } as const;
@@ -101,8 +102,38 @@ export const POSITIONS: Record<string, readonly [number, number]> = {
  * for the 11px size and at 480, 520 and 576px for the 12px size. These are
  * the directions that cleared all of them. Lines may pass under a label —
  * its pill is what keeps it legible over them — but no dot is ever covered.
+ *
+ * THE ENGLISH NAMES ARE LONGER, and three of the five do not fit where the
+ * Japanese ones sit: 認知機能の低下 is 84px at 12px and "reduced
+ * concentration and memory" is 198, which to the left of its dot runs out of
+ * the frame and over 徹夜・深夜までの勉強 on the way. So the direction is
+ * chosen per language (STANDING_LABELS below), and English has three of its
+ * own, each a direction with a nudge:
+ *   rightRaised   right of the dot and 10px up, for the long name, which is
+ *                 also set on two lines (`firstLine` below). On one line it
+ *                 fits too, but ends above 人との関わりを避ける's dot and
+ *                 reads as that dot's name; on two it stops short of it;
+ *   leftLowered   left of the dot and 6px down, under the path's own line,
+ *                 which climbs away to the upper left;
+ *   belowShifted  under the dot with its centre 28px to the right, which
+ *                 keeps a name too wide for belowRight inside the frame and
+ *                 off 信頼できる大人とのつながり.
+ * The same check, run for the English names: every frame width from 400 to
+ * 576px in steps of 2 (480 up for the two hubs), 11px below 480 and 12px
+ * from it, with the widths of both faces the stack can resolve to —
+ * Helvetica Neue, and Inter, which sets about 4% wider — and again with
+ * every name a further 10% wider than Inter sets it. No dot is covered and
+ * no name leaves the frame; the two closest names stay 20px apart, and none
+ * lies across the highlighted path. The dots did not move.
  */
-export type Placement = "left" | "aboveLeft" | "aboveRight" | "belowRight";
+export type Placement =
+  | "left"
+  | "aboveLeft"
+  | "aboveRight"
+  | "belowRight"
+  | "rightRaised"
+  | "leftLowered"
+  | "belowShifted";
 
 /**
  * The names that stand without a pointer: the example path's three, which
@@ -116,16 +147,46 @@ export type Placement = "left" | "aboveLeft" | "aboveRight" | "belowRight";
  * closer together than their names are long, so no direction clears the
  * neighbouring dots; there the ordered list directly above the figure names
  * them, with the same ink-and-blue marker. The two hub names need the 12px
- * size's room and appear from 480px.
+ * size's room and appear from 480px. Both thresholds hold for English too.
+ *
+ * `placement` is per language, because the names are different lengths; the
+ * concepts, their order and their thresholds are the same in both.
+ *
+ * `firstLine` sets a name on two lines: how many of its words stay on the
+ * first. A count rather than the two halves written out, so the name is
+ * still the seed's and only the break is this file's.
  */
 export const STANDING_LABELS: readonly {
   id: string;
-  placement: Placement;
+  placement: Record<Locale, Placement>;
   minWidth: "path" | "hub";
+  firstLine?: Partial<Record<Locale, number>>;
 }[] = [
-  { id: "sleep_deprivation", placement: "aboveLeft", minWidth: "path" },
-  { id: "cognitive_impairment", placement: "left", minWidth: "path" },
-  { id: "depressed_mood", placement: "aboveRight", minWidth: "path" },
-  { id: "exam_pressure", placement: "belowRight", minWidth: "hub" },
-  { id: "social_withdrawal", placement: "belowRight", minWidth: "hub" },
+  {
+    id: "sleep_deprivation",
+    placement: { ja: "aboveLeft", en: "aboveLeft" },
+    minWidth: "path",
+  },
+  {
+    id: "cognitive_impairment",
+    placement: { ja: "left", en: "rightRaised" },
+    minWidth: "path",
+    // "reduced concentration" / "and memory"
+    firstLine: { en: 2 },
+  },
+  {
+    id: "depressed_mood",
+    placement: { ja: "aboveRight", en: "leftLowered" },
+    minWidth: "path",
+  },
+  {
+    id: "exam_pressure",
+    placement: { ja: "belowRight", en: "belowRight" },
+    minWidth: "hub",
+  },
+  {
+    id: "social_withdrawal",
+    placement: { ja: "belowRight", en: "belowShifted" },
+    minWidth: "hub",
+  },
 ];

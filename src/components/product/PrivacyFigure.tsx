@@ -7,20 +7,62 @@ import {
   type MotionValue,
 } from "motion/react";
 import { useRef, type ReactNode } from "react";
+import { useLocale } from "@/components/LocaleProvider";
 import { Logo } from "@/components/Logo";
 import { Chip, Composer, Frame, Screen } from "@/components/mock";
 import { Icon } from "@/components/ui";
+import type { Locale } from "@/lib/i18n";
 import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 import {
   BASIS,
   ENTRY,
-  ENTRY_LENGTH,
+  ENTRY_COUNT,
+  OBSERVATION_LABEL,
   REPORT_SORT,
   REPORT_TITLE,
   ROWS,
+  SCREEN_WORDS,
   STUDENT_BAR,
   TEACHER_BAR,
 } from "@/lib/sample";
+
+/*
+ * The two places English is laid out differently from Japanese. Both are
+ * whole class strings picked by locale — Tailwind only generates classes it
+ * can read.
+ */
+
+/**
+ * The band's height from 768px, where the two windows sit side by side and
+ * take their height from it.
+ *
+ * Japanese is 27rem, and 29rem from 1024px. English is 29rem from 768px.
+ * At 768px each window is 288px wide, and there the English observations
+ * run to two lines apiece, and the longest to three, where the Japanese
+ * run to one and two. The teacher's rows are centred in what the window
+ * has left, so rows that do not fit do not push the window taller — they
+ * run out of it at both ends, up into the title bar. 27rem holds six lines
+ * of observation and English can need seven; the extra 2rem holds them.
+ * From 1024px the windows are wide enough that both languages fit in the
+ * same 29rem.
+ *
+ * Below 768px the windows are stacked and as tall as what they hold, in
+ * either language.
+ */
+const BAND: Record<Locale, string> = {
+  ja: "md:h-[27rem] lg:h-[29rem]",
+  en: "md:h-[29rem]",
+};
+
+/**
+ * The entry on the writing surface: the same size in both languages, with
+ * the looser leading kana and kanji need kept for Japanese. See ENTRY_TEXT
+ * in StepMockups, which is this window's twin in 仕組み.
+ */
+const ENTRY_TEXT: Record<Locale, string> = {
+  ja: "text-[0.78rem] leading-[1.85] text-ink lg:text-[0.85rem]",
+  en: "text-[0.78rem] leading-[1.65] text-ink lg:text-[0.85rem]",
+};
 
 /**
  * The privacy boundary, as one figure.
@@ -63,10 +105,12 @@ import {
  * a translate would be measured mid-flight.
  *
  * Every string is sample data from @/lib/sample or a word the interface
- * itself says. Students are a class and a roll number.
+ * itself says, in the page's language: the figure and its two windows ask
+ * useLocale() and pick with it. Students are a class and a roll number.
  */
 export function PrivacyFigure({ children }: { children: ReactNode }) {
   const reduce = usePrefersReducedMotion();
+  const locale = useLocale();
   const ref = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -117,7 +161,7 @@ export function PrivacyFigure({ children }: { children: ReactNode }) {
         from 768px, where it runs down it. h-full so both windows take the
         Frame's height at md+ and the grid row stretches the wall to match.
       */}
-      <Frame tint={1} className="md:h-[27rem] lg:h-[29rem]">
+      <Frame tint={1} className={BAND[locale]}>
         <div className="grid h-full w-full gap-3 md:grid-cols-[1fr_auto_1fr] md:gap-4">
           <DiaryScreen scanX={scanX} scanOpacity={reduce ? 0 : scanOpacity} />
           <Wall glow={reduce ? 1 : wallGlow} />
@@ -165,31 +209,33 @@ function DiaryScreen({
   scanX: MotionValue<string>;
   scanOpacity: MotionValue<number> | number;
 }) {
+  const locale = useLocale();
+  const entry = ENTRY[locale];
+  const bar = STUDENT_BAR[locale];
+
   return (
     <Screen
       title={<Logo className="h-3 w-auto shrink-0" />}
       trailing={
         <span className="shrink-0 text-[0.7rem] tabular-nums text-muted">
-          {ENTRY.date}
+          {entry.date}
         </span>
       }
-      footer={<Composer note={STUDENT_BAR.note} action={STUDENT_BAR.action} />}
+      footer={<Composer note={bar.note} action={bar.action} />}
     >
       <p className="text-[0.78rem] font-medium tracking-[-0.01em] text-ink lg:text-[0.85rem]">
-        {ENTRY.prompt}
+        {entry.prompt}
       </p>
 
       {/* flex-1 and min-h-0: the writing surface absorbs whatever height the
           Frame gives this window beyond its content, so the bubble under it
           is never pushed out of the window. */}
       <div className="relative mt-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg bg-inset p-2.5">
-        <p className="text-[0.78rem] leading-[1.85] text-ink lg:text-[0.85rem]">
-          {ENTRY.body}
-        </p>
+        <p className={ENTRY_TEXT[locale]}>{entry.body}</p>
         {/* Counted from the text above, never typed out: the two cannot
             drift apart. */}
         <span className="mt-auto pt-1.5 text-right text-[0.66rem] tabular-nums text-muted">
-          {ENTRY_LENGTH}字
+          {ENTRY_COUNT[locale]}
         </span>
 
         <motion.div
@@ -209,10 +255,10 @@ function DiaryScreen({
       <div className="mt-2.5 max-w-[92%] shrink-0 rounded-xl rounded-bl-sm bg-accent/10 px-3 py-2.5">
         <p className="flex items-center gap-1 text-[0.66rem] font-medium tracking-[0.06em] text-mark-1">
           <Icon name="auto_awesome" size={12} className="shrink-0" />
-          AIからの問いかけ
+          {SCREEN_WORDS[locale].question}
         </p>
         <p className="mt-1.5 text-[0.8rem] leading-relaxed text-ink lg:text-[0.9rem]">
-          {ENTRY.followUp}
+          {entry.followUp}
         </p>
       </div>
     </Screen>
@@ -287,19 +333,21 @@ function ReportScreen({
   rowX: MotionValue<number> | number;
   observationOpacity: MotionValue<number> | number;
 }) {
+  const locale = useLocale();
+
   return (
     <Screen
-      title={REPORT_TITLE}
-      trailing={<Chip>{REPORT_SORT}</Chip>}
+      title={REPORT_TITLE[locale]}
+      trailing={<Chip>{REPORT_SORT[locale]}</Chip>}
       bodyClassName="flex flex-col justify-center divide-y divide-line px-3.5 py-1"
       footer={
         <span className="flex items-start gap-1.5 text-[0.66rem] leading-snug text-muted sm:text-[0.7rem]">
           <Icon name="lock" size={13} className="mt-px shrink-0" />
-          {TEACHER_BAR.note}
+          {TEACHER_BAR[locale].note}
         </span>
       }
     >
-      {ROWS.map((row, i) => {
+      {ROWS[locale].map((row, i) => {
         const first = i === 0;
         return (
           /*
@@ -332,9 +380,9 @@ function ReportScreen({
               className="mt-1 text-[0.75rem] leading-snug text-ink lg:text-[0.8rem]"
               style={first ? { opacity: observationOpacity } : undefined}
             >
-              観測: {row.observation}
+              {OBSERVATION_LABEL[locale]}: {row.observation}
             </motion.p>
-            <p className="mt-0.5 text-[0.66rem] text-muted">└ {BASIS}</p>
+            <p className="mt-0.5 text-[0.66rem] text-muted">└ {BASIS[locale]}</p>
           </motion.div>
         );
       })}
