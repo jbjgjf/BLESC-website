@@ -188,11 +188,15 @@ export function PrivacyFigure({ children }: { children: ReactNode }) {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The diary, a moment after the question came back.
+ * The diary, a moment after it was submitted on a hard day.
  *
  * The same window as the 仕組み diary — same prompt, same writing surface,
- * same foot — with the AI's one question under the entry, drawn exactly as
- * the probe screen draws it. Static: this is the side with words on it, and
+ * same foot — with the follow-up question under the entry, drawn as the
+ * probe screen draws it: one question from the product's fixed script,
+ * under the product's own heading for it. It used to be labelled as a
+ * question from the AI, under a sparkle, and to quote the entry; the
+ * product asks set questions that no AI writes (jbjgjf/BLESC#467,
+ * docs/claims.md §5). Static: this is the side with words on it, and
  * the only thing that moves here is the scanner reading them.
  *
  * The scanner sits inside the writing surface so its corners clip it. It is
@@ -253,8 +257,7 @@ function DiaryScreen({
         white window, #f3f9fd), where mark-1 holds 5.11:1.
       */}
       <div className="mt-2.5 max-w-[92%] shrink-0 rounded-xl rounded-bl-sm bg-accent/10 px-3 py-2.5">
-        <p className="flex items-center gap-1 text-[0.66rem] font-medium tracking-[0.06em] text-mark-1">
-          <Icon name="auto_awesome" size={12} className="shrink-0" />
+        <p className="text-[0.66rem] font-medium tracking-[0.06em] text-mark-1">
           {SCREEN_WORDS[locale].question}
         </p>
         <p className="mt-1.5 text-[0.8rem] leading-relaxed text-ink lg:text-[0.9rem]">

@@ -37,11 +37,15 @@
  *   first of all with what Blesc does not do.
  * - No "chat", "chatbot" or "conversation", even in a denial. The Japanese
  *   question is about 汎用のAIチャット and its answer opens
- *   会話を続けるチャットではなく; here the other thing is "a general-purpose
- *   AI assistant" and the denial is "does not keep a back-and-forth going",
- *   which is how 仕組み 03 says it (components/sections/HowItWorks). It is
- *   still a negation. Blesc's AI is only ever said to reply with one
- *   follow-up question.
+ *   会話を続けるチャットではありません; here the other thing is "a
+ *   general-purpose AI assistant" and the denial is "does not keep a
+ *   back-and-forth going". It is still a negation.
+ * - The follow-up is "up to three set questions", asked "on hard days, or
+ *   when an entry is short", any of which "can be skipped" — the words
+ *   仕組み 03 uses (components/sections/HowItWorks). It used to be "one
+ *   short follow-up question" from Blesc's own AI; the product's follow-up
+ *   is a fixed script that no AI writes and that is not drawn from the
+ *   entry (jbjgjf/BLESC#467, docs/claims.md §5). Never say otherwise.
  * - The ontology answers use the words テクノロジー shows for the same
  *   things, as the Japanese ones do: "links", "academic pressure" (the
  *   area's label in lib/ontologySeed.ts), "our own judgment", "which one is
@@ -66,7 +70,7 @@ import { ENQUIRY_LABELS } from "@/lib/site";
 export const FAQ_EN: readonly { q: string; a: string }[] = [
   {
     q: "What is Blesc?",
-    a: "Blesc is a mental health platform for schools. Its own AI follows up on the diary each student writes in their own time, and Blesc captures changes in wording and in how a student writes and makes them visible. Blesc does not assess psychological risk, and it does not diagnose a student’s mental or physical condition.",
+    a: "Blesc is a mental health platform for schools. From the diary each student writes in their own time, it captures changes in wording and in how a student writes and makes them visible. Blesc does not assess psychological risk, and it does not diagnose a student’s mental or physical condition.",
   },
   {
     q: "Do teachers read what students write in their diaries?",
@@ -78,11 +82,11 @@ export const FAQ_EN: readonly { q: string; a: string }[] = [
   },
   {
     q: "How is Blesc different from a general-purpose AI assistant?",
-    a: "Blesc does not keep a back-and-forth going. It replies to a diary entry with just one short follow-up question. In addition, for three areas (sleep, social withdrawal, and academic pressure), we have organized the links between concepts such as mood, behavior, and events at school into a knowledge graph (an ontology), checking them against published sources such as those from WHO and NICE. For each link, we record whether a published source supports it.",
+    a: "Blesc does not keep a back-and-forth going. Only on hard days, or when an entry is short, it asks up to three set questions, and any of them can be skipped. In addition, for three areas (sleep, social withdrawal, and academic pressure), we have organized the links between concepts such as mood, behavior, and events at school into a knowledge graph (an ontology), checking them against published sources such as those from WHO and NICE. For each link, we record whether a published source supports it.",
   },
   {
     q: "What is “mental health observation,” and how is Blesc different?",
-    a: "“Mental health observation” (kokoro no kenkō kansatsu) is an initiative that MEXT (Japan’s Ministry of Education) is introducing with the aim of having it carried out in schools nationwide. It uses tools such as the devices issued one per student to keep track of changes in students’ state of mind and physical condition, so that this leads to early identification and early support. The examples given in MEXT’s materials, such as web-based stress checks, forms, and apps, collect answers to questions. Blesc does not use a format where students select answers. From the diary each student writes in their own time, it captures changes in wording and in how a student writes and makes them visible. Note that this is a description of MEXT’s initiative. It does not mean that MEXT recommends or endorses Blesc.",
+    a: "“Mental health observation” (kokoro no kenkō kansatsu) is an initiative that MEXT (Japan’s Ministry of Education) is introducing with the aim of having it carried out in schools nationwide. It uses tools such as the devices issued one per student to keep track of changes in students’ state of mind and physical condition, so that this leads to early identification and early support. The examples given in MEXT’s materials, such as web-based stress checks, forms, and apps, collect answers to questions. Blesc is not built around collecting answers to questions. From the diary each student writes in their own time, it captures changes in wording and in how a student writes and makes them visible. Note that this is a description of MEXT’s initiative. It does not mean that MEXT recommends or endorses Blesc.",
   },
   {
     q: "Can one low day be told apart from a change that continues?",

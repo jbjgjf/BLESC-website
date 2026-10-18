@@ -179,6 +179,28 @@ const RULES = [
     why: "3サブグラフ・40ノード・50エッジの seed に対して過大な主張です。",
     negatable: true,
   },
+  {
+    id: "one-ai-question",
+    section: "§5 日記のあとの問い",
+    // jbjgjf/BLESC#467. The page said, in five places and both languages,
+    // that an AI reads the diary and returns one short question. What the
+    // product does is ask a fixed script of up to three skippable questions
+    // (`followup-script-v1`), only on a hard day or after a short entry. The
+    // copy had been written that way from the start, so nothing here caught
+    // it; these are the shapes it took, so it cannot come back in them.
+    //
+    // Japanese: a count of one on 問い / 質問 (問いをひとつ, ひとつだけの
+    // 質問, 1つの問い), 一問一答, and an AI as the one asking (AIが問いを,
+    // AIからの問いかけ, 独自AIによる…深掘り). English: one follow-up
+    // question, and the AI as the one replying or asking. The English is
+    // the part a translator rewrites, so it is matched too, unlike most of
+    // the rules above. Not negatable: no denial of these is copy the page
+    // needs.
+    pattern:
+      /(?:問い|質問)(?:を|は)?(?:ひとつ|一つ|1つ)|(?:ひとつ|一つ|1つ)(?:だけ)?の(?:短い)?(?:問い|質問)|一問一答|AI(?:が|から|による)[^。\n]{0,12}?(?:問い|質問|深掘り)|\b(?:one|a single|just one)(?: short)? follow-up question|question (?:back )?from (?:the|our|Blesc[’']s own) AI|\b(?:the|our|its own|Blesc[’']s own) AI (?:replies|asks|sends back|follows up|returns)/gi,
+    why: "日記のあとの問いは、つらい日や日記が短い日に出る「決まった問い（最大3つ・どれも飛ばせる）」です。AIが日記から作る問いでも、ひとつだけでもありません（jbjgjf/BLESC#467）。",
+    negatable: false,
+  },
 ];
 
 /* -------------------------------------------------------------------------- */

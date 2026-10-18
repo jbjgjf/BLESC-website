@@ -55,18 +55,24 @@ type Step = {
  * The English beside each step is a translation of the Japanese above it,
  * and claims no more than it does. Two of them are worded with care:
  *
- * - 03's 会話ではなく is "There is no back-and-forth." The point of the
- *   sentence is that the AI does not hold an exchange with the student, and
- *   this says so without calling the product, even in a denial, by the name
- *   of the thing it is not.
+ * - 03 says what the product does after a diary is submitted, and only
+ *   that: on a hard day (mood つらい or low) or after a short entry, it asks
+ *   a fixed script of up to three questions (`followup-script-v1`), one at
+ *   a time, any of which can be skipped. 決まった問い is "set questions".
+ *   It used to say the AI replies with one short question, which the
+ *   product has never done (jbjgjf/BLESC#467): the questions are not
+ *   written by an AI and not drawn from the entry, and there can be up to
+ *   three. Neither may come back (docs/claims.md §5). The title is the
+ *   product's own heading for the script, もう少しだけ教えてください, said
+ *   from Blesc's side.
  * - 04 is 捉える, not 検知: "capture", and "a clue for telling … from …",
  *   never a word for finding or measuring something in a student. Its last
  *   sentence is a negation in both languages and has to stay one
  *   (docs/claims.md §1).
  *
  * Both also say their Japanese in the words the FAQ uses for the same
- * Japanese (lib/faqEn.ts): 短い問いをひとつだけ is "just one short follow-up
- * question", and 一日だけの落ち込みか、続いている変化か is "one low day"
+ * Japanese (lib/faqEn.ts): 決まった問いを最大3つ is "up to three set
+ * questions", and 一日だけの落ち込みか、続いている変化か is "one low day"
  * against "a change that continues". Change one and change the other.
  */
 const STEPS: Step[] = [
@@ -105,13 +111,13 @@ const STEPS: Step[] = [
     mark: 1,
     mock: ProbeMock,
     ja: {
-      title: "AIが問いを返す",
-      body: "会話ではなく、短い問いをひとつだけ返します。",
+      title: "もう少しだけ聞く",
+      body: "つらい日や日記が短い日だけ、決まった問いを最大3つたずねます。どれも飛ばせます。",
       view: "生徒の画面",
     },
     en: {
-      title: "The AI replies with a question",
-      body: "There is no back-and-forth. The AI replies with just one short follow-up question.",
+      title: "Ask a little more",
+      body: "Only on hard days, or when an entry is short, Blesc asks up to three set questions. Any of them can be skipped.",
       view: "Student’s screen",
     },
   },
@@ -150,8 +156,10 @@ const LEAD: Record<Locale, string> = {
 
 /**
  * A step's title. The pinned layout's column is 255px wide at 768px, where
- * "The AI replies with a question" takes two lines and would leave
- * "question" alone on the second; balanced, it breaks in the middle.
+ * an English title that takes two lines would leave its last word alone on
+ * the second; balanced, it breaks in the middle. (The title this was
+ * measured against, 03's "The AI replies with a question", is gone — see
+ * STEPS — but the column is no wider.)
  */
 const STEP_TITLE: Record<Locale, string> = {
   ja: "mt-2 text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink transition-colors duration-500",

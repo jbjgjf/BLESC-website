@@ -4,7 +4,6 @@ import { motion, useReducedMotion } from "motion/react";
 import { useLocale } from "@/components/LocaleProvider";
 import { Logo } from "@/components/Logo";
 import { Chip, Composer, Screen } from "@/components/mock";
-import { Icon } from "@/components/ui";
 import type { Locale } from "@/lib/i18n";
 import {
   BASIS,
@@ -12,7 +11,6 @@ import {
   CLASS,
   ENTRY,
   ENTRY_COUNT,
-  ENTRY_TAIL,
   OBSERVATION_LABEL,
   ROWS,
   SCREEN_WORDS,
@@ -206,16 +204,26 @@ export function DiaryMock() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* 03 — one question back                                                     */
+/* 03 — a little more, on a hard day                                         */
 /* -------------------------------------------------------------------------- */
 
 /**
- * The last line of the entry, and the single question it gets back.
+ * The follow-up, as the student sees it: the product's own heading and the
+ * line under it, then one question from the script.
  *
  * Same chrome as the diary, because it is the same screen a moment later
- * rather than a second product — and only two bubbles in it, because one
- * question back is the whole of what the AI sends. A thread of four would be
- * a chat app, which is the one thing this is not.
+ * rather than a second product. What the product asks here is a fixed
+ * script (`followup-script-v1`) of up to three questions, one at a time,
+ * each skippable, and only on a hard day or after a short entry; this
+ * screen shows the third of them (lib/sample's ENTRY.followUp).
+ *
+ * It used to show the entry's last line in a bubble and, under a sparkle,
+ * "a question from the AI" that quoted it — one question written back to
+ * what the student wrote. The product has never done that
+ * (jbjgjf/BLESC#467), so nothing on this screen may quote the entry or
+ * say an AI wrote the question (docs/claims.md §5). The skip line is on
+ * screen rather than left to the caption because it is the promise the
+ * product makes at this moment, and it makes it on screen too.
  *
  * The question arriving is the whole of this step, so the bubble is the one
  * thing on this screen that moves. It is held back 0.3s, which in the pinned
@@ -226,6 +234,7 @@ export function ProbeMock() {
   const reduce = useReducedMotion();
   const locale = useLocale();
   const entry = ENTRY[locale];
+  const words = SCREEN_WORDS[locale];
 
   return (
     <Screen
@@ -237,9 +246,14 @@ export function ProbeMock() {
       }
     >
       <div className="my-auto flex flex-col gap-2.5">
-        <span className="ml-auto w-fit max-w-[78%] rounded-xl rounded-br-sm bg-inset px-3 py-2 text-[0.78rem] leading-relaxed text-muted lg:text-[0.85rem]">
-          {ENTRY_TAIL[locale]}
-        </span>
+        <div>
+          <p className="text-[0.78rem] font-medium tracking-[-0.01em] text-ink lg:text-[0.85rem]">
+            {words.question}
+          </p>
+          <p className="mt-0.5 text-[0.66rem] leading-relaxed text-muted">
+            {words.skip}
+          </p>
+        </div>
 
         <motion.div
           className="max-w-[92%] rounded-xl rounded-bl-sm bg-accent/10 px-3 py-2.5"
@@ -254,16 +268,7 @@ export function ProbeMock() {
               : { duration: 0.6, ease: EXPO_OUT, delay: 0.3 }
           }
         >
-          {/*
-            mark-1, not accent: #85c0ed is a fill colour and measures 1.95:1
-            as text on white, where mark-1 is the same blue taken dark enough
-            to read.
-          */}
-          <p className="flex items-center gap-1 text-[0.66rem] font-medium tracking-[0.06em] text-mark-1">
-            <Icon name="auto_awesome" size={12} className="shrink-0" />
-            {SCREEN_WORDS[locale].question}
-          </p>
-          <p className="mt-1.5 text-[0.8rem] leading-relaxed text-ink lg:text-[0.9rem]">
+          <p className="text-[0.8rem] leading-relaxed text-ink lg:text-[0.9rem]">
             {entry.followUp}
           </p>
         </motion.div>

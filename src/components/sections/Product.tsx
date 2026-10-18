@@ -14,6 +14,12 @@ import { TRUST_PATH, TRUST_TITLE } from "@/lib/trust";
  * not be able to read its next sentence as saying it is. The last sentence
  * is a negation in both languages and has to stay one (docs/claims.md §1).
  *
+ * The caption's first sentences say what 仕組み 03 says: on a hard day or
+ * after a short entry, Blesc asks up to three set questions, any of which
+ * can be skipped. It used to say the AI replies with one question
+ * (jbjgjf/BLESC#467); the questions are a fixed script, not written by an
+ * AI or drawn from the entry (docs/claims.md §5).
+ *
  * The English lead is a sentence with its own full stop, where the Japanese
  * one is a clause followed by an ideographic space; <Caption> joins each the
  * way its language does.
@@ -24,14 +30,14 @@ const COPY = {
     lead: "教員に届くのは、観測と根拠だけ。",
     captionLead: "日記の本文は共有されません",
     caption:
-      "自分のタイミングで書いた日記にAIが問いをひとつ返します。教員に届くのは観測された記述とその時刻・根拠だけで、心理的リスクの判定は行いません。",
+      "生徒は自分のタイミングで日記を書き、つらい日や日記が短い日には、Blescが決まった問いを最大3つたずねます（どれも飛ばせます）。教員に届くのは観測された記述とその時刻・根拠だけで、心理的リスクの判定は行いません。",
   },
   en: {
     title: "Product",
     lead: "Teachers receive only observations and their basis.",
     captionLead: "The diary text is not shared.",
     caption:
-      "Students write a diary in their own time, and the AI replies with one follow-up question. Teachers receive only what was observed in the writing, with its time and basis. Blesc does not assess psychological risk.",
+      "Students write a diary in their own time. On hard days, or when an entry is short, Blesc asks up to three set questions, any of which can be skipped. Teachers receive only what was observed in the writing, with its time and basis. Blesc does not assess psychological risk.",
   },
 } as const;
 

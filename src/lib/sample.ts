@@ -3,8 +3,8 @@
  *
  * One module, because the mockups are an argument and the argument only holds
  * if they agree with each other: the entry the student writes in 仕組み has to
- * be the same entry the AI asks about, and the row along the foot of step
- * 04's analysis has to be the row the teacher receives. When this lived as
+ * be the entry the follow-up question comes after, and the row along the foot
+ * of step 04's analysis has to be the row the teacher receives. When this lived as
  * a local `const` in each section, two screens could quietly come to show
  * two different products.
  *
@@ -13,7 +13,8 @@
  * name; no dates beyond the one entry's own; no counts, percentages or
  * metrics that read as a measurement of anything. Every Japanese string
  * below already shipped in the repo — this file moved them, it did not write
- * them.
+ * them — except the follow-up question and the two lines around it, which
+ * are copied from the product itself (jbjgjf/BLESC#467).
  *
  * Every product picture on the page — 仕組み, プロダクト — imports from here
  * and nowhere else.
@@ -46,18 +47,27 @@ export const ENTRY = {
     prompt: "今日はどんな一日だった？",
     body: "部活がきつくて、最近あんまり眠れてない。朝がしんどいけど、みんなも同じだと思うから、たぶん大丈夫。",
     /**
-     * The deep-dive. Not a chat: the diary is still the interface, and the AI
-     * returns a single question about what was actually written rather than
-     * opening a conversation. "たぶん大丈夫" is the kind of line it exists to
-     * push gently on.
+     * The follow-up, word for word as the product asks it: the third
+     * question of its fixed script (`followup-script-v1`, `duration` in
+     * sentra/frontend's lib/i18n/ja.ts). The product asks that script — up
+     * to three questions, each skippable — only on a hard day (mood つらい
+     * or low) or after a short entry, and the same questions whatever was
+     * written.
+     *
+     * This used to be 「あんまり眠れてない」のは、いつごろから？ — a question
+     * quoting the entry, as if an AI had read it and written one question
+     * back. The product has never done that (jbjgjf/BLESC#467), so the mock
+     * may not show it: no question here may quote or paraphrase the entry
+     * (docs/claims.md §5).
      */
-    followUp: "「あんまり眠れてない」のは、いつごろから？",
+    followUp:
+      "そのように感じる出来事は今日だけでしたか。それとも最近も続いていますか。",
   },
   /*
    * The same entry as a teenager would write it in English, and no more
    * worrying than the Japanese: practice, sleep, mornings, "probably fine".
-   * The follow-up quotes three words of it exactly, as the Japanese one
-   * quotes あんまり眠れてない, so change the two together.
+   * The follow-up is the script's question translated — the product asks it
+   * in Japanese only — and, like the Japanese, it does not quote the entry.
    *
    * It runs to about a line more than the Japanese at every width the
    * screens are drawn at; the screens that hold it give English its own
@@ -67,7 +77,8 @@ export const ENTRY = {
     date: "Thu, Aug 20",
     prompt: "How was your day?",
     body: "Practice has been tough and I’m not sleeping much lately. Mornings are rough, but I guess everyone’s the same, so I’m probably fine.",
-    followUp: "About when did “not sleeping much” start?",
+    followUp:
+      "Was it only today that something made you feel this way, or has it been going on lately?",
   },
 } as const satisfies Record<
   Locale,
@@ -85,22 +96,6 @@ const lengthOf = (body: string) => [...body].length;
 export const ENTRY_COUNT: Record<Locale, string> = {
   ja: `${lengthOf(ENTRY.ja.body)}字`,
   en: `${lengthOf(ENTRY.en.body)} characters`,
-};
-
-/** Everything after the last `comma` in `body`, behind an ellipsis. */
-const tailOf = (body: string, comma: string) =>
-  `…${body.slice(body.lastIndexOf(comma) + comma.length)}`;
-
-/**
- * The last clause of the entry, quoted on its own where a mockup shows the
- * moment the question comes back — it is the line the follow-up pushes on.
- * Sliced from the entry's `body` rather than written out a second time, so
- * the quote cannot drift from the entry it quotes. The clause starts after
- * the last comma: 「、」 in Japanese, a comma and a space in English.
- */
-export const ENTRY_TAIL: Record<Locale, string> = {
-  ja: tailOf(ENTRY.ja.body, "、"),
-  en: tailOf(ENTRY.en.body, ", "),
 };
 
 /** The two promises the student is given, as the writing screen states them. */
@@ -361,20 +356,32 @@ export const TREND_TITLE: Record<Locale, string> = {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The few words the screens print that are not sample data: a column head
- * and the label over the AI's question. They are here, rather than in each
- * screen, because two screens print the same label — the question appears in
- * 仕組み and again in プロダクト — and it has to be the same words in both.
+ * The few words the screens print that are not sample data: a column head,
+ * the label over the follow-up question, and the line that says it can be
+ * skipped. They are here, rather than in each screen, because two screens
+ * print the same label — the question appears in 仕組み and again in
+ * プロダクト — and it has to be the same words in both.
+ *
+ * The label and the skip line are the product's own heading and subheading
+ * for the follow-up script (sentra/frontend's journal page). The label used
+ * to be AIからの問いかけ, under a sparkle; the questions are a fixed script
+ * that no AI writes (jbjgjf/BLESC#467, docs/claims.md §5).
  */
 export const SCREEN_WORDS = {
   ja: {
     /** The column head over the class list. */
     rollNumber: "出席番号",
-    /** Over the one question the AI sends back. */
-    question: "AIからの問いかけ",
+    /** Over the follow-up question. */
+    question: "もう少しだけ教えてください",
+    /** Under it: every question in the script can be left unanswered. */
+    skip: "答えたくない質問は飛ばして大丈夫です。",
   },
   en: {
     rollNumber: "Student number",
-    question: "Question from the AI",
+    question: "Tell us a little more",
+    skip: "You can skip any question you’d rather not answer.",
   },
-} as const satisfies Record<Locale, { rollNumber: string; question: string }>;
+} as const satisfies Record<
+  Locale,
+  { rollNumber: string; question: string; skip: string }
+>;

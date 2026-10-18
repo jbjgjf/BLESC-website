@@ -6,8 +6,13 @@ import { PRIVACY, TRUST_PATH, TRUST_TITLE } from "@/lib/trust";
 /**
  * The same two sentences the Japanese page's description is made of, in
  * lib/trust.ts's English: diary text is never shown to teachers, parents or
- * other students, and diaries are never sold, used for ads or used to train
- * AI models. 132 characters, inside the ~155 an English result shows.
+ * other students, and diaries are never sold or used for ads, nor used for
+ * AI training without separate consent. (Until jbjgjf/BLESC#469, 2026-10-18,
+ * it said "never used to train AI models"; the research consent pack has an
+ * optional consent to that, so the promise is now "not without consent".)
+ * 157 characters, at the edge of the ~155 an English result shows — which
+ * is why the English says "separate consent" where the Japanese names the
+ * student and guardian. Lengthen it and the snippet cuts the consent clause.
  */
 const DESCRIPTION = `${PRIVACY.en.items[0]} ${PRIVACY.en.items[2]}`;
 

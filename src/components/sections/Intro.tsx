@@ -5,31 +5,39 @@ import { Container } from "@/components/ui";
 import type { Locale } from "@/lib/i18n";
 
 /**
- * The three sentences, in each language.
+ * The few sentences, in each language.
  *
  * The Japanese is in the pieces it is set in: the heading's two halves,
- * which break between them and nowhere else, and the paragraph's three
+ * which break between them and nowhere else, and the paragraph's four
  * lines, which are its authored breaks on a wide screen.
  *
- * The English is the same three statements, in the words lib/trust.ts's
- * ABOUT.en already uses for them — "in their own time", "one follow-up
- * question" — and it says what the Japanese says and no more: the teacher
- * gets a class, a student number, and what kind of expression appeared and
- * when, never the diary text. It has no authored breaks; see HEADING and
- * BODY below.
+ * The English is the same statements, in the words lib/trust.ts's
+ * ABOUT.en already uses for them — "in their own time", "on hard days, or
+ * when an entry is short", "up to three set questions" — and it says what
+ * the Japanese says and no more: the teacher gets a class, a student
+ * number, and what kind of expression appeared and when, never the diary
+ * text. It has no authored breaks; see HEADING and BODY below.
+ *
+ * The questions are the product's fixed follow-up script
+ * (`followup-script-v1`), asked only on a hard day or after a short entry,
+ * and each can be skipped. This block used to say the AI sends back one
+ * short question, which the product has never done (jbjgjf/BLESC#467,
+ * docs/claims.md §5): nothing here may say the questions are written by an
+ * AI, or drawn from what the student wrote.
  */
 const COPY = {
   ja: {
     heading: ["Blescは、", "学校で使う日記アプリです。"],
     body: [
-      "生徒は好きなときに日記を書き、AIが短い問いをひとつ返します。",
+      "生徒は好きなときに日記を書きます。つらい日や日記が短い日は、",
+      "飛ばしてもよい決まった問いを、Blescが最大3つたずねます。",
       "先生に届くのは日記の本文ではなく、",
       "クラスと出席番号、どんな表現がいつあったかだけです。",
     ],
   },
   en: {
     heading: "Blesc is a journaling app for schools.",
-    body: "Students write a diary in their own time, and the AI replies with one short follow-up question. Teachers do not receive the diary text. They receive only the class, the student number, and what kind of expression appeared and when.",
+    body: "Students write a diary in their own time. On hard days, or when an entry is short, Blesc asks up to three set questions, and any of them can be skipped. Teachers do not receive the diary text. They receive only the class, the student number, and what kind of expression appeared and when.",
   },
 } as const;
 
@@ -62,7 +70,7 @@ const BODY: Record<Locale, string> = {
 };
 
 /**
- * What Blesc is, in three sentences, immediately before 仕組み.
+ * What Blesc is, in a few sentences, immediately before 仕組み.
  *
  * The feedback that asked for this was plain about why: 仕組み was hard to
  * follow because nothing before it had said what the product is, and a
@@ -70,7 +78,8 @@ const BODY: Record<Locale, string> = {
  * also said what not to write — no AI-sounding explanation. So this is the
  * product in the words a teacher, a parent or a 中学生 would use, and only
  * facts the rest of the page already states: students write a diary when
- * they like, the AI sends back one short question, and what reaches the
+ * they like, on a hard day or after a short entry Blesc asks up to three
+ * set questions that can each be skipped, and what reaches the
  * teacher is a class, a roll number and an observation with its time,
  * never the diary itself. The last clause says プロダクト's 「観測と根拠」
  * in everyday words — どんな表現がいつあったか, which kind of expression

@@ -465,8 +465,13 @@ export function siteMetadata(locale: Locale): Metadata {
  * was made:
  *
  * - `features`: implemented features only (see the note in siteJsonLd), in
- *   the words the English pages already use — "in their own time", "one
- *   follow-up question", "how a student writes", "observations", "basis".
+ *   the words the English pages already use — "in their own time", "up to
+ *   three set questions", "how a student writes", "observations", "basis".
+ *   The second item used to be 独自AIによる一問一答の深掘り / "One
+ *   follow-up question from Blesc's own AI": the product's follow-up is a
+ *   fixed script of up to three skippable questions, asked only on a hard
+ *   day or after a short entry, and no AI writes it (jbjgjf/BLESC#467,
+ *   docs/claims.md §5).
  *   The fourth says the graph is structured "with reference to" published
  *   guidelines, the FAQ's phrase for the same sources (lib/faqEn.ts), and
  *   not "based on" them: most of its links have no published source behind
@@ -482,7 +487,7 @@ const GRAPH_COPY: Record<
     subCategory: "学校向けメンタルヘルスプラットフォーム",
     features: [
       "自分のタイミングで綴る日記による全生徒のセルフレポート",
-      "独自AIによる一問一答の深掘り",
+      "つらい日や日記が短い日に、決まった問いを最大3つたずねる追加質問（どれも省略可）",
       "入力のためらいや書き直しといった書きぶりの計測",
       "公開されている医学的ガイドラインをもとに構造化したオントロジー知識グラフによる記述の整理",
       "日記本文を教員に開示しないプライバシー設計",
@@ -494,7 +499,7 @@ const GRAPH_COPY: Record<
     subCategory: "Mental health platform for schools",
     features: [
       "Self-reports from all students, through a diary each writes in their own time",
-      "One follow-up question from Blesc’s own AI in reply to a diary entry",
+      "On hard days or after a short entry, up to three set follow-up questions, any of which can be skipped",
       "Measurement of how a student writes, such as hesitation and rewriting while typing",
       "Organizing what is written with an ontology knowledge graph structured with reference to published medical guidelines",
       "A privacy design that does not disclose the diary text to teachers",
@@ -655,9 +660,14 @@ export function breadcrumbJsonLd(
  * support is the mismatch this comment block above warns against.
  */
 export const FAQ: { q: string; a: string }[] = [
+  /*
+   * 独自のAIが深掘りし was taken out of this answer (jbjgjf/BLESC#467): the
+   * only "deep-dive" the product has is the fixed follow-up script, which no
+   * AI writes. What remains is what the page shows elsewhere.
+   */
   {
     q: "Blescとは何ですか？",
-    a: "Blescは、生徒が自分のタイミングで綴る日記を独自のAIが深掘りし、言葉づかいや書きぶりの変化を捉えて可視化する学校向けのメンタルヘルスプラットフォームです。心理的リスクの判定や、心身の状態の診断は行いません。",
+    a: "Blescは、生徒が自分のタイミングで綴る日記から、言葉づかいや書きぶりの変化を捉えて可視化する学校向けのメンタルヘルスプラットフォームです。心理的リスクの判定や、心身の状態の診断は行いません。",
   },
   {
     q: "生徒が書いた日記の内容は、先生に読まれますか？",
@@ -681,10 +691,16 @@ export const FAQ: { q: string; a: string }[] = [
    * The counts are typed here, not imported, and have to match COUNTS in
    * src/lib/ontologySeed.ts: 42 relations, 15 recorded as "association",
    * 27 not. If the seed is regenerated, change them with it.
+   *
+   * The first answer's opening used to be 日記に短い問いをひとつだけ返します.
+   * The product's follow-up is a fixed script of up to three questions,
+   * asked only on a hard day or after a short entry, each skippable — not
+   * one question written in reply to the entry (jbjgjf/BLESC#467,
+   * docs/claims.md §5). It says so in 仕組み 03's words.
    */
   {
     q: "汎用のAIチャットとは何が違うのですか？",
-    a: "Blescは会話を続けるチャットではなく、日記に短い問いをひとつだけ返します。また、睡眠・社会的ひきこもり・学業上の負荷の3領域について、気分や行動、学校での出来事などの概念どうしのつながりを、WHOやNICEなどの公開資料に照らして知識グラフ（オントロジー）として整理しています。つながりの一本ずつに、裏付けとなる公開資料があるかどうかを記録しています。",
+    a: "Blescは会話を続けるチャットではありません。つらい日や日記が短い日にだけ、決まった問いを最大3つたずね、どの問いも飛ばせます。また、睡眠・社会的ひきこもり・学業上の負荷の3領域について、気分や行動、学校での出来事などの概念どうしのつながりを、WHOやNICEなどの公開資料に照らして知識グラフ（オントロジー）として整理しています。つながりの一本ずつに、裏付けとなる公開資料があるかどうかを記録しています。",
   },
   /*
    * Three entries written to be found by what a school actually types —
@@ -702,10 +718,14 @@ export const FAQ: { q: string; a: string }[] = [
    * endorsement the same way 技術的な裏づけ does. There is deliberately no
    * claim that Blesc can be used alongside it, replaces it, or is listed by
    * it: nobody on the team has confirmed any of those, so none is written.
+   *
+   * The contrast used to be 回答を選ぶ形式ではなく. The follow-up script does
+   * offer answers to choose from (jbjgjf/BLESC#467), so the contrast is
+   * now that Blesc is not built around collecting answers, which stays true.
    */
   {
     q: "「心の健康観察」とは何ですか？ Blescとの違いは？",
-    a: "「心の健康観察」は、文部科学省が全国の学校での実施を目指して導入を進めている取り組みで、1人1台端末などを使って児童生徒の心や体調の変化を把握し、早期発見・早期支援につなげるものです。文部科学省の資料に示された実施例は、ウェブ上のストレスチェックやフォーム、アプリなど、質問への回答を集める形のものです。Blescは回答を選ぶ形式ではなく、生徒が自分のタイミングで綴る日記から、言葉づかいや書きぶりの変化を捉えて可視化します。なお、これは文部科学省の取り組みの説明であり、文部科学省がBlescを推奨・承認するものではありません。",
+    a: "「心の健康観察」は、文部科学省が全国の学校での実施を目指して導入を進めている取り組みで、1人1台端末などを使って児童生徒の心や体調の変化を把握し、早期発見・早期支援につなげるものです。文部科学省の資料に示された実施例は、ウェブ上のストレスチェックやフォーム、アプリなど、質問への回答を集める形のものです。Blescは質問への回答を集めることを中心とせず、生徒が自分のタイミングで綴る日記から、言葉づかいや書きぶりの変化を捉えて可視化します。なお、これは文部科学省の取り組みの説明であり、文部科学省がBlescを推奨・承認するものではありません。",
   },
   {
     q: "一日の落ち込みと、続いている変化は見分けられますか？",
