@@ -27,3 +27,12 @@ jobs:
       # that nobody is tempted to skip it.
       - name: Check LP claims against docs/claims.md
         run: node scripts/check-claims.mjs
+
+      # The support line the 安全とプライバシー page promises must be the one
+      # the product shows (jbjgjf/BLESC#465). Reads the product's
+      # sentra/shared/crisis_contacts.json from jbjgjf/BLESC; set the
+      # repository variable BLESC_REF to check against a branch other than main.
+      - name: Check the crisis line against the product
+        env:
+          BLESC_REF: ${{ vars.BLESC_REF || 'main' }}
+        run: node scripts/check-crisis-contacts.mjs
