@@ -5,7 +5,7 @@ import { Reveal } from "@/components/Reveal";
 import { TRUST_TYPE, TrustSections } from "@/components/trust/TrustSections";
 import { ButtonLink, Container } from "@/components/ui";
 import type { Locale } from "@/lib/i18n";
-import { ctaFor } from "@/lib/site";
+import { ADOPTION_STATUS, ctaFor } from "@/lib/site";
 import { ABOUT, TRUST_TITLE } from "@/lib/trust";
 
 /**
@@ -131,21 +131,31 @@ export function TrustPage({ locale }: { locale: Locale }) {
         Stacked and left-aligned on a phone, where items-start keeps each
         button at its own width rather than stretched to the column.
 
-        The English pair is wider — "Request information" and "Book a
-        consultation" are about 206px each against 118px and 150px — and
-        needs nothing changed: side by side from sm they are about 436px
-        with the gap, of the 592px a 640px screen leaves, and stacked on a
-        phone the wider is 210px of the 272px at 320px.
+        The English pair is the wider, and still a row from sm; stacked on
+        a phone each keeps its own width.
       */}
       <Container className="relative">
         <div className="relative pt-[clamp(2.5rem,5vw,3.5rem)] pb-[clamp(4rem,9vw,7rem)]">
           <DrawnRule className="top-0" />
-          <Reveal className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-x-6">
-            <ButtonLink variant="secondary" href={cta.document.href}>
-              {cta.document.label}
+          {/*
+            The page about privacy and safety is where the reason adoption
+            is not open yet belongs most, so the whole statement is said
+            here, over the buttons (lib/site, ADOPTION_STATUS).
+          */}
+          <Reveal>
+            <p className="text-[0.85rem] font-medium tracking-[0.06em] text-mark-1">
+              {ADOPTION_STATUS[locale].label}
+            </p>
+            <p className="mt-3 max-w-2xl text-pretty text-[1rem] leading-relaxed text-ink">
+              {ADOPTION_STATUS[locale].sentence}
+            </p>
+          </Reveal>
+          <Reveal className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-x-6">
+            <ButtonLink variant="secondary" href={cta.notify.href}>
+              {cta.notify.label}
             </ButtonLink>
-            <ButtonLink variant="primary" href={cta.consult.href}>
-              {cta.consult.label}
+            <ButtonLink variant="primary" href={cta.general.href}>
+              {cta.general.label}
             </ButtonLink>
           </Reveal>
         </div>

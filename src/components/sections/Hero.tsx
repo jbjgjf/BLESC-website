@@ -11,7 +11,7 @@ import { getLenis } from "@/components/SmoothScroll";
 import { WebGLFallback } from "@/components/webgl/WebGLErrorBoundary";
 import { ButtonLink, Container } from "@/components/ui";
 import type { Locale } from "@/lib/i18n";
-import { ctaFor } from "@/lib/site";
+import { ADOPTION_STATUS, ctaFor } from "@/lib/site";
 import { LIGHT_PALETTE } from "@/lib/sky";
 
 /*
@@ -240,12 +240,28 @@ export function Hero({ locale: fromPage }: { locale?: Locale }) {
             the column's full width.
           */}
           <IntroFade play={play} delay={AFTER_HEADLINE + 0.08}>
-            <div className="mt-11 flex flex-col gap-4 sm:flex-row sm:justify-center">
-              <ButtonLink variant="secondary" href={cta.document.href}>
-                {cta.document.label}
+            {/*
+              Adoption is coming soon (lib/site, ADOPTION_STATUS), and the
+              buttons under this no longer offer it yet, so the first screen
+              says so before a school looks for the button that is gone: the
+              mark, then the one-line headline. Ink, not muted, for the
+              reason the tagline is: muted falls under AA over the sky's
+              deepest blue. The headline is one unbreakable run.
+            */}
+            <p className="mt-10 text-[0.95rem] leading-relaxed text-ink">
+              <span className="mr-3 text-[0.8rem] font-medium tracking-[0.06em] text-mark-1">
+                {ADOPTION_STATUS[locale].label}
+              </span>
+              <span className="inline-block">
+                {ADOPTION_STATUS[locale].headline}
+              </span>
+            </p>
+            <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-center">
+              <ButtonLink variant="secondary" href={cta.notify.href}>
+                {cta.notify.label}
               </ButtonLink>
-              <ButtonLink variant="primary" href={cta.consult.href}>
-                {cta.consult.label}
+              <ButtonLink variant="primary" href={cta.general.href}>
+                {cta.general.label}
               </ButtonLink>
             </div>
           </IntroFade>

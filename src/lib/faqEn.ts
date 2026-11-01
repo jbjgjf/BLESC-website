@@ -61,7 +61,7 @@
  * the answer names the options by the words the form's own buttons use.
  */
 
-import { ENQUIRY_LABELS } from "@/lib/site";
+import { ADOPTION_STATUS, ENQUIRY_LABELS } from "@/lib/site";
 
 export const FAQ_EN: readonly { q: string; a: string }[] = [
   {
@@ -101,7 +101,7 @@ export const FAQ_EN: readonly { q: string; a: string }[] = [
     a: "The knowledge graph is compiled in-house with reference to the WHO fact sheet “Mental health of adolescents,” NICE guideline NG134, the WHO mhGAP Intervention Guide, and Seito Shidō Teiyō, the Student Guidance Guidelines of MEXT (Japan’s Ministry of Education). Of its 42 links, 15 are recorded as associations with a published source cited. The remaining 27 have no published source behind them, and are clearly marked as our own judgment. Even the links that have a source are recorded as associations. They do not show which one is the cause. The organizations listed do not recommend or endorse Blesc. We are preparing a review by clinical experts.",
   },
   {
-    q: "How do we get in touch about adopting Blesc?",
-    a: `Please contact us through the contact form, choosing “${ENQUIRY_LABELS.en.document}” or “${ENQUIRY_LABELS.en.consult}.” We will review your message, and a member of our team will reply within a few business days.`,
+    q: "Can we adopt blesc now?",
+    a: `${ADOPTION_STATUS.en.sentence} If you would like us to tell you when it becomes available, send the contact form with “${ENQUIRY_LABELS.en.notify}” selected.`,
   },
 ];

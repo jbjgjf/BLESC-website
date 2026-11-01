@@ -115,8 +115,8 @@ const COPY: Record<Locale, Copy> = {
     email: { label: "メールアドレス", placeholder: "name@school.ac.jp" },
     phone: { label: "電話番号", placeholder: "03-0000-0000" },
     message: {
-      label: "ご相談内容",
-      placeholder: "ご検討中の背景や、お聞きになりたい点をご記入ください。",
+      label: "お問い合わせ内容",
+      placeholder: "お聞きになりたい点をご記入ください。",
     },
     submit: "送信する",
     sending: "送信中…",
@@ -152,7 +152,7 @@ const COPY: Record<Locale, Copy> = {
     message: {
       label: "Message",
       placeholder:
-        "Tell us the background to your interest and anything you would like to ask.",
+        "Tell us anything you would like to ask.",
     },
     submit: "Send",
     sending: "Sending…",
@@ -321,7 +321,7 @@ export function ContactForm() {
   const typeParam = params.get("type");
 
   const [type, setType] = useState<EnquiryType>(
-    isEnquiryType(typeParam) ? typeParam : "consult",
+    isEnquiryType(typeParam) ? typeParam : "general",
   );
   const [org, setOrg] = useState("");
   const [name, setName] = useState("");
@@ -459,14 +459,10 @@ export function ContactForm() {
           visitor arrived with is worth showing rather than hiding in a
           collapsed control.
 
-          The English names are longer — "Book a consultation" against
-          導入のご相談 — and still sit on one line each wherever the pair is
-          side by side. The tightest case is the two-column page at 1024px,
-          where a label has about 150px for some 135px of text in Helvetica
-          Neue (nearer 145px in Inter). Worked out from the faces' advance
-          widths, not measured in a browser. Should a fallback face run
-          wider, the name wraps inside its box and items-center keeps the
-          radio centred against both lines; nothing here is fixed in height.
+          The longest name is the English "Notify me when available".
+          Where a box is too narrow for it the name wraps inside its box and
+          items-center keeps the radio centred against both lines; nothing
+          here is fixed in height.
         */}
         <div className="mt-3 flex flex-col gap-3 sm:flex-row">
           {(Object.keys(ENQUIRY_TYPES) as EnquiryType[]).map((key) => {

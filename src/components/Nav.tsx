@@ -153,7 +153,7 @@ export function Nav() {
   const locale = useLocale();
   const links = NAV[locale];
   const bar = BAR[locale];
-  const cta = ctaFor(locale).consult;
+  const cta = ctaFor(locale).general;
   const ctaShort = NAV_CTA_SHORT[locale];
 
   /*
@@ -441,8 +441,9 @@ export function Nav() {
           </a>
 
           {/*
-            The enquiry that opens the form with 導入のご相談 selected, in
-            the page's language.
+            The enquiry that opens the form with お問い合わせ selected, in
+            the page's language. (It was 導入のご相談 until adoption was
+            moved to coming soon; see ADOPTION_STATUS in lib/site.)
 
             Where a language has a short form (English, below sm — see the
             budget above) both labels are in the markup and CSS shows one.
