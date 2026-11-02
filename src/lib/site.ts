@@ -161,13 +161,20 @@ export const CONTACT_PATH = "/contact";
  * a strong focus on privacy, security and reliability, and Blesc will be
  * available for adoption very soon (decided 2026-11; worded from the team's
  * own English). Every place the site used to invite a school to adopt Blesc
- * says this instead, from here, so it reads the same on every page.
+ * says this instead, and every telling of it lives here.
  *
- *   label     "Coming soon", in both languages: a mark over the headline,
- *             set in the mark colour like the site's step numerals.
- *   headline  the one line where there is room for one.
- *   body      why, where there is room for more.
- *   sentence  the whole statement, for running text (contact page, FAQ).
+ *   label    "Coming soon", in English on both pages: the footer's title,
+ *            and the whole of what the hero says.
+ *   footer   why, under the footer's title.
+ *   safety   why, on 安全とプライバシー.
+ *   contact  why, opening the contact page's lead.
+ *
+ * The three say the same three things — privacy, security and reliability
+ * come first; blesc is being refined around them; it will be available for
+ * adoption very soon — in slightly different words and order, at the
+ * team's request, so a reader who meets it on several pages is not reading
+ * one paragraph pasted three times. Change what they say and change all
+ * three; change only how they say it and each stands alone.
  *
  * "blesc" is lowercase here, as the wordmark is, at the company's request.
  *
@@ -177,21 +184,25 @@ export const CONTACT_PATH = "/contact";
  */
 export const ADOPTION_STATUS: Record<
   Locale,
-  { label: string; headline: string; body: string; sentence: string }
+  { label: string; footer: string; safety: string; contact: string }
 > = {
   ja: {
     label: "Coming soon",
-    headline: "まもなく、導入いただけるようになります。",
-    body: "blescにとって、プライバシー、セキュリティ、信頼性は欠かせない基盤だと考えています。これらに重点を置いて、blescの改善を続けています。",
-    sentence:
+    footer:
+      "プライバシー、セキュリティ、信頼性は、blescにとって欠かせない基盤です。この3つを軸にblescを磨き上げており、まもなく導入いただけるようになります。",
+    safety:
       "blescにとって、プライバシー、セキュリティ、信頼性は欠かせない基盤だと考えています。これらに重点を置いてblescの改善を続けており、まもなく導入いただけるようになります。",
+    contact:
+      "blescは、まもなく導入いただけるようになります。いまはプライバシー、セキュリティ、信頼性の強化に重点を置き、改善を続けています。",
   },
   en: {
     label: "Coming soon",
-    headline: "blesc will be available for adoption very soon.",
-    body: "We understand that privacy, security, and reliability are fundamental to blesc. We will continue refining blesc with a strong focus on these areas.",
-    sentence:
+    footer:
+      "Privacy, security, and reliability are at the core of blesc. We are refining blesc around all three, and it will be ready for adoption very soon.",
+    safety:
       "We understand that privacy, security, and reliability are fundamental to blesc. We will continue refining blesc with a strong focus on these areas, and it will be available for adoption very soon.",
+    contact:
+      "blesc will be available for adoption very soon. Until then, our focus is on strengthening its privacy, security, and reliability.",
   },
 };
 

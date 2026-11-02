@@ -147,7 +147,7 @@ export function Footer() {
         */}
         <Container className="relative z-10 pt-16">
           {/*
-            Coming soon, then why on a muted line. (This was the invitation
+            "Coming soon", then why on a muted line. (This was the invitation
             導入について、お話ししませんか。, folded in from the old standalone
             CTA section, with no paragraph under it: the one it once had only
             read the two button labels back. The why is new information, so
@@ -159,18 +159,19 @@ export function Footer() {
             clusters re-checked.
           */}
           {/*
-            Coming soon (lib/site, ADOPTION_STATUS): the mark in the mark
-            colour, the headline at the size the invitation it replaced was
-            set in, and why under it, muted.
+            "Coming soon" is the title, at the size the invitation it
+            replaced was set in, in English on both pages; why is under it,
+            muted, in the footer's own wording (lib/site, ADOPTION_STATUS).
           */}
-          <p className="text-center text-[0.85rem] font-medium tracking-[0.06em] text-mark-1">
-            {ADOPTION_STATUS[locale].label}
-          </p>
-          <h2 className={`mt-3 ${t.headingClass}`}>
-            {ADOPTION_STATUS[locale].headline}
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-pretty text-center text-[0.95rem] leading-relaxed text-muted">
-            {ADOPTION_STATUS[locale].body}
+          <h2 className={t.headingClass}>{ADOPTION_STATUS[locale].label}</h2>
+          {/*
+            [word-break:auto-phrase] breaks Japanese between phrases rather
+            than between any two characters, so 「この3つ」 cannot split as
+            「この3／つ」. Chrome and Edge support it; elsewhere it falls back
+            to the ordinary break, and for English it changes nothing.
+          */}
+          <p className="mx-auto mt-4 max-w-xl text-pretty text-center text-[0.95rem] leading-relaxed text-muted [word-break:auto-phrase]">
+            {ADOPTION_STATUS[locale].footer}
           </p>
 
           {/*

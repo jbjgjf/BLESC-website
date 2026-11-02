@@ -146,8 +146,8 @@ export function TrustPage({ locale }: { locale: Locale }) {
             <p className="text-[0.85rem] font-medium tracking-[0.06em] text-mark-1">
               {ADOPTION_STATUS[locale].label}
             </p>
-            <p className="mt-3 max-w-2xl text-pretty text-[1rem] leading-relaxed text-ink">
-              {ADOPTION_STATUS[locale].sentence}
+            <p className="mt-3 max-w-2xl text-pretty text-[1rem] leading-relaxed text-ink [word-break:auto-phrase]">
+              {ADOPTION_STATUS[locale].safety}
             </p>
           </Reveal>
           <Reveal className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-x-6">
