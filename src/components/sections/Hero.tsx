@@ -242,19 +242,13 @@ export function Hero({ locale: fromPage }: { locale?: Locale }) {
           <IntroFade play={play} delay={AFTER_HEADLINE + 0.08}>
             {/*
               Adoption is coming soon (lib/site, ADOPTION_STATUS), and the
-              buttons under this no longer offer it yet, so the first screen
-              says so before a school looks for the button that is gone: the
-              mark, then the one-line headline. Ink, not muted, for the
-              reason the tagline is: muted falls under AA over the sky's
-              deepest blue. The headline is one unbreakable run.
+              buttons under this no longer offer it yet. The first screen
+              says only that — "Coming soon", in English on both pages, at
+              the team's direction — and leaves the why to the footer and
+              the 安全とプライバシー page.
             */}
-            <p className="mt-10 text-[0.95rem] leading-relaxed text-ink">
-              <span className="mr-3 text-[0.8rem] font-medium tracking-[0.06em] text-mark-1">
-                {ADOPTION_STATUS[locale].label}
-              </span>
-              <span className="inline-block">
-                {ADOPTION_STATUS[locale].headline}
-              </span>
+            <p className="mt-10 text-[0.95rem] font-medium tracking-[0.06em] text-mark-1">
+              {ADOPTION_STATUS[locale].label}
             </p>
             <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-center">
               <ButtonLink variant="secondary" href={cta.notify.href}>

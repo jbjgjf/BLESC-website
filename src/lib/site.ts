@@ -171,9 +171,9 @@ export const CONTACT_PATH = "/contact";
  *
  * "blesc" is lowercase here, as the wordmark is, at the company's request.
  *
- * No date, because none has been set. When adoption opens, this,
- * ENQUIRY_TYPES below and the FAQ's last entry (lib/seo.ts, lib/faqEn.ts)
- * are what to change back.
+ * No date, because none has been set. When adoption opens, this and
+ * ENQUIRY_TYPES below are what to change back. (The FAQ has no entry about
+ * it: the team asked for 「いま、blescを導入できますか？」 to be removed.)
  */
 export const ADOPTION_STATUS: Record<
   Locale,

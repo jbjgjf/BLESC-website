@@ -17,10 +17,8 @@ import {
   type Locale,
 } from "@/lib/i18n";
 import {
-  ADOPTION_STATUS,
   CONTACT_EMAIL,
   CONTACT_PATH,
-  ENQUIRY_TYPES,
 } from "@/lib/site";
 
 /**
@@ -721,16 +719,6 @@ export const FAQ: { q: string; a: string }[] = [
   {
     q: "技術的な裏づけはありますか？",
     a: "知識グラフは、WHOのファクトシート「Mental health of adolescents」、NICEガイドライン NG134、WHOの mhGAP Intervention Guide、文部科学省の生徒指導提要を参照して、社内でまとめています。42のつながりのうち、公開資料を出典として関連を記録しているのは15で、残る27は公開資料の裏付けがなく、社内の判断であることを明記しています。出典のあるつながりも関連として記録したもので、どちらが原因かを示すものではありません。掲載の各機関は、Blescを推奨・承認するものではありません。臨床の専門家によるレビューを準備しています。",
-  },
-  /*
-   * Adoption is coming soon (lib/site, ADOPTION_STATUS). This entry used to
-   * say how to ask about adopting Blesc; it now answers the question a
-   * school arriving today has, in the site's own words for it, and names
-   * the form's option by the label the form itself prints.
-   */
-  {
-    q: "いま、blescを導入できますか？",
-    a: `${ADOPTION_STATUS.ja.sentence}導入開始のお知らせをご希望の場合は、お問い合わせフォームで「${ENQUIRY_TYPES.notify}」を選んでお送りください。`,
   },
 ];
 
