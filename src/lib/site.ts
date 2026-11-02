@@ -155,12 +155,75 @@ export const WEB3FORMS_ACCESS_KEY: string = "";
 export const CONTACT_PATH = "/contact";
 
 /**
- * The two enquiries. Carried to the form as ?type= so whichever button was
- * pressed arrives pre-selected rather than making the visitor say it twice.
+ * Adoption is coming soon.
+ *
+ * The company is not taking on schools yet: it is refining the product with
+ * a strong focus on privacy, security and reliability, and Blesc will be
+ * available for adoption very soon (decided 2026-11; worded from the team's
+ * own English). Every place the site used to invite a school to adopt Blesc
+ * says this instead, and every telling of it lives here.
+ *
+ *   label    "Coming soon", in English on both pages: the footer's title,
+ *            and the whole of what the hero says.
+ *   footer   why, under the footer's title.
+ *   safety   why, on 安全とプライバシー.
+ *   contact  why, opening the contact page's lead.
+ *
+ * The three say the same three things — privacy, security and reliability
+ * come first; blesc is being refined around them; it will be available for
+ * adoption very soon — in slightly different words and order, at the
+ * team's request, so a reader who meets it on several pages is not reading
+ * one paragraph pasted three times. Change what they say and change all
+ * three; change only how they say it and each stands alone.
+ *
+ * "blesc" is lowercase here, as the wordmark is, at the company's request.
+ *
+ * No date, because none has been set. When adoption opens, this and
+ * ENQUIRY_TYPES below are what to change back. (The FAQ has no entry about
+ * it: the team asked for 「いま、blescを導入できますか？」 to be removed.)
+ */
+export const ADOPTION_STATUS: Record<
+  Locale,
+  { label: string; footer: string; safety: string; contact: string }
+> = {
+  ja: {
+    label: "Coming soon",
+    footer:
+      "プライバシー、セキュリティ、信頼性は、blescにとって欠かせない基盤です。この3つを軸にblescを磨き上げており、まもなく導入いただけるようになります。",
+    safety:
+      "blescにとって、プライバシー、セキュリティ、信頼性は欠かせない基盤だと考えています。これらに重点を置いてblescの改善を続けており、まもなく導入いただけるようになります。",
+    contact:
+      "blescは、まもなく導入いただけるようになります。いまはプライバシー、セキュリティ、信頼性の強化に重点を置き、改善を続けています。",
+  },
+  en: {
+    label: "Coming soon",
+    footer:
+      "Privacy, security, and reliability are at the core of blesc. We are refining blesc around all three, and it will be ready for adoption very soon.",
+    safety:
+      "We understand that privacy, security, and reliability are fundamental to blesc. We will continue refining blesc with a strong focus on these areas, and it will be available for adoption very soon.",
+    contact:
+      "blesc will be available for adoption very soon. Until then, our focus is on strengthening its privacy, security, and reliability.",
+  },
+};
+
+/**
+ * The two enquiries, while adoption is coming soon: a general question, and
+ * a request to hear when adoption opens. They replace 資料請求 and 導入の
+ * ご相談, both of which asked for something the company is not offering
+ * yet.
+ *
+ * Carried to the form as ?type= so whichever button was pressed arrives
+ * pre-selected rather than making the visitor say it twice. An old link
+ * with ?type=document or ?type=consult is no longer a type and falls through
+ * to `general`, so nothing that points here breaks.
+ *
+ * `notify` is a promise as well as an option: whoever reads the inbox keeps
+ * these and writes back when adoption opens. The form's subject line
+ * carries the label, so they can be found.
  */
 export const ENQUIRY_TYPES = {
-  document: "資料請求",
-  consult: "導入のご相談",
+  general: "お問い合わせ",
+  notify: "導入開始のお知らせ",
 } as const;
 
 export type EnquiryType = keyof typeof ENQUIRY_TYPES;
@@ -169,13 +232,13 @@ export const isEnquiryType = (v: string | null): v is EnquiryType =>
   v !== null && Object.hasOwn(ENQUIRY_TYPES, v);
 
 export const CTA = {
-  document: {
-    label: ENQUIRY_TYPES.document,
-    href: `${CONTACT_PATH}?type=document`,
+  general: {
+    label: ENQUIRY_TYPES.general,
+    href: `${CONTACT_PATH}?type=general`,
   },
-  consult: {
-    label: ENQUIRY_TYPES.consult,
-    href: `${CONTACT_PATH}?type=consult`,
+  notify: {
+    label: ENQUIRY_TYPES.notify,
+    href: `${CONTACT_PATH}?type=notify`,
   },
 } as const;
 
@@ -187,7 +250,7 @@ export const CTA = {
  */
 export const ENQUIRY_LABELS: Record<Locale, Record<EnquiryType, string>> = {
   ja: ENQUIRY_TYPES,
-  en: { document: "Request information", consult: "Book a consultation" },
+  en: { general: "Contact us", notify: "Notify me when available" },
 };
 
 /**
@@ -198,22 +261,22 @@ export const ENQUIRY_LABELS: Record<Locale, Record<EnquiryType, string>> = {
  */
 export const ctaFor = (locale: Locale) =>
   ({
-    document: {
-      label: ENQUIRY_LABELS[locale].document,
-      href: localePath(locale, `${CONTACT_PATH}?type=document`),
+    general: {
+      label: ENQUIRY_LABELS[locale].general,
+      href: localePath(locale, `${CONTACT_PATH}?type=general`),
     },
-    consult: {
-      label: ENQUIRY_LABELS[locale].consult,
-      href: localePath(locale, `${CONTACT_PATH}?type=consult`),
+    notify: {
+      label: ENQUIRY_LABELS[locale].notify,
+      href: localePath(locale, `${CONTACT_PATH}?type=notify`),
     },
   }) as const;
 
 /**
  * The top bar's call to action, where the full label does not fit.
  *
- * The bar's button is ctaFor(locale).consult. In English that label is
- * "Book a consultation", 172px of button, and on a phone the mark, the
- * language switch and that button together are wider than the screen (see
+ * The bar's button is ctaFor(locale).general. In English that label is
+ * "Contact us", and on a phone the mark, the language switch and that
+ * button together are wider than the screen (see
  * the budget in components/Nav). Below sm the English button therefore
  * reads "Contact" — the name of the page it opens — and takes its full
  * label from sm up. Japanese fits at every width and has no short form.

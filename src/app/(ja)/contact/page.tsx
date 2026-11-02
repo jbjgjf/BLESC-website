@@ -7,9 +7,9 @@ export const metadata: Metadata = pageMetadata({
   locale: "ja",
   path: CONTACT_PATH,
   /* The layout's template appends "｜Blesc", so this is the page name only. */
-  title: "お問い合わせ・資料請求",
+  title: "お問い合わせ",
   description:
-    "Blescの資料請求・導入のご相談を承っております。学校・教育委員会からのお問い合わせは、フォームより数営業日以内にご返信いたします。",
+    "blescへのお問い合わせはこちらから。blescはまもなく導入いただけるようになります。ご質問や、導入開始のお知らせのご希望を承ります。",
   socialDescription: DESCRIPTIONS_SHORT.ja,
 });
 

@@ -16,7 +16,10 @@ import {
   otherLocale,
   type Locale,
 } from "@/lib/i18n";
-import { CONTACT_EMAIL, CONTACT_PATH } from "@/lib/site";
+import {
+  CONTACT_EMAIL,
+  CONTACT_PATH,
+} from "@/lib/site";
 
 /**
  * Absolute origin, no trailing slash.
@@ -476,7 +479,7 @@ export function siteMetadata(locale: Locale): Metadata {
  */
 const GRAPH_COPY: Record<
   Locale,
-  { subCategory: string; features: readonly string[]; pricing: string }
+  { subCategory: string; features: readonly string[] }
 > = {
   ja: {
     subCategory: "学校向けメンタルヘルスプラットフォーム",
@@ -488,7 +491,6 @@ const GRAPH_COPY: Record<
       "日記本文を教員に開示しないプライバシー設計",
       "教員向けダッシュボードでの観測・時刻・根拠の提示",
     ],
-    pricing: "導入のご相談・お見積りはお問い合わせください。",
   },
   en: {
     subCategory: "Mental health platform for schools",
@@ -500,7 +502,6 @@ const GRAPH_COPY: Record<
       "A privacy design that does not disclose the diary text to teachers",
       "A teacher dashboard that shows observations with their time and basis",
     ],
-    pricing: "Please contact us to discuss adoption or to request a quote.",
   },
 };
 
@@ -547,7 +548,7 @@ export function siteJsonLd(locale: Locale) {
         contactPoint: [
           {
             "@type": "ContactPoint",
-            contactType: "sales",
+            contactType: "customer support",
             email: CONTACT_EMAIL,
             url: pageUrl(locale, CONTACT_PATH),
             availableLanguage: ["ja"],
@@ -593,15 +594,11 @@ export function siteJsonLd(locale: Locale) {
          * The list itself is GRAPH_COPY's, above, in the page's language.
          */
         featureList: copy.features,
-        offers: {
-          "@type": "Offer",
-          category: "SaaS",
-          availability: "https://schema.org/InStock",
-          priceSpecification: {
-            "@type": "PriceSpecification",
-            description: copy.pricing,
-          },
-        },
+        /*
+         * No `offers` until adoption opens. It said InStock, which search
+         * engines read as "available now"; with nothing offered yet the
+         * honest structured data is none. Restore it when adoption opens.
+         */
       },
     ],
   };
@@ -722,10 +719,6 @@ export const FAQ: { q: string; a: string }[] = [
   {
     q: "技術的な裏づけはありますか？",
     a: "知識グラフは、WHOのファクトシート「Mental health of adolescents」、NICEガイドライン NG134、WHOの mhGAP Intervention Guide、文部科学省の生徒指導提要を参照して、社内でまとめています。42のつながりのうち、公開資料を出典として関連を記録しているのは15で、残る27は公開資料の裏付けがなく、社内の判断であることを明記しています。出典のあるつながりも関連として記録したもので、どちらが原因かを示すものではありません。掲載の各機関は、Blescを推奨・承認するものではありません。臨床の専門家によるレビューを準備しています。",
-  },
-  {
-    q: "導入について相談するにはどうすればよいですか？",
-    a: "お問い合わせフォームより、資料請求または導入のご相談としてご連絡ください。内容を確認のうえ、担当者より数営業日以内にご返信いたします。",
   },
 ];
 

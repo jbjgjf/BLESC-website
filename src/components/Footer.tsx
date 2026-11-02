@@ -16,6 +16,7 @@ import {
   CONTACT_EMAIL,
   FOOTER_NAV,
   LANGUAGE_SWITCH,
+  ADOPTION_STATUS,
   ctaFor,
   sectionHref,
 } from "@/lib/site";
@@ -56,23 +57,20 @@ const LINK_ROW =
  */
 const COPY: Record<
   Locale,
-  { heading: string; headingClass: string; navLabel: string }
+  { headingClass: string; navLabel: string }
 > = {
   ja: {
-    heading: "導入について、お話ししませんか。",
     headingClass:
       "mx-auto max-w-3xl text-center text-[clamp(1.625rem,3.6vw,2.375rem)] font-medium leading-[1.3] tracking-[-0.025em] text-ink [font-feature-settings:'palt'_1]",
     navLabel: "フッターナビゲーション",
   },
   en: {
     /*
-      導入について、お話ししませんか。 with 導入 as "adopting Blesc", the
-      word the FAQ and the contact page use for it, so the invitation at the
-      foot of every page asks for what the page above it has been calling
-      by that name. It names no addressee: the Japanese does not, and the
-      reader may be a school or a board of education.
+      The heading was an invitation to adopt Blesc (導入について、お話し
+      しませんか。 / "Talk to us about adopting Blesc."). Adoption is coming
+      soon, so the foot of every page now says that instead, in the words
+      lib/site keeps for it (ADOPTION_STATUS).
     */
-    heading: "Talk to us about adopting Blesc.",
     /*
       The same invitation in the same voice: the Japanese heading's size,
       weight and tracking, on the same measure.
@@ -149,20 +147,32 @@ export function Footer() {
         */}
         <Container className="relative z-10 pt-16">
           {/*
-            導入について, folded in from the old standalone CTA section.
-
-            The supporting paragraph under this is gone. It said 資料のご請求、
-            導入のご相談を承っております, which is the two button labels below
-            read back, and then お問い合わせフォームよりご連絡ください, which is
-            where both buttons already go. With the heading no longer sharing a
-            half-width grid cell it also sets on one line at desktop.
+            "Coming soon", then why on a muted line. (This was the invitation
+            導入について、お話ししませんか。, folded in from the old standalone
+            CTA section, with no paragraph under it: the one it once had only
+            read the two button labels back. The why is new information, so
+            it earns the line.)
 
             max-w-3xl is the measure the flower clusters are laid out against:
             768px centred leaves 128px of gutter at 1024 and FooterFlowers
             reasons from exactly that figure, so widening this would need the
             clusters re-checked.
           */}
-          <h2 className={t.headingClass}>{t.heading}</h2>
+          {/*
+            "Coming soon" is the title, at the size the invitation it
+            replaced was set in, in English on both pages; why is under it,
+            muted, in the footer's own wording (lib/site, ADOPTION_STATUS).
+          */}
+          <h2 className={t.headingClass}>{ADOPTION_STATUS[locale].label}</h2>
+          {/*
+            [word-break:auto-phrase] breaks Japanese between phrases rather
+            than between any two characters, so 「この3つ」 cannot split as
+            「この3／つ」. Chrome and Edge support it; elsewhere it falls back
+            to the ordinary break, and for English it changes nothing.
+          */}
+          <p className="mx-auto mt-4 max-w-xl text-pretty text-center text-[0.95rem] leading-relaxed text-muted [word-break:auto-phrase]">
+            {ADOPTION_STATUS[locale].footer}
+          </p>
 
           {/*
             The only route to the form the footer now needs: both hrefs are
@@ -173,17 +183,15 @@ export function Footer() {
             centred on a phone, rather than stretched to the column.
 
             The same two in either language, each leading to that language's
-            form (ctaFor). The English pair is the wider — about 206px a
-            button against 118px and 150px — and still a row from sm: about
-            425px with the gap, of the 592px a 640px screen leaves. Stacked
-            on a phone, the wider is 210px of the 272px at 320px.
+            form (ctaFor). The English pair is the wider, and still a row
+            from sm.
           */}
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <ButtonLink variant="secondary" href={cta.document.href}>
-              {cta.document.label}
+            <ButtonLink variant="secondary" href={cta.notify.href}>
+              {cta.notify.label}
             </ButtonLink>
-            <ButtonLink variant="primary" href={cta.consult.href}>
-              {cta.consult.label}
+            <ButtonLink variant="primary" href={cta.general.href}>
+              {cta.general.label}
             </ButtonLink>
           </div>
 

@@ -23,9 +23,8 @@ import { FAQ } from "@/lib/seo";
  *   Japanese line and breaks at spaces, so on a phone it runs to two lines
  *   and would otherwise wrap as a full line and a one-word orphan. The
  *   Japanese is fifteen characters and sits on one line from 360px up.
- *   The English names what is being adopted ("adopting Blesc"). 導入前に
- *   leaves it unsaid, but a bare "before adoption" on a page about
- *   students can be misread.
+ *   Both used to say "before adopting" (導入前に); with adoption not open
+ *   yet the lead is simply about Blesc.
  * - An answer drops measure-jp, which is the Japanese paragraph setting
  *   (1.9 leading and a hair of tracking — too open for Latin, and being
  *   unlayered it would outrank any leading set beside it), for 1.7 leading
@@ -37,7 +36,7 @@ import { FAQ } from "@/lib/seo";
 const COPY = {
   ja: {
     title: "よくあるご質問",
-    lead: "導入前に、よくいただくご質問。",
+    lead: "よくいただくご質問。",
     items: FAQ,
     leadClass:
       "text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.4] tracking-[-0.02em] text-ink",
@@ -45,7 +44,7 @@ const COPY = {
   },
   en: {
     title: "FAQ",
-    lead: "Common questions before adopting Blesc.",
+    lead: "Common questions about Blesc.",
     items: FAQ_EN,
     leadClass:
       "text-balance text-[clamp(1.25rem,2.6vw,1.75rem)] font-medium leading-[1.4] tracking-[-0.02em] text-ink",

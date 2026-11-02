@@ -3,7 +3,7 @@ import { ContactForm } from "@/components/ContactForm";
 import { Flower } from "@/components/Flower";
 import { Container, Icon } from "@/components/ui";
 import { localePath, type Locale } from "@/lib/i18n";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { ADOPTION_STATUS, CONTACT_EMAIL } from "@/lib/site";
 import { TRUST_PATH, TRUST_TITLE } from "@/lib/trust";
 
 /**
@@ -32,7 +32,7 @@ import { TRUST_PATH, TRUST_TITLE } from "@/lib/trust";
 const COPY = {
   ja: {
     heading: "お問い合わせ",
-    lead: "資料のご請求、導入のご相談を承っております。内容を確認のうえ、担当者より数営業日以内にご返信いたします。",
+    lead: `${ADOPTION_STATUS.ja.contact}ご質問や、導入開始のお知らせのご希望は、こちらのフォームから承ります。内容を確認のうえ、担当者より数営業日以内にご返信いたします。`,
     mailNote: "フォームをお使いになれない場合は、こちらまで直接ご連絡ください。",
     trust: { before: "日記やデータの扱いについては『", after: "』をご覧ください。" },
     leadClass: "measure-jp mt-6 text-[1.0625rem] text-muted",
@@ -40,7 +40,7 @@ const COPY = {
   },
   en: {
     heading: "Contact",
-    lead: "We welcome requests for information and consultations about adopting Blesc. We will review your message, and a member of our team will reply within a few business days.",
+    lead: `${ADOPTION_STATUS.en.contact} You can already send us questions about blesc, or ask to be notified when it becomes available. We will review your message, and a member of our team will reply within a few business days.`,
     mailNote:
       "If you cannot use the form, please write to us directly at this address.",
     trust: { before: "See ", after: " for how diaries and data are handled." },
