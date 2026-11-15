@@ -300,8 +300,10 @@ const cardImage = (locale: Locale, route: "opengraph-image" | "twitter-image") =
 /**
  * hreflang for a page: itself in each language, and x-default.
  *
- * Every page exists in both languages at the same path under /en, so the
- * pair is derived, not listed. x-default is the Japanese page — the site's
+ * Every page but the news articles exists in both languages at the same
+ * path under /en, so the pair is derived, not listed. (An article is
+ * Japanese only and takes none: pageMetadata's `japaneseOnly`, and no
+ * alternates in the sitemap.) x-default is the Japanese page — the site's
  * default language and the one a reader of neither is best sent to. Google
  * honours the annotation only when both ends carry it; both ends are built
  * by this one function, so they always do.
@@ -327,10 +329,22 @@ export const languageAlternates = (path: string) => ({
  * a card, which truncates hard. Without it the card says what the snippet
  * says.
  *
+ * `japaneseOnly` is for a page with no English counterpart — a news
+ * article (lib/i18n, JAPANESE_ONLY). It drops the hreflang pair and the
+ * card's alternate locale, both of which would name an English twin that
+ * does not exist and send a crawler to a 404. The canonical stays.
+ * `locale` is "ja" for such a page.
+ *
+ * `article` makes the card an Open Graph article rather than a website:
+ * `publishedTime` is the date the page was published, as ISO 8601 (a
+ * YYYY-MM-DD or a YYYY-MM date), and `section` what it is filed under.
+ *
  * openGraph and twitter are written out whole every time. Metadata merges
  * shallowly — a page's `openGraph` replaces the layout's, it does not add
  * to it — and X reads its own tags before it falls back to Open Graph, so
  * a page that left either to inherit would be carded as the home page.
+ * `alternates` is replaced the same way, which is what lets a Japanese-only
+ * page shed the layout's hreflang by naming a canonical alone.
  */
 export function pageMetadata({
   locale,
@@ -338,32 +352,41 @@ export function pageMetadata({
   title,
   description,
   socialDescription = description,
+  japaneseOnly = false,
+  article,
 }: {
   locale: Locale;
   path: string;
   title?: string;
   description: string;
   socialDescription?: string;
+  japaneseOnly?: boolean;
+  article?: { publishedTime?: string; section?: string };
 }): Metadata {
   const cardTitle = title ? pageTitle(locale, title) : CARD_ALT[locale];
+
+  const card = {
+    locale: OG_LOCALE[locale],
+    ...(japaneseOnly
+      ? null
+      : { alternateLocale: [OG_LOCALE[otherLocale(locale)]] }),
+    url: pageUrl(locale, path),
+    siteName: SITE_NAME,
+    title: cardTitle,
+    description: socialDescription,
+    images: [cardImage(locale, "opengraph-image")],
+  };
 
   return {
     ...(title ? { title } : null),
     description,
     alternates: {
       canonical: localePath(locale, path),
-      languages: languageAlternates(path),
+      ...(japaneseOnly ? null : { languages: languageAlternates(path) }),
     },
-    openGraph: {
-      type: "website",
-      locale: OG_LOCALE[locale],
-      alternateLocale: [OG_LOCALE[otherLocale(locale)]],
-      url: pageUrl(locale, path),
-      siteName: SITE_NAME,
-      title: cardTitle,
-      description: socialDescription,
-      images: [cardImage(locale, "opengraph-image")],
-    },
+    openGraph: article
+      ? { type: "article", ...card, ...article }
+      : { type: "website", ...card },
     twitter: {
       card: "summary_large_image",
       /*
@@ -506,6 +529,14 @@ const GRAPH_COPY: Record<
 };
 
 /**
+ * The Organization node's @id in siteJsonLd's graph, which every page
+ * carries (app/_shell/RootShell). A node on a page that names Blesc as its
+ * publisher — a news article's — points here rather than describing the
+ * company a second time.
+ */
+export const ORGANIZATION_ID = `${SITE_URL}/#organization`;
+
+/**
  * One @graph rather than several loose blocks. Nodes cross-reference by @id,
  * so Google resolves "the organisation that publishes this website that
  * offers this software" as a single entity instead of three unrelated ones.
@@ -522,7 +553,6 @@ const GRAPH_COPY: Record<
  * page.
  */
 export function siteJsonLd(locale: Locale) {
-  const orgId = `${SITE_URL}/#organization`;
   const siteId = `${SITE_URL}/#website`;
   const copy = GRAPH_COPY[locale];
   const description = DESCRIPTIONS[locale];
@@ -532,7 +562,7 @@ export function siteJsonLd(locale: Locale) {
     "@graph": [
       {
         "@type": "Organization",
-        "@id": orgId,
+        "@id": ORGANIZATION_ID,
         name: SITE_NAME,
         legalName: LEGAL_NAME,
         alternateName: ["BLESC", "ブレスク"],
@@ -562,11 +592,12 @@ export function siteJsonLd(locale: Locale) {
         name: `${SITE_NAME} — ${TAGLINES[locale]}`,
         description,
         /*
-         * The site, not this page: every page exists in both languages
-         * (lib/i18n), and this one node is emitted on all of them.
+         * The site, not this page: the site is in both languages (lib/
+         * i18n; only the news articles are Japanese alone), and this one
+         * node is emitted on every page.
          */
         inLanguage: LOCALES.map((each) => HTML_LANG[each]),
-        publisher: { "@id": orgId },
+        publisher: { "@id": ORGANIZATION_ID },
       },
       {
         "@type": "SoftwareApplication",
@@ -578,7 +609,7 @@ export function siteJsonLd(locale: Locale) {
         description,
         url: SITE_URL,
         inLanguage: "ja",
-        publisher: { "@id": orgId },
+        publisher: { "@id": ORGANIZATION_ID },
         audience: {
           "@type": "EducationalAudience",
           educationalRole: ["teacher", "administrator"],

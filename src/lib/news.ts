@@ -114,11 +114,26 @@ export type NewsEntry = {
   body: Localized;
   photo?: NewsPhoto;
   /**
+   * The article in content/news that tells this entry's story at length, by
+   * its slug (the file name without .md). Optional: most entries have none.
+   *
+   * An entry's row is still a row that opens in place, to its sentence and
+   * photo. When it names an article, the Japanese page adds a quiet
+   * 詳しく読む → to that opened row, and does not list the article as a row
+   * of its own — one event, one row. Only once the article is published,
+   * though: while its date is TODO there is no page to link to, so the row
+   * stays exactly as it was. The English page never links, because the
+   * articles are Japanese only for now.
+   *
+   * A slug that matches no file fails the build (components/sections/News),
+   * so a typo cannot quietly drop the link.
+   */
+  article?: string;
+  /**
    * Where the fact and the date were checked. Provenance for whoever edits
-   * this next — never rendered. There are no article pages, so an entry
-   * links nowhere and carries no arrow: a headline that looks like a link to
-   * a page that does not exist is worse than one that plainly isn't one. The
-   * one thing a row does is open, in place, to its own sentence and photo.
+   * this next — never rendered. An entry itself links nowhere: the one thing
+   * its row does is open, in place, to its own sentence and photo. The only
+   * link a row can carry is the 詳しく読む to an article (`article`, above).
    */
   source?: string;
 };
@@ -217,6 +232,7 @@ const ENTRIES: NewsEntry[] = [
       ja: "に登壇し、Blescの取り組みについて発表しました。",
       en: "Took the stage and presented Blesc’s work.",
     },
+    article: "sushi-tech-tokyo-pitch",
   },
   {
     kind: "news",
@@ -242,6 +258,7 @@ const ENTRIES: NewsEntry[] = [
     // banner and the lanyards read IVS2026. IVS2026 ran 2026年7月1日〜3日,
     // and IVS Youth was held on 7月3日 (the release below).
     source: "https://prtimes.jp/main/html/rd/p/000000231.000059319.html",
+    article: "ivs-pitch",
   },
 ];
 
@@ -304,19 +321,27 @@ export function formatNewsDate(date: NewsDate, locale: Locale): string {
 }
 
 /**
- * Newest first, undated after dated.
+ * Newest first, undated after dated — the register's one order, compared on
+ * the dates alone so that the section can put these entries and the
+ * articles (lib/newsArticles, where an undated draft's date is null) into
+ * it together.
  *
  * ISO dates sort as plain strings, which is why they are stored that way. A
  * month-only date is a prefix of every day in its month, so it lands after
  * that month's dated entries — "sometime in September" reads naturally below
- * the 15th. The sort is stable, so undated entries, and entries sharing a
- * date, keep the order they are written in above.
+ * the 15th. Array sorts are stable, so undated entries, and entries sharing
+ * a date, keep the order they are written in above.
  */
-function byDateDesc(a: NewsEntry, b: NewsEntry): number {
-  if (a.date && b.date) return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
-  if (a.date) return -1;
-  if (b.date) return 1;
+export function newestFirst(
+  a: NewsDate | null | undefined,
+  b: NewsDate | null | undefined,
+): number {
+  if (a && b) return a < b ? 1 : a > b ? -1 : 0;
+  if (a) return -1;
+  if (b) return 1;
   return 0;
 }
 
-export const NEWS: readonly NewsEntry[] = [...ENTRIES].sort(byDateDesc);
+export const NEWS: readonly NewsEntry[] = [...ENTRIES].sort((a, b) =>
+  newestFirst(a.date, b.date),
+);

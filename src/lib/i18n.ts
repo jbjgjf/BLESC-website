@@ -3,8 +3,10 @@
  *
  * Japanese is the default and keeps the bare paths (/, /contact, /safety).
  * English is the same page tree under /en (/en, /en/contact, /en/safety).
- * Every page exists in both; nothing is English-only or Japanese-only, so a
- * language switch always has somewhere to go.
+ * Every page exists in both, with one exception: the news articles
+ * (/news/<slug>) are written in Japanese only. Nothing is English-only.
+ * switchLocalePath, at the bottom, is what keeps a language switch from
+ * leading to a page that is not there.
  *
  * How a component learns its language:
  * - a server component takes a `locale` prop, handed down from the page;
@@ -56,5 +58,31 @@ export const localePath = (locale: Locale, path: string): string => {
 export const otherLocale = (locale: Locale): Locale =>
   locale === "ja" ? "en" : "ja";
 
-export const switchLocalePath = (pathname: string): string =>
-  localePath(otherLocale(localeFromPath(pathname)), stripLocale(pathname));
+/**
+ * Japanese pages with no English counterpart, by path prefix, and the
+ * English page the switch leads to from each instead.
+ *
+ * A news article is written in Japanese only (content/news, lib/
+ * newsArticles), so /en/news/<slug> is a 404. The nearest English page is
+ * the News section of the English home page, the counterpart of the list
+ * the article is filed in — written here as the bare path, "/#news",
+ * which localePath turns into /en#news.
+ */
+const JAPANESE_ONLY: readonly { prefix: string; english: string }[] = [
+  { prefix: "/news/", english: "/#news" },
+];
+
+/**
+ * Where the language switch on `pathname` leads: the same page in the
+ * other language, or — from a Japanese-only page (JAPANESE_ONLY) — the
+ * English page nearest to it.
+ */
+export const switchLocalePath = (pathname: string): string => {
+  const locale = localeFromPath(pathname);
+  const path = stripLocale(pathname);
+  if (locale === "ja") {
+    const only = JAPANESE_ONLY.find(({ prefix }) => path.startsWith(prefix));
+    if (only) return localePath("en", only.english);
+  }
+  return localePath(otherLocale(locale), path);
+};

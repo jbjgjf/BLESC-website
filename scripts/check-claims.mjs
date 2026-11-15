@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Checks the LP's user-visible copy against docs/claims.md.
+ * Checks the LP's user-visible copy against docs/claims.md: the source
+ * under src/ (.ts, .tsx) and the news articles under content/ (.md).
  *
  * #12 #13 #14 were all the same failure: a decision recorded in
  * jbjgjf/BLESC's docs, applied to the old LP, and then lost when the LP was
@@ -13,8 +14,19 @@
  * False positives are accepted; `claims-allow` in a comment on the offending
  * line or the one above suppresses a finding.
  *
- * Comments are skipped: they do not reach a reader. They are blanked rather
- * than deleted so reported line and column numbers stay true to the file.
+ * Comments in source are skipped: they do not reach a reader. They are
+ * blanked rather than deleted so reported line and column numbers stay true
+ * to the file. Markdown is read whole, as plain text — it has no // or /*
+ * comments, and treating them as such would blank the rest of any line with
+ * a URL on it (https://…). Everything in an article file is scanned, its
+ * header included: the title and summary are shown on the site too.
+ *
+ * An article's body has nowhere to put `claims-allow`. Markdown's comment
+ * is an HTML one, and lib/markdown refuses raw HTML — `<!-- … -->` there
+ * stops the build — so a hit in a body is taken back to whoever supplied the
+ * text, not suppressed. (In the header, a `# claims-allow: …` note line,
+ * which lib/newsArticles ignores, works over the title: or summary: line
+ * under it.) The failure message says so when an article is among the hits.
  */
 
 import { readFileSync } from "node:fs";
@@ -264,7 +276,7 @@ function suppressed(lines, lineNo) {
 
 function scanFile(path) {
   const src = readFileSync(path, "utf8");
-  const scannable = blankComments(src);
+  const scannable = path.endsWith(".md") ? src : blankComments(src);
   const lines = src.split("\n");
   const findings = [];
 
@@ -303,9 +315,17 @@ function scanFile(path) {
 /* Main                                                                       */
 /* -------------------------------------------------------------------------- */
 
+/*
+ * Source, and the news articles (content/news, read by lib/newsArticles):
+ * an article's text is copy on the site like any string in a component.
+ */
+const SCANNED = ["src/**/*.{ts,tsx}", "content/**/*.md"];
+
 const files = [];
-for await (const entry of glob("src/**/*.{ts,tsx}", { cwd: ROOT })) {
-  files.push(join(ROOT, entry));
+for (const pattern of SCANNED) {
+  for await (const entry of glob(pattern, { cwd: ROOT })) {
+    files.push(join(ROOT, entry));
+  }
 }
 files.sort();
 
@@ -335,5 +355,12 @@ console.error(
   `${DOC} を読んでから直してください。表現が正しく、検査のほうが誤っている場合は、
 その行か直前の行に理由つきの \`claims-allow\` コメントを置くと抑止できます。\n`,
 );
+
+if (findings.some((f) => f.file.endsWith(".md"))) {
+  console.error(
+    `ただしニュース記事（content/**/*.md）の本文にはコメントを書けません（HTML は記事のビルドで拒否されます）。
+記事の文面は提供元に確認してください。\n`,
+  );
+}
 
 process.exit(1);
