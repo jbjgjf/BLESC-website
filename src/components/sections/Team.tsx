@@ -35,7 +35,7 @@ type Member = {
    * The member's own introduction, and its English translation. The English
    * follows the Japanese sentence by sentence and says nothing it does not:
    * a title the Japanese names is the title the English names, including
-   * the three noted on MEMBERS that differ from `role`.
+   * the two noted on MEMBERS that differ from `role`.
    *
    * It is written in the first person. The Japanese is a self-introduction
    * with no subject, and the first person is the reading that needs no
@@ -61,13 +61,28 @@ type Member = {
  * from a brief about AI, product development and running the technical
  * team. 松本 龍's Head of Finance is the company's own answer.
  *
- * NOTE: three biographies still name other titles internally — 内藤 悠人's
- * says Chief Research Officer, 王 謙蘊's says CTO, and 松本 龍's says
- * プロジェクトリード. Those are the company's own words so they are left
- * exactly as given; they need a line changed by their authors, not by us.
- * The English translations name the same three titles for the same reason
- * (Chief Research Officer, CTO, "co-founder and project lead"): a
- * translation that quietly corrected them would be us changing the line.
+ * NOTE: two biographies still name other titles internally — 内藤 悠人's
+ * says Chief Research Officer and 王 謙蘊's says CTO. Those are the
+ * company's own words so they are left exactly as given; they need a line
+ * changed by their authors, not by us. The English translations name the
+ * same two titles for the same reason: a translation that quietly corrected
+ * them would be us changing the line. 松本 龍's said プロジェクトリード
+ * ("co-founder and project lead") until the CEO confirmed Head of Finance
+ * on 2026-11-16; his biography now says 共同創業者兼Head of Finance, in the
+ * Latin the other biographies use for titles, and "co-founder and Head of
+ * Finance" in English. Nothing else in it changed.
+ *
+ * No biography introduces its author as a 高校生 / high school student any
+ * more. The CEO's instruction (2026-11-16) is that the site never stresses
+ * that the team is made up of junior or senior high school students
+ * (中高生 / 高校生), so four biographies that opened on it lost that noun
+ * and nothing else: 「…にルーツを持つ高校生です。」 became
+ * 「…にルーツを持っています。」, 「…に関心を持つ高校生です。」 became
+ * 「…に関心を持っています。」, and the English "I am a high school student
+ * with roots in …" / "interested in …" became "I have roots in …" / "I am
+ * interested in …". 山村 初香's and 梅澤 透真's still name their school and
+ * year — facts the members supplied about themselves, which only they or
+ * the CEO can take out — and are kept as given.
  *
  * In English the company is written Blesc throughout, as on the rest of
  * the English site, where the Japanese biographies write BLESC or Blesc as
@@ -84,8 +99,8 @@ const MEMBERS: Member[] = [
     role: "CEO",
     photo: "/team/longlong.png",
     description: {
-      ja: "中国と日本にルーツを持つ高校生です。人と話すことが好きで、コミュニケーション力には自信があります。一方で、なぜか言う冗談はいつも滑りがちです。マーケティングや行動経済学に強い関心を持ち、人々の意思決定や行動変容を促す仕組みづくりについて学んでいます。BLESCではCEOとして、事業戦略の立案や外部機関との連携を担当し、若者のメンタルヘルスという社会課題の解決に挑戦しています。",
-      en: "I am a high school student with roots in China and Japan. I like talking with people and am confident in my communication skills. My jokes, on the other hand, somehow always tend to fall flat. I have a strong interest in marketing and behavioral economics, and I am learning about building mechanisms that prompt people’s decision-making and behavior change. As CEO of Blesc, I am in charge of planning business strategy and working with outside organizations, and I am taking on the social issue of young people’s mental health.",
+      ja: "中国と日本にルーツを持っています。人と話すことが好きで、コミュニケーション力には自信があります。一方で、なぜか言う冗談はいつも滑りがちです。マーケティングや行動経済学に強い関心を持ち、人々の意思決定や行動変容を促す仕組みづくりについて学んでいます。BLESCではCEOとして、事業戦略の立案や外部機関との連携を担当し、若者のメンタルヘルスという社会課題の解決に挑戦しています。",
+      en: "I have roots in China and Japan. I like talking with people and am confident in my communication skills. My jokes, on the other hand, somehow always tend to fall flat. I have a strong interest in marketing and behavioral economics, and I am learning about building mechanisms that prompt people’s decision-making and behavior change. As CEO of Blesc, I am in charge of planning business strategy and working with outside organizations, and I am taking on the social issue of young people’s mental health.",
     },
   },
   {
@@ -94,8 +109,8 @@ const MEMBERS: Member[] = [
     role: "Head of Finance",
     photo: "/team/ryu.png",
     description: {
-      ja: "データサイエンスを用いた社会課題解決に関心を持ち、現在は主に計量経済学やファイナンス、市場流動性に関する研究に従事しています。Blescでは共同創業者兼プロジェクトリードとして、臨床オントロジーや非言語的な行動バイアスの分析技術を用いたプロダクトの開発、および事業戦略・ファイナンス面の立案を牽引しています。",
-      en: "I am interested in using data science to solve social issues, and at present I am mainly engaged in research on econometrics, finance, and market liquidity. At Blesc, as co-founder and project lead, I lead the development of a product that uses clinical ontology and techniques for analyzing nonverbal behavioral biases, as well as the planning of business strategy and finance.",
+      ja: "データサイエンスを用いた社会課題解決に関心を持ち、現在は主に計量経済学やファイナンス、市場流動性に関する研究に従事しています。Blescでは共同創業者兼Head of Financeとして、臨床オントロジーや非言語的な行動バイアスの分析技術を用いたプロダクトの開発、および事業戦略・ファイナンス面の立案を牽引しています。",
+      en: "I am interested in using data science to solve social issues, and at present I am mainly engaged in research on econometrics, finance, and market liquidity. At Blesc, as co-founder and Head of Finance, I lead the development of a product that uses clinical ontology and techniques for analyzing nonverbal behavioral biases, as well as the planning of business strategy and finance.",
     },
   },
   {
@@ -104,8 +119,8 @@ const MEMBERS: Member[] = [
     role: "Web Designer & Marketing Director",
     photo: "/team/jasper.png",
     description: {
-      ja: "オーストラリアと日本にルーツを持つ高校生です。AIを活用した課題解決や地域貢献に関心があり、デジタルマーケティング、動画編集、クリエイティブ制作にも取り組んでいます。BLESCではマーケティングとプロダクトを担当していて、ブランドアイデンティティの構築、プロダクト・ウェブサイトのデザイン、SNS運用やマーケティング戦略を担当しています。技術とデザインの両面から、より多くの人に価値を届けることを目指しています。",
-      en: "I am a high school student with roots in Australia and Japan. I am interested in solving problems with AI and in contributing to local communities, and I also work on digital marketing, video editing, and creative production. At Blesc, I am in charge of marketing and product: building the brand identity, designing the product and the website, and handling social media and marketing strategy. I aim to bring value to more people through both technology and design.",
+      ja: "オーストラリアと日本にルーツを持っています。AIを活用した課題解決や地域貢献に関心があり、デジタルマーケティング、動画編集、クリエイティブ制作にも取り組んでいます。BLESCではマーケティングとプロダクトを担当していて、ブランドアイデンティティの構築、プロダクト・ウェブサイトのデザイン、SNS運用やマーケティング戦略を担当しています。技術とデザインの両面から、より多くの人に価値を届けることを目指しています。",
+      en: "I have roots in Australia and Japan. I am interested in solving problems with AI and in contributing to local communities, and I also work on digital marketing, video editing, and creative production. At Blesc, I am in charge of marketing and product: building the brand identity, designing the product and the website, and handling social media and marketing strategy. I aim to bring value to more people through both technology and design.",
     },
   },
   {
@@ -114,8 +129,8 @@ const MEMBERS: Member[] = [
     role: "Experience Designer",
     photo: "/team/reona.png",
     description: {
-      ja: "インドと日本にルーツを持つ高校生です。斬新なインターフェースの研究・開発や、テクノロジーを活用した課題解決、地域貢献に関心があります。また、デジタルマーケティング、動画編集、クリエイティブ制作にも取り組んでいます。BLESCではExperience Designerとして、ユーザー体験（UX）の設計やプロダクトデザインを担当し、誰もが直感的に使えるサービスづくりを目指しています。技術とデザインを融合させながら、より良い体験価値の創出に挑戦しています。",
-      en: "I am a high school student with roots in India and Japan. I am interested in researching and developing novel interfaces, in solving problems with technology, and in contributing to local communities. I also work on digital marketing, video editing, and creative production. As Experience Designer at Blesc, I am in charge of user experience (UX) design and product design, and I aim to build a service anyone can use intuitively. I am working to create better experiences by bringing technology and design together.",
+      ja: "インドと日本にルーツを持っています。斬新なインターフェースの研究・開発や、テクノロジーを活用した課題解決、地域貢献に関心があります。また、デジタルマーケティング、動画編集、クリエイティブ制作にも取り組んでいます。BLESCではExperience Designerとして、ユーザー体験（UX）の設計やプロダクトデザインを担当し、誰もが直感的に使えるサービスづくりを目指しています。技術とデザインを融合させながら、より良い体験価値の創出に挑戦しています。",
+      en: "I have roots in India and Japan. I am interested in researching and developing novel interfaces, in solving problems with technology, and in contributing to local communities. I also work on digital marketing, video editing, and creative production. As Experience Designer at Blesc, I am in charge of user experience (UX) design and product design, and I aim to build a service anyone can use intuitively. I am working to create better experiences by bringing technology and design together.",
     },
   },
   {
@@ -134,8 +149,8 @@ const MEMBERS: Member[] = [
     role: "Engineering Lead",
     photo: "/team/ou.png",
     description: {
-      ja: "AI・バイオテクノロジー・起業に関心を持つ高校生です。BLESCではCTOとして、科学的根拠と透明性を重視しながら、社会課題の解決につながるテクノロジーの開発に取り組んでいます。アイデアを実際のプロダクトへと形にすることや、優秀な仲間とチームを組んで難しい課題に挑戦することが好きです。現在は主にAI活用やプロダクト開発、技術チームのマネジメントに力を入れています。",
-      en: "I am a high school student interested in AI, biotechnology, and entrepreneurship. As CTO of Blesc, I work on developing technology that helps solve social issues, with an emphasis on scientific evidence and transparency. I like turning ideas into real products, and teaming up with talented peers to take on hard problems. At present I am focusing mainly on applying AI, product development, and managing the technical team.",
+      ja: "AI・バイオテクノロジー・起業に関心を持っています。BLESCではCTOとして、科学的根拠と透明性を重視しながら、社会課題の解決につながるテクノロジーの開発に取り組んでいます。アイデアを実際のプロダクトへと形にすることや、優秀な仲間とチームを組んで難しい課題に挑戦することが好きです。現在は主にAI活用やプロダクト開発、技術チームのマネジメントに力を入れています。",
+      en: "I am interested in AI, biotechnology, and entrepreneurship. As CTO of Blesc, I work on developing technology that helps solve social issues, with an emphasis on scientific evidence and transparency. I like turning ideas into real products, and teaming up with talented peers to take on hard problems. At present I am focusing mainly on applying AI, product development, and managing the technical team.",
     },
   },
   {
@@ -169,12 +184,15 @@ const MEMBERS: Member[] = [
  * What went was the two-clause construction carrying them.
  *
  * The English is that sentence and carries the same claims. 帰国子女 is
- * "returnee students", the usual English for it: students who lived abroad
- * and came back to school in Japan.
+ * "returnees", the usual English for it: people who spent part of their
+ * childhood abroad and came back to Japan. It is not "returnee students":
+ * 帰国子女 does not say that anyone is at school, and the CEO's instruction
+ * (2026-11-16) is that the site never stresses that the team is made up of
+ * students (see the note on MEMBERS).
  */
 const TEAM_INTRO = {
   ja: "BLESCは、中国、日本、オーストラリア、インドなど多様なバックグラウンドを持つバイリンガルの帰国子女が、国内外の視点から社会課題の解決に取り組むチームです。",
-  en: "Blesc is a team of bilingual returnee students with diverse backgrounds, including China, Japan, Australia, and India, working to solve social issues from perspectives inside and outside Japan.",
+  en: "Blesc is a team of bilingual returnees with diverse backgrounds, including China, Japan, Australia, and India, working to solve social issues from perspectives inside and outside Japan.",
 } as const;
 
 /**
@@ -416,7 +434,8 @@ export function Team({ locale: fromPage }: { locale?: Locale }) {
   // button every time anything on this section re-rendered.
   const close = useCallback(() => setShown(null), []);
 
-  const person = MEMBERS[active];
+  /* The gallery only reports whole indices in range; MEMBERS[0] is the floor. */
+  const person = MEMBERS[active] ?? MEMBERS[0];
   const shownMember = shown === null ? null : MEMBERS[shown];
 
   return (

@@ -83,21 +83,98 @@ const MANAGED_ORGS = ["京都大学", "Hatapro", "ハタプロ"];
  */
 const PERMITTED_ORGS = [
   // Written permission confirmed by the Blesc team (Jasper McGann,
-  // 2026-09-30). Scope: 支援, shown in the backing section
-  // (src/components/sections/Backing.tsx) only.
+  // 2026-09-30), scope 支援; widened by the CEO on 2026-11-16 to joint
+  // research with one named centre (see PERMITTED_RELATIONSHIPS). Shown in
+  // the backing band (src/components/sections/Backing.tsx) only.
   "京都大学",
 ];
 
-/** 京都大学 under each name it is written as. See unscoped-relationship. */
-const KYOTO_NAMES = "京都大学|(?<![東北南])京大|Kyoto University";
+/**
+ * The research centre of 京都大学 that Blesc's joint research is with, as
+ * the CEO confirmed it (2026-11-16), in each language.
+ *
+ * The English is the centre's own name in Kyoto University's English
+ * material — "1997 Praxis and Research Center for Clinical Psychology and
+ * Education established" in the Graduate School of Education's overview
+ * (https://www.educ.kyoto-u.ac.jp/en/wp/wp-content/uploads/2026/06/overview_2026.pdf),
+ * the same name its bulletin carries beside 京都大学大学院教育学研究科附属
+ * 臨床教育実践研究センター紀要.
+ */
+const KYOTO_CENTRE_JA =
+  "京都大学大学院\\s*教育学研究科\\s*附属臨床教育実践研究センター";
+const KYOTO_CENTRE_EN =
+  "Praxis and Research Center for Clinical Psychology and Education,\\s*Graduate School of Education,\\s*Kyoto University";
+
+/**
+ * 京都大学 under each name it is written as — the centre among them, whole
+ * or without the university in front, so that a relationship word is
+ * measured from the end of the centre's long name and not from the 京都大学
+ * at its start. See unscoped-relationship.
+ */
+const KYOTO_NAMES = [
+  KYOTO_CENTRE_JA,
+  "(?:附属)?臨床教育実践研究センター",
+  "Praxis and Research Center for Clinical Psychology and Education(?:,\\s*Graduate School of Education)?(?:,\\s*Kyoto University)?",
+  "京都大学",
+  "(?<![東北南])京大",
+  "Kyoto University",
+].join("|");
 
 /**
  * Words that say what an institution did — each narrower than 支援, and none
- * confirmed for 京都大学. English stems, so "collaboration", "partnership",
- * "jointly" and "supervised" are all caught.
+ * confirmed for 京都大学 except in the one statement below. English stems,
+ * so "collaboration", "partnership", "jointly" and "supervised" are all
+ * caught.
  */
 const SCOPE_WORDS =
   "共同研究|共同開発|監修|協働|提携|連携|[Cc]ollaborat|[Pp]artner|[Jj]oint|[Ss]upervis|[Cc]o-?develop";
+
+/**
+ * Relationship statements confirmed word for word. Each pattern matches the
+ * relationship words alone; the centre's name is a lookaround, so it is
+ * required but not part of the match.
+ *
+ * 京都大学 — the CEO, 2026-11-16: joint research with the centre named in
+ * full, 「京都大学大学院 教育学研究科 附属臨床教育実践研究センターとの共同研究」,
+ * and the same statement in English. Joint research with 京都大学 as a
+ * whole, with the graduate school, or with the centre under a shorter name
+ * was not what was confirmed, and still fails. So does 共同研究開発 (joint
+ * research and development), which says 共同開発 as well: the Japanese
+ * 共同研究 is only cleared when 開発 does not follow it.
+ *
+ * Inside one of these, only the relationship words are removed before
+ * unscoped-relationship runs (see blankPermitted). The names stay, so a
+ * second relationship word put beside the confirmed one —
+ * 「…センターとの共同研究・監修」, "Supervision and joint research with the
+ * Praxis …" — is still measured against the centre's name, and still
+ * fails. In English the whole "Joint research with the " goes, so that it
+ * does not use up the window between a word put in front of it and the
+ * name.
+ *
+ * The Japanese may carry a `\n` before との, as the two characters a
+ * source string writes it with: in Backing it marks where the line may
+ * break and is drawn as a <wbr>, adding nothing to the words.
+ */
+const PERMITTED_RELATIONSHIPS = [
+  new RegExp(
+    `(?<=${KYOTO_CENTRE_JA}(?:\\\\n)?との)共同研究(?!(?:[・、と]|及び|および)?開発)`,
+    "g",
+  ),
+  new RegExp(`[Jj]oint research with the (?=${KYOTO_CENTRE_EN})`, "g"),
+];
+
+/**
+ * The text with each confirmed relationship phrase taken out. What is
+ * removed never holds a line break, so every reported line is unchanged:
+ * a finding's line is counted from the line breaks before it.
+ */
+function blankPermitted(text) {
+  let out = text;
+  for (const pattern of PERMITTED_RELATIONSHIPS) {
+    out = out.replace(pattern, "");
+  }
+  return out;
+}
 
 /** Words that make an accelerator selection read as an investment. */
 const INVESTMENT_WORDS =
@@ -151,10 +228,12 @@ const RULES = [
   {
     id: "unscoped-relationship",
     section: "§3 外部機関名",
-    // Permission to name 京都大学 is permission to say 支援 and nothing
-    // narrower. Each of these words says what the university did, and none
-    // of them has been confirmed; the skip above clears the name, this keeps
-    // the scope.
+    // Permission to name 京都大学 is permission to say 支援, and joint
+    // research with one centre in the words the CEO confirmed — nothing
+    // else. Each of these words says what the university did; the skip
+    // above clears the name, this keeps the scope. The one confirmed use of
+    // 共同研究 is taken out before the scan (prepare, PERMITTED_RELATIONSHIPS),
+    // so it is the only one that passes.
     //
     // The university is matched under every name it goes by, and the words
     // in English as well as Japanese: the permission covers the institution,
@@ -162,11 +241,18 @@ const RULES = [
     // Kyoto University" would otherwise walk straight past a rule that only
     // knew 京都大学. The lookbehind keeps 東京大学, 北京大学 and 南京大学 —
     // each of which contains 京大 — out of it.
+    //
+    // A word may sit up to 24 characters after the name and 40 before it.
+    // English puts the relationship first and joins it with more words than
+    // Japanese does — "Joint research and development with the …" is 35
+    // between the stem and the name — so the window before the name is the
+    // wider one.
     pattern: new RegExp(
-      `(${KYOTO_NAMES})(?:[^。\\n]{0,24}?)(${SCOPE_WORDS})|(${SCOPE_WORDS})(?:[^。\\n]{0,12}?)(${KYOTO_NAMES})`,
+      `(${KYOTO_NAMES})(?:[^。\\n]{0,24}?)(${SCOPE_WORDS})|(${SCOPE_WORDS})(?:[^。\\n]{0,40}?)(${KYOTO_NAMES})`,
       "g",
     ),
-    why: "京都大学について確認されている範囲は「支援」のみです。共同研究・監修・協働・提携・連携は、範囲が書面で確認できるまで書けません。",
+    prepare: blankPermitted,
+    why: "京都大学について確認されている範囲は「支援」と「京都大学大学院 教育学研究科 附属臨床教育実践研究センターとの共同研究」（この文言どおり）のみです。それ以外の共同研究・監修・協働・提携・連携は書けません。",
     negatable: true,
   },
   {
@@ -281,21 +367,24 @@ function scanFile(path) {
   const findings = [];
 
   for (const rule of RULES) {
+    // A rule's `prepare` rewrites what it alone sees, keeping every line
+    // break, so the line a finding is reported on is still the source's.
+    const text = rule.prepare ? rule.prepare(scannable) : scannable;
     rule.pattern.lastIndex = 0;
     let m;
-    while ((m = rule.pattern.exec(scannable)) !== null) {
+    while ((m = rule.pattern.exec(text)) !== null) {
       const hit = m[0];
       if (rule.skip?.(hit)) continue;
 
       if (rule.negatable) {
-        const after = scannable.slice(
+        const after = text.slice(
           m.index + hit.length,
           m.index + hit.length + NEGATION_WINDOW,
         );
         if (NEGATORS.test(after)) continue;
       }
 
-      const line = lineOf(scannable, m.index);
+      const line = lineOf(text, m.index);
       if (suppressed(lines, line)) continue;
 
       findings.push({

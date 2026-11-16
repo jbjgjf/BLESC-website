@@ -543,7 +543,13 @@ class App {
       const width = this.medias[0].width;
       const raw = Math.round(this.scroll.current / width);
       const active = ((raw % this.realLength) + this.realLength) % this.realLength;
-      if (active !== this.lastActive) {
+      /*
+       * A canvas with no size yet (laid out at zero width, or measured
+       * mid-resize) gives a zero item width, and the index comes out NaN.
+       * Reporting that would hand the roster MEMBERS[NaN] — undefined — and
+       * take the whole page down, so the frame simply reports nothing.
+       */
+      if (Number.isInteger(active) && active !== this.lastActive) {
         this.lastActive = active;
         this.opts.onActiveChange?.(active);
       }

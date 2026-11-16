@@ -2,6 +2,7 @@ import { Fragment, type ReactNode } from "react";
 import { Flower } from "@/components/Flower";
 import { TRUST_TYPE } from "@/components/trust/TrustSections";
 import { Icon } from "@/components/ui";
+import type { Locale } from "@/lib/i18n";
 import {
   parseMarkdown,
   type Align,
@@ -30,9 +31,10 @@ import { SITE_URL } from "@/lib/seo";
  * every body once as it read the files, drafts included, so in practice
  * the build stops there, before any page is rendered.)
  *
- * Japanese only, as the articles are (lib/newsArticles): the type is
- * TRUST_TYPE's Japanese cut, and the one string this file owns, the
- * new-tab note, is Japanese.
+ * In the article's language, `locale`: the type is TRUST_TYPE's cut for
+ * it — Japanese at measure-jp's 1.9 leading, English at the Latin leading
+ * the English safety page uses — and so is the one string this file owns,
+ * the new-tab note, which is the Technology section's in either language.
  *
  * The measure is the caller's (NewsArticlePage sets 40rem). min-w-0 so
  * that, in a grid or flex column, a wide table scrolls inside its own box
@@ -42,6 +44,7 @@ export function Markdown({
   source,
   file,
   lineOffset = 0,
+  locale,
 }: {
   source: string;
   /** The path errors name: content/news/<slug>.md. */
@@ -52,13 +55,20 @@ export function Markdown({
    * body's. See parseMarkdown.
    */
   lineOffset?: number;
+  /** The language the body is written in. */
+  locale: Locale;
 }) {
   const blocks = parseMarkdown(source, file, lineOffset);
 
   return (
     <div className="min-w-0">
       {blocks.map((block, k) => (
-        <BlockView key={k} block={block} prev={blocks[k - 1]} />
+        <BlockView
+          key={k}
+          block={block}
+          prev={blocks[k - 1]}
+          locale={locale}
+        />
       ))}
     </div>
   );
@@ -68,14 +78,16 @@ export function Markdown({
 /* Type                                                                       */
 /* -------------------------------------------------------------------------- */
 
-const TYPE = TRUST_TYPE.ja;
-
 /**
- * Body text: the 安全とプライバシー list items' setting — measure-jp's 1.9
- * leading at 17px, weight 400 — in ink, as that page sets every sentence.
- * Ink on the page ground is 19.43:1.
+ * Body text: the 安全とプライバシー list items' setting — in Japanese
+ * measure-jp's 1.9 leading at 17px, in English 1.65 at 17px and 18px from
+ * md, both weight 400 — in ink, as that page sets every sentence. Ink on
+ * the page ground is 19.43:1.
  */
-const BODY = `${TYPE.item} text-ink`;
+const BODY: Record<Locale, string> = {
+  ja: `${TRUST_TYPE.ja.item} text-ink`,
+  en: `${TRUST_TYPE.en.item} text-ink`,
+};
 
 /**
  * ## and ###: the home page's step titles (STEP_TITLE in
@@ -85,11 +97,15 @@ const BODY = `${TYPE.item} text-ink`;
  * and at 22–28px a subheading stays well under the title (28–60px)
  * however long the title runs.
  *
- * text-balance and auto-phrase, as the title has them (NewsArticlePage):
- * a heading that wraps on a phone breaks between phrases, in even lines.
+ * text-balance and, in Japanese, auto-phrase, as the title has them
+ * (NewsArticlePage): a heading that wraps on a phone breaks between
+ * phrases, in even lines. English breaks at its spaces already, and the
+ * English step titles are balanced the same way.
  */
-const H2 =
-  "text-balance text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink [word-break:auto-phrase]";
+const H2: Record<Locale, string> = {
+  ja: "text-balance text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink [word-break:auto-phrase]",
+  en: "text-balance text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink",
+};
 
 /**
  * ####: no article uses one yet. Body size at the captions' bold weight,
@@ -122,6 +138,15 @@ const LINK =
 const ITEM_RULED = "border-t border-line py-5 last:pb-0";
 const ITEM_OPEN =
   "border-t border-line py-5 first:border-t-0 first:pt-0 last:pb-0";
+
+/**
+ * What a screen reader hears after a link to another site: the Technology
+ * section's note, in either language.
+ */
+const NEW_TAB: Record<Locale, string> = {
+  ja: "（新しいタブで開きます）",
+  en: " (opens in a new tab)",
+};
 
 /** Literal classes — Tailwind cannot see an interpolated one. */
 const ALIGN: Record<NonNullable<Align> | "none", string> = {
@@ -156,18 +181,32 @@ function gap(prev: Block | undefined, block: Block): string {
 /* Blocks                                                                     */
 /* -------------------------------------------------------------------------- */
 
-function BlockView({ block, prev }: { block: Block; prev?: Block }) {
+function BlockView({
+  block,
+  prev,
+  locale,
+}: {
+  block: Block;
+  prev?: Block;
+  locale: Locale;
+}) {
   const space = gap(prev, block);
 
   switch (block.type) {
     case "paragraph":
-      return <p className={`${BODY} ${space}`}>{inlines(block.children)}</p>;
+      return (
+        <p className={`${BODY[locale]} ${space}`}>
+          {inlines(block.children, locale)}
+        </p>
+      );
 
     case "heading":
       return block.level === 2 ? (
-        <h2 className={`${H2} ${space}`}>{inlines(block.children)}</h2>
+        <h2 className={`${H2[locale]} ${space}`}>
+          {inlines(block.children, locale)}
+        </h2>
       ) : (
-        <h3 className={`${H3} ${space}`}>{inlines(block.children)}</h3>
+        <h3 className={`${H3} ${space}`}>{inlines(block.children, locale)}</h3>
       );
 
     case "list":
@@ -176,11 +215,12 @@ function BlockView({ block, prev }: { block: Block; prev?: Block }) {
           block={block}
           ruled={prev !== undefined && prev.type !== "heading"}
           space={space}
+          locale={locale}
         />
       );
 
     case "table":
-      return <TableView block={block} space={space} />;
+      return <TableView block={block} space={space} locale={locale} />;
 
     case "rule":
       /*
@@ -195,8 +235,8 @@ function BlockView({ block, prev }: { block: Block; prev?: Block }) {
 /**
  * Both kinds of list, as the safety page sets its list: each item ruled
  * off, its marker hung in a 2rem gutter so every line of the item starts
- * at one edge, and centred in a box one line tall (TRUST_TYPE's `line`,
- * in em, so it follows the item's size).
+ * at one edge, and centred in a box one line tall (TRUST_TYPE's `line` for
+ * the language, in em, so it follows the item's size and leading).
  *
  * A bulleted list's marker is that page's: the brand flower in mark-1.
  * A numbered list's is the number as written, two digits, in the home
@@ -214,17 +254,19 @@ function ListView({
   block,
   ruled,
   space,
+  locale,
 }: {
   block: Extract<Block, { type: "list" }>;
   ruled: boolean;
   space: string;
+  locale: Locale;
 }) {
   const items = block.items.map((item, k) => (
     <li key={k} className={ruled ? ITEM_RULED : ITEM_OPEN}>
-      <div className={`relative pl-8 ${BODY}`}>
+      <div className={`relative pl-8 ${BODY[locale]}`}>
         <span
           aria-hidden
-          className={`absolute top-0 left-0 flex items-center ${TYPE.line}`}
+          className={`absolute top-0 left-0 flex items-center ${TRUST_TYPE[locale].line}`}
         >
           {block.ordered ? (
             <span className="text-[0.85rem] font-medium tabular-nums text-mark-1">
@@ -234,7 +276,7 @@ function ListView({
             <Flower size={16} className="text-mark-1" />
           )}
         </span>
-        <p>{inlines(item)}</p>
+        <p>{inlines(item, locale)}</p>
       </div>
     </li>
   ));
@@ -273,9 +315,11 @@ function ListView({
 function TableView({
   block,
   space,
+  locale,
 }: {
   block: Extract<Block, { type: "table" }>;
   space: string;
+  locale: Locale;
 }) {
   const align = (c: number) => ALIGN[block.align[c] ?? "none"];
 
@@ -290,7 +334,7 @@ function TableView({
                 scope="col"
                 className={`pr-6 pb-3 align-bottom text-[0.85rem] font-medium tracking-[0.02em] text-muted last:pr-0 ${align(c)}`}
               >
-                {inlines(cell)}
+                {inlines(cell, locale)}
               </th>
             ))}
           </tr>
@@ -303,7 +347,7 @@ function TableView({
                   key={c}
                   className={`py-4 pr-6 align-top text-[1rem] tabular-nums text-ink last:pr-0 ${align(c)}`}
                 >
-                  {inlines(cell)}
+                  {inlines(cell, locale)}
                 </td>
               ))}
             </tr>
@@ -318,7 +362,7 @@ function TableView({
 /* Inline                                                                     */
 /* -------------------------------------------------------------------------- */
 
-function inlines(nodes: readonly Inline[]): ReactNode {
+function inlines(nodes: readonly Inline[], locale: Locale): ReactNode {
   return nodes.map((node, k) => {
     switch (node.type) {
       case "text":
@@ -326,13 +370,18 @@ function inlines(nodes: readonly Inline[]): ReactNode {
       case "strong":
         return (
           <strong key={k} className={STRONG}>
-            {inlines(node.children)}
+            {inlines(node.children, locale)}
           </strong>
         );
       case "link":
         return (
-          <TextLink key={k} href={node.href} kind={node.kind}>
-            {inlines(node.children)}
+          <TextLink
+            key={k}
+            href={node.href}
+            kind={node.kind}
+            locale={locale}
+          >
+            {inlines(node.children, locale)}
           </TextLink>
         );
     }
@@ -368,10 +417,12 @@ function isSameSite(href: string): boolean {
 function TextLink({
   href,
   kind,
+  locale,
   children,
 }: {
   href: string;
   kind: LinkKind;
+  locale: Locale;
   children: ReactNode;
 }) {
   if (kind === "external" && !isSameSite(href)) {
@@ -388,7 +439,7 @@ function TextLink({
           size={14}
           className="ml-0.5 inline-block align-[-0.1em] transition-[translate] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/link:translate-x-px group-hover/link:-translate-y-px motion-reduce:transition-none"
         />
-        <span className="sr-only">（新しいタブで開きます）</span>
+        <span className="sr-only">{NEW_TAB[locale]}</span>
       </a>
     );
   }

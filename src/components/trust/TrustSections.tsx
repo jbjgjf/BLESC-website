@@ -6,7 +6,12 @@ import { Reveal, RevealItem } from "@/components/Reveal";
 import { RevealList } from "@/components/trust/RevealList";
 import { Container } from "@/components/ui";
 import type { Locale } from "@/lib/i18n";
-import { PRIVACY, SAFETY, SOS_DIAL } from "@/lib/trust";
+import {
+  PRIVACY,
+  PRIVACY_POLICY_URL,
+  SAFETY,
+  SOS_DIAL,
+} from "@/lib/trust";
 
 /**
  * The type the two trust pages are set in, per language.
@@ -47,6 +52,9 @@ import { PRIVACY, SAFETY, SOS_DIAL } from "@/lib/trust";
  * leading of their own for body text, and `line` — the height the list
  * marker centres itself in — repeats the leading each cut really has.
  *
+ * `note` is the size of the quiet line after a list — 安全's planned
+ * review, プライバシー's policy link — a step under the items.
+ *
  * Class names are written out whole: Tailwind only generates what it can
  * read.
  */
@@ -58,6 +66,7 @@ export const TRUST_TYPE = {
     intro: "measure-jp text-[clamp(1.125rem,1rem+0.5vw,1.375rem)]",
     item: "measure-jp text-[1.0625rem]",
     line: "h-[1.9em]",
+    note: "measure-jp text-[0.9375rem]",
   },
   en: {
     h1: "text-balance text-[clamp(1.625rem,0.5rem+5.6vw,4.5rem)] leading-[1.08]",
@@ -66,6 +75,7 @@ export const TRUST_TYPE = {
     intro: "text-[clamp(1.1875rem,1.05rem+0.6vw,1.5rem)] leading-[1.45]",
     item: "text-pretty text-[1.0625rem] leading-[1.65] md:text-[1.125rem]",
     line: "h-[1.65em]",
+    note: "text-pretty text-[0.9375rem] leading-[1.65] md:text-[1rem]",
   },
 } as const;
 
@@ -155,11 +165,20 @@ const ITEM_OPEN =
  * in mark-1, 5.44:1 on the ground: nothing depends on it, and it clears the
  * 3:1 of a meaningful mark anyway.
  *
+ * After the list, quieter, comes what is about the list rather than one
+ * more statement in it: a `note` (安全's planned clinical review) and a
+ * `link` (プライバシー's privacy policy, once there is one). Muted, a step
+ * smaller than the items and level with the column's left edge, as the
+ * opening sentence is. Muted is 6.25:1 on the page ground (5.79:1 if the
+ * flower wash ever lay behind it), so the step down costs no legibility;
+ * the link is underlined, so it reads as a link without its colour, and
+ * goes to ink under the pointer, as the dial does.
+ *
  * Motion is the page's own: the rule draws, the heading and the opening
- * sentence reveal, the items follow 0.08s apart. Every piece has its still
- * form — DrawnRule and Reveal swap variants under reduced motion, Drift
- * collapses its range — and without JavaScript the layout's noscript rule
- * puts each of them at rest and visible.
+ * sentence reveal, the items follow 0.08s apart, and the note last. Every
+ * piece has its still form — DrawnRule and Reveal swap variants under
+ * reduced motion, Drift collapses its range — and without JavaScript the
+ * layout's noscript rule puts each of them at rest and visible.
  */
 function TrustSection({
   id,
@@ -167,6 +186,8 @@ function TrustSection({
   title,
   intro,
   items,
+  note,
+  link,
 }: {
   id: string;
   locale: Locale;
@@ -174,6 +195,10 @@ function TrustSection({
   /** The sentence the list hangs from, where the copy has one. */
   intro?: string;
   items: readonly string[];
+  /** A quiet line after the list. */
+  note?: string;
+  /** A quiet link after the list (and after `note`, if both). */
+  link?: { href: string; label: string };
 }) {
   const type = TRUST_TYPE[locale];
   const titleId = `${id}-title`;
@@ -232,6 +257,22 @@ function TrustSection({
                   </RevealItem>
                 ))}
               </RevealList>
+
+              {note || link ? (
+                <Reveal className={`mt-8 text-muted md:mt-10 ${type.note}`}>
+                  {note ? <p>{note}</p> : null}
+                  {link ? (
+                    <p className={note ? "mt-2" : undefined}>
+                      <a
+                        href={link.href}
+                        className="underline decoration-1 underline-offset-[0.25em] transition-colors duration-300 [@media(hover:hover)_and_(pointer:fine)]:hover:text-ink"
+                      >
+                        {link.label}
+                      </a>
+                    </p>
+                  ) : null}
+                </Reveal>
+              ) : null}
             </div>
           </div>
         </div>
@@ -245,10 +286,15 @@ function TrustSection({
  * what it does with a diary — in the language asked for.
  *
  * Presentational only. Every word is lib/trust.ts's, rendered as supplied:
- * the title, the sentence 安全 opens on, and each item, in order. That file
- * is the one place the two languages are kept side by side, and this is the
- * one component both pages draw them with, so /safety and /en/safety cannot
- * come to promise different things or set them differently.
+ * the title, the sentence 安全 opens on, each item, in order, and the note
+ * under 安全. That file is the one place the two languages are kept side by
+ * side, and this is the one component both pages draw them with, so
+ * /safety and /en/safety cannot come to promise different things or set
+ * them differently.
+ *
+ * The privacy policy link is there only once lib/trust.ts's
+ * PRIVACY_POLICY_URL is set. Until then プライバシー ends with its list:
+ * no dead link and no placeholder.
  *
  * The ids are `safety` and `privacy` in both languages, so /safety#privacy
  * and /en/safety#privacy are the same fragment on the two pages. Nothing in
@@ -267,12 +313,18 @@ export function TrustSections({ locale }: { locale: Locale }) {
         title={safety.title}
         intro={safety.lead}
         items={safety.items}
+        note={safety.note}
       />
       <TrustSection
         id="privacy"
         locale={locale}
         title={privacy.title}
         items={privacy.items}
+        link={
+          PRIVACY_POLICY_URL === null
+            ? undefined
+            : { href: PRIVACY_POLICY_URL, label: privacy.policyLabel }
+        }
       />
     </>
   );

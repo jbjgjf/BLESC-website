@@ -16,7 +16,6 @@ import {
   CONTACT_EMAIL,
   FOOTER_NAV,
   LANGUAGE_SWITCH,
-  ADOPTION_STATUS,
   ctaFor,
   sectionHref,
 } from "@/lib/site";
@@ -49,7 +48,9 @@ const LINK_ROW =
 /*
  * The footer's own words, per language. The buttons' labels are ctaFor's,
  * the section names FOOTER_NAV's and the page title TRUST_TITLE's, so what
- * is left to say here is the invitation and the name of the link row.
+ * is left to say here is the invitation, the name of the link row, and —
+ * on English pages only — the line under the address saying an enquiry in
+ * English is welcome (the company's word, 2026-11).
  *
  * `headingClass` is a whole class string per language: the two headings
  * share a measure, a size, a weight and a tracking, and differ in balance
@@ -57,20 +58,29 @@ const LINK_ROW =
  */
 const COPY: Record<
   Locale,
-  { headingClass: string; navLabel: string }
+  {
+    heading: string;
+    headingClass: string;
+    navLabel: string;
+    languageNote: string | null;
+  }
 > = {
   ja: {
+    heading: "導入について、お話ししませんか。",
     headingClass:
       "mx-auto max-w-3xl text-center text-[clamp(1.625rem,3.6vw,2.375rem)] font-medium leading-[1.3] tracking-[-0.025em] text-ink [font-feature-settings:'palt'_1]",
     navLabel: "フッターナビゲーション",
+    languageNote: null,
   },
   en: {
     /*
-      The heading was an invitation to adopt Blesc (導入について、お話し
-      しませんか。 / "Talk to us about adopting Blesc."). Adoption is coming
-      soon, so the foot of every page now says that instead, in the words
-      lib/site keeps for it (ADOPTION_STATUS).
+      導入について、お話ししませんか。 with 導入 as "adopting Blesc", the
+      word the FAQ and the contact page use for it, so the invitation at the
+      foot of every page asks for what the page above it has been calling
+      by that name. It names no addressee: the Japanese does not, and the
+      reader may be a school or a board of education.
     */
+    heading: "Talk to us about adopting Blesc.",
     /*
       The same invitation in the same voice: the Japanese heading's size,
       weight and tracking, on the same measure.
@@ -89,6 +99,7 @@ const COPY: Record<
     headingClass:
       "mx-auto max-w-3xl text-balance text-center text-[clamp(1.625rem,3.6vw,2.375rem)] font-medium leading-[1.3] tracking-[-0.025em] text-ink",
     navLabel: "Footer",
+    languageNote: "We’re happy to respond in English.",
   },
 };
 
@@ -147,32 +158,20 @@ export function Footer() {
         */}
         <Container className="relative z-10 pt-16">
           {/*
-            "Coming soon", then why on a muted line. (This was the invitation
-            導入について、お話ししませんか。, folded in from the old standalone
-            CTA section, with no paragraph under it: the one it once had only
-            read the two button labels back. The why is new information, so
-            it earns the line.)
+            導入について, folded in from the old standalone CTA section.
+
+            The supporting paragraph under this is gone. It said 資料のご請求、
+            導入のご相談を承っております, which is the two button labels below
+            read back, and then お問い合わせフォームよりご連絡ください, which is
+            where both buttons already go. With the heading no longer sharing a
+            half-width grid cell it also sets on one line at desktop.
 
             max-w-3xl is the measure the flower clusters are laid out against:
             768px centred leaves 128px of gutter at 1024 and FooterFlowers
             reasons from exactly that figure, so widening this would need the
             clusters re-checked.
           */}
-          {/*
-            "Coming soon" is the title, at the size the invitation it
-            replaced was set in, in English on both pages; why is under it,
-            muted, in the footer's own wording (lib/site, ADOPTION_STATUS).
-          */}
-          <h2 className={t.headingClass}>{ADOPTION_STATUS[locale].label}</h2>
-          {/*
-            [word-break:auto-phrase] breaks Japanese between phrases rather
-            than between any two characters, so 「この3つ」 cannot split as
-            「この3／つ」. Chrome and Edge support it; elsewhere it falls back
-            to the ordinary break, and for English it changes nothing.
-          */}
-          <p className="mx-auto mt-4 max-w-xl text-pretty text-center text-[0.95rem] leading-relaxed text-muted [word-break:auto-phrase]">
-            {ADOPTION_STATUS[locale].footer}
-          </p>
+          <h2 className={t.headingClass}>{t.heading}</h2>
 
           {/*
             The only route to the form the footer now needs: both hrefs are
@@ -183,15 +182,17 @@ export function Footer() {
             centred on a phone, rather than stretched to the column.
 
             The same two in either language, each leading to that language's
-            form (ctaFor). The English pair is the wider, and still a row
-            from sm.
+            form (ctaFor). The English pair is the wider — about 206px a
+            button against 118px and 150px — and still a row from sm: about
+            425px with the gap, of the 592px a 640px screen leaves. Stacked
+            on a phone, the wider is 210px of the 272px at 320px.
           */}
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <ButtonLink variant="secondary" href={cta.notify.href}>
-              {cta.notify.label}
+            <ButtonLink variant="secondary" href={cta.document.href}>
+              {cta.document.label}
             </ButtonLink>
-            <ButtonLink variant="primary" href={cta.general.href}>
-              {cta.general.label}
+            <ButtonLink variant="primary" href={cta.consult.href}>
+              {cta.consult.label}
             </ButtonLink>
           </div>
 
@@ -289,14 +290,28 @@ export function Footer() {
               It stays in this band rather than joining the copyright, because
               the copyright row is the one the wordmark reads through and a
               second line of type over those letters would crowd them.
+
+              On English pages a quiet line sits under it (languageNote), a
+              step smaller than the address so it reads as a note on it
+              rather than as another link. The two share a wrapper so they
+              stay together, closer than the band's gap-5; on Japanese pages
+              the wrapper holds the address alone and sets exactly as the
+              address did on its own.
             */}
-            <a
-              href={`mailto:${CONTACT_EMAIL}`}
-              className={`inline-flex items-center gap-2 ${QUIET_LINK}`}
-            >
-              <Icon name="mail" size={18} className="shrink-0" />
-              {CONTACT_EMAIL}
-            </a>
+            <div className="flex flex-col items-center gap-2">
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className={`inline-flex items-center gap-2 ${QUIET_LINK}`}
+              >
+                <Icon name="mail" size={18} className="shrink-0" />
+                {CONTACT_EMAIL}
+              </a>
+              {t.languageNote && (
+                <p className="text-center text-[0.8rem] text-muted">
+                  {t.languageNote}
+                </p>
+              )}
+            </div>
           </div>
 
           {/*

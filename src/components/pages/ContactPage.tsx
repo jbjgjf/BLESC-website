@@ -3,7 +3,7 @@ import { ContactForm } from "@/components/ContactForm";
 import { Flower } from "@/components/Flower";
 import { Container, Icon } from "@/components/ui";
 import { localePath, type Locale } from "@/lib/i18n";
-import { ADOPTION_STATUS, CONTACT_EMAIL } from "@/lib/site";
+import { CONTACT_EMAIL } from "@/lib/site";
 import { TRUST_PATH, TRUST_TITLE } from "@/lib/trust";
 
 /**
@@ -14,6 +14,11 @@ import { TRUST_PATH, TRUST_TITLE } from "@/lib/trust";
  * page's title, TRUST_TITLE in lib/trust, so the link always names the page
  * by the name the page gives itself. The English halves carry their own
  * spaces; the Japanese ones are the brackets the title sits in.
+ *
+ * `languageNote` is a quiet line under the address, on the English page
+ * only: enquiries in English are welcome (the company's word, 2026-11), and
+ * the visitor who needs to know that is the one reading this page in
+ * English. The Japanese page has nothing in its place.
  *
  * `lead` and `trustLine` are whole class strings picked by language, never
  * fragments joined up: Tailwind only generates what it can read. English
@@ -32,17 +37,19 @@ import { TRUST_PATH, TRUST_TITLE } from "@/lib/trust";
 const COPY = {
   ja: {
     heading: "お問い合わせ",
-    lead: `${ADOPTION_STATUS.ja.contact}ご質問や、導入開始のお知らせのご希望は、こちらのフォームから承ります。内容を確認のうえ、担当者より数営業日以内にご返信いたします。`,
+    lead: "資料のご請求、導入のご相談を承っております。内容を確認のうえ、担当者より数営業日以内にご返信いたします。",
     mailNote: "フォームをお使いになれない場合は、こちらまで直接ご連絡ください。",
+    languageNote: null,
     trust: { before: "日記やデータの扱いについては『", after: "』をご覧ください。" },
     leadClass: "measure-jp mt-6 text-[1.0625rem] text-muted",
     trustLineClass: "measure-jp mt-5 px-6 text-[0.8rem] text-muted md:px-8",
   },
   en: {
     heading: "Contact",
-    lead: `${ADOPTION_STATUS.en.contact} You can already send us questions about blesc, or ask to be notified when it becomes available. We will review your message, and a member of our team will reply within a few business days.`,
+    lead: "We welcome requests for information and consultations about adopting Blesc. We will review your message, and a member of our team will reply within a few business days.",
     mailNote:
       "If you cannot use the form, please write to us directly at this address.",
+    languageNote: "We’re happy to respond in English.",
     trust: { before: "See ", after: " for how diaries and data are handled." },
     leadClass:
       "mt-6 max-w-[36rem] text-pretty text-[1.0625rem] leading-[1.65] text-muted",
@@ -149,6 +156,15 @@ export function ContactPage({ locale }: { locale: Locale }) {
                 <Icon name="mail" size={18} className="shrink-0" />
                 {CONTACT_EMAIL}
               </a>
+              {/*
+                The same size and colour as the note over the address, so
+                the two read as one aside around it.
+              */}
+              {t.languageNote && (
+                <p className="mt-3 text-[0.85rem] text-muted">
+                  {t.languageNote}
+                </p>
+              )}
             </div>
           </div>
 

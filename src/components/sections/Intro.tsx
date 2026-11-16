@@ -9,27 +9,35 @@ import type { Locale } from "@/lib/i18n";
  *
  * The Japanese is in the pieces it is set in: the heading's two halves,
  * which break between them and nowhere else, and the paragraph's three
- * lines, which are its authored breaks on a wide screen.
+ * lines, which are its authored breaks on a wide screen. Each line is a
+ * list of phrases, and from 768px a phrase is an inline-block, so a line
+ * too long for the column breaks between its phrases and not inside one.
+ * Only the first line has two: 毎日、ホームルームの数分で made it about
+ * 37em, one line from about 800px up but not between 768px and there,
+ * where left to itself it would put 「す。」 alone on a second line (worked
+ * out from Hiragino Sans' advance widths, not measured in a browser). Split
+ * after 書き、 instead, it is two lines of whole phrases. Below 768px the
+ * phrases are plain inline text and the paragraph rewraps as before.
  *
- * The English is the same three statements, in the words lib/trust.ts's
- * ABOUT.en already uses for them — "in their own time", "one follow-up
- * question" — and it says what the Japanese says and no more: the teacher
- * gets a class, a student number, and what kind of expression appeared and
- * when, never the diary text. It has no authored breaks; see HEADING and
- * BODY below.
+ * The English is the same three statements, in the words the English
+ * pages use for them — "each day during a few minutes of homeroom", "one
+ * follow-up question" — and it says what the Japanese says and no more:
+ * the teacher gets a class, a student number, and what kind of expression
+ * appeared and when, never the diary text. It has no authored breaks; see
+ * HEADING and BODY below.
  */
 const COPY = {
   ja: {
     heading: ["Blescは、", "学校で使う日記アプリです。"],
     body: [
-      "生徒は好きなときに日記を書き、AIが短い問いをひとつ返します。",
-      "先生に届くのは日記の本文ではなく、",
-      "クラスと出席番号、どんな表現がいつあったかだけです。",
+      ["生徒は毎日、ホームルームの数分で日記を書き、", "AIが短い問いをひとつ返します。"],
+      ["先生に届くのは日記の本文ではなく、"],
+      ["クラスと出席番号、どんな表現がいつあったかだけです。"],
     ],
   },
   en: {
     heading: "Blesc is a journaling app for schools.",
-    body: "Students write a diary in their own time, and the AI replies with one short follow-up question. Teachers do not receive the diary text. They receive only the class, the student number, and what kind of expression appeared and when.",
+    body: "Students write a diary each day during a few minutes of homeroom, and the AI replies with one short follow-up question. Teachers do not receive the diary text. They receive only the class, the student number, and what kind of expression appeared and when.",
   },
 } as const;
 
@@ -69,15 +77,15 @@ const BODY: Record<Locale, string> = {
  * mechanism is only readable once you know what it is the mechanism of. It
  * also said what not to write — no AI-sounding explanation. So this is the
  * product in the words a teacher, a parent or a 中学生 would use, and only
- * facts the rest of the page already states: students write a diary when
- * they like, the AI sends back one short question, and what reaches the
- * teacher is a class, a roll number and an observation with its time,
- * never the diary itself. The last clause says プロダクト's 「観測と根拠」
- * in everyday words — どんな表現がいつあったか, which kind of expression
- * appeared and when, is exactly what an observation row carries — rather
- * than a looser paraphrase such as 気になる変化: the teacher's screen shows
- * observations, not changes, and 気になる would be the product judging what
- * matters (docs/claims.md §2). 観測 itself was tried here and read as
+ * facts the rest of the page already states: students write a diary every
+ * day in a few minutes of homeroom, the AI sends back one short question,
+ * and what reaches the teacher is a class, a roll number and an
+ * observation with its time, never the diary itself. The last clause says
+ * プロダクト's 「観測と根拠」 in everyday words — どんな表現がいつあったか,
+ * which kind of expression appeared and when, is exactly what an
+ * observation row carries — rather than a looser paraphrase such as
+ * 気になる変化: the teacher's screen shows observations, not changes, and
+ * 気になる would be the product judging what matters (docs/claims.md §2). 観測 itself was tried here and read as
  * jargon, which is the thing this block exists to avoid.
  * No 独自のAI, 深掘り, 可視化, プラットフォーム or シグナル: each of those
  * needs a second sentence to explain it, and this block has no room for one.
@@ -135,10 +143,14 @@ export function Intro({ locale }: { locale: Locale }) {
 
           <p className={BODY[locale]}>
             {locale === "ja"
-              ? COPY.ja.body.map((line, i) => (
-                  <Fragment key={line}>
+              ? COPY.ja.body.map((phrases, i) => (
+                  <Fragment key={phrases.join("")}>
                     {i > 0 && <br className="br-wide" />}
-                    {line}
+                    {phrases.map((phrase) => (
+                      <span key={phrase} className="md:inline-block">
+                        {phrase}
+                      </span>
+                    ))}
                   </Fragment>
                 ))
               : COPY.en.body}

@@ -5,8 +5,10 @@
  * Real entries only. The placeholder list that used to sit in the section was
  * removed rather than kept alongside, because a press list that mixes
  * placeholders with real entries is worse than one that is short. Every entry
- * below is something the company did, and every date is the organiser's own —
- * the entry's comment says where on the organiser's pages it was checked.
+ * below is something the company did, and every date is the organiser's own,
+ * or — for an event that ran over several days — the company's own day,
+ * checked to fall inside the organiser's dates. The entry's comment says
+ * where on the organiser's pages it was checked.
  *
  * Institution names follow docs/claims.md §3. Kyoto University's support is
  * stated in the backing section (Backing.tsx) and nowhere else, so it has no
@@ -118,12 +120,13 @@ export type NewsEntry = {
    * its slug (the file name without .md). Optional: most entries have none.
    *
    * An entry's row is still a row that opens in place, to its sentence and
-   * photo. When it names an article, the Japanese page adds a quiet
-   * 詳しく読む → to that opened row, and does not list the article as a row
-   * of its own — one event, one row. Only once the article is published,
-   * though: while its date is TODO there is no page to link to, so the row
-   * stays exactly as it was. The English page never links, because the
-   * articles are Japanese only for now.
+   * photo. When it names an article, the opened row ends with a quiet link
+   * to it — 詳しく読む → on the Japanese page, Read more → on the English
+   * page — and the article is not listed as a row of its own: one event,
+   * one row. Only once the article is published in that language, though:
+   * while its date is TODO there is no page to link to, and on the English
+   * page an article with no English version has none either, so there the
+   * row stays exactly as it was.
    *
    * A slug that matches no file fails the build (components/sections/News),
    * so a typo cannot quietly drop the link.
@@ -227,11 +230,17 @@ const ENTRIES: NewsEntry[] = [
   },
   {
     kind: "news",
+    date: "2026-04-29",
     name: { ja: "SusHi Tech Tokyo", en: "SusHi Tech Tokyo" },
     body: {
       ja: "に登壇し、Blescの取り組みについて発表しました。",
       en: "Took the stage and presented Blesc’s work.",
     },
+    // The day is the company's own, given with the article's date
+    // (content/news/sushi-tech-tokyo-pitch.md, 2026-11). The organiser's
+    // release below gives SusHi Tech Tokyo 2026 as 2026年4月27日〜29日 at
+    // Tokyo Big Sight, the 29th its public day.
+    source: "https://www.metro.tokyo.lg.jp/information/press/2026/02/2026021612",
     article: "sushi-tech-tokyo-pitch",
   },
   {

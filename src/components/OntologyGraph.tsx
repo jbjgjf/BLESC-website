@@ -56,8 +56,9 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
  *     wash of the logo's blue, with its three names standing wherever the
  *     frame is wide enough to set them clear of the other dots.
  * Direction is deliberately not drawn. The seed's relations are directed,
- * but its sources report association; arrowheads on a figure this size read
- * as "leads to" before any caption can say otherwise. The list under the
+ * but what it records of its sources is association; arrowheads on a
+ * figure this size read as "leads to" before any caption can say
+ * otherwise. The list under the
  * section gives every relation with its direction and type, in words.
  *
  * WHAT WAS REMOVED WITH THE 3D SCENE. The WebGL shell, its flat SVG fallback,
@@ -65,7 +66,7 @@ import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
  * drew itself along the chain as the page scrolled with a dot riding its
  * head. At forty-odd lines a sphere is unreadable from most angles, and a
  * dot travelling 睡眠不足 → 抑うつ傾向 animates exactly the causal reading
- * the sources do not support. What is left moves only when asked: the
+ * the seed does not record. What is left moves only when asked: the
  * figure fades in once, and a pointed-at concept lights its own relations.
  *
  * Everything the drawing shows is text in the section — the counts, the path
@@ -716,7 +717,7 @@ export function OntologyGraph() {
  *
  * The line wording follows the data, not a gloss of it: "association" is a
  * published source the seed records for the pair (what the source itself
- * bears out is the curator's reading — see lib/ontologySeed.ts), and the
+ * bears out was checked on 2026-11-16 — see lib/ontologySeed.ts), and the
  * dashed lines are the ones the seed records as having no published
  * source — "社内の判断", and "our own judgment" in English, because upstream
  * defines expert_judgement as the authors' judgement, not an expert panel's.

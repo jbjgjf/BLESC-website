@@ -15,9 +15,8 @@ import {
 } from "@/lib/news";
 import {
   allArticles,
-  articlePath,
   visibleArticles,
-  type NewsArticle,
+  type LocalizedArticle,
 } from "@/lib/newsArticles";
 
 /**
@@ -27,12 +26,13 @@ import {
  * in both of the site's languages — live in lib/news.ts, with their order
  * and the date display. The articles, whole texts with a page each at
  * /news/<slug>, are files in content/news, read by lib/newsArticles.ts.
- * They are Japanese only for now, so the English page lists the entries
- * alone, exactly as it did before there were articles. This file is the
+ * Every article is in Japanese, and in English too once it has been
+ * translated (a second file, at /en/news/<slug>), so each page lists the
+ * entries and the articles written in its own language. This file is the
  * layout; the strings it owns are the section's title and the article
- * rows' two labels. It is a server component, so the language arrives as
- * the `locale` prop from the page (see lib/i18n), and it reads the articles
- * off the disk when the page is built.
+ * rows' labels (ARTICLE_COPY). It is a server component, so the language
+ * arrives as the `locale` prop from the page (see lib/i18n), and it reads
+ * the articles off the disk when the page is built.
  *
  * Each row is full-width, its rules running edge to edge of the viewport —
  * wider than the page measure — so a row reads as a line in a register
@@ -101,10 +101,13 @@ import {
  *
  * An entry that tells the same story as an article names it (`article` in
  * lib/news.ts). That article then has no row of its own — one event, one
- * row — and the entry, opened, ends with 詳しく読む → the article. Both only
- * on the Japanese page and only once the article is published: an article
- * dated TODO has no page, so it is not listed and nothing links to it (the
- * dev server shows drafts, marked 日付未定 — see lib/newsArticles).
+ * row — and the entry, opened, ends with 詳しく読む → the article (Read
+ * more → its English page, on the English page). Each only once the
+ * article is published in that language: an article dated TODO has no
+ * page, so it is not listed and nothing links to it (the dev server shows
+ * drafts, marked 日付未定 or "Date to be set" — see lib/newsArticles), and
+ * an article with no English version is neither listed nor linked on the
+ * English page.
  *
  * With a mouse, a closed entry with a photo also shows that photo in place
  * of the cursor while the pointer is over it (NewsPhotoCursor, which wraps
@@ -123,20 +126,26 @@ const COPY = {
 } as const;
 
 /**
- * The article rows' labels: 日付未定 stands where a draft's date would be
- * (drafts show on the dev server only), and 詳しく読む is the link from an
- * entry to its article. Japanese only, as the articles are; the English
- * page renders neither.
+ * The article rows' labels: `undated` stands where a draft's date would be
+ * (drafts show on the dev server only), and `more` is the link from an
+ * entry to its article. `sep` joins the link's words to the article's
+ * title for a screen reader, in each language's own punctuation.
  */
-const ARTICLE_COPY = { undated: "日付未定", more: "詳しく読む" } as const;
+const ARTICLE_COPY = {
+  ja: { undated: "日付未定", more: "詳しく読む", sep: "：" },
+  en: { undated: "Date to be set", more: "Read more", sep: ": " },
+} as const satisfies Record<
+  Locale,
+  { undated: string; more: string; sep: string }
+>;
 
 /**
  * The opened row's sentence, per language. measure-jp is the site's Japanese
  * paragraph setting — 1.9 leading and a hair of tracking — which sets an
  * English sentence as if it were double-spaced, so English takes the Latin
  * leading the 安全とプライバシー pages use. Whole class strings, because
- * Tailwind only generates what it can read. An article's summary is
- * Japanese, and takes the Japanese setting.
+ * Tailwind only generates what it can read. An article's summary is in the
+ * page's language, and takes the same setting.
  */
 const BODY_TYPE = {
   ja: "measure-jp",
@@ -225,8 +234,8 @@ const FOLLOW_PHOTOS: FollowPhoto[] = NEWS.flatMap(({ photo }) =>
  * when there is one to link to, or an article that no entry names.
  */
 type Row = { key: string; date: NewsDate | null | undefined } & (
-  | { type: "entry"; entry: NewsEntry; more: NewsArticle | undefined }
-  | { type: "article"; article: NewsArticle }
+  | { type: "entry"; entry: NewsEntry; more: LocalizedArticle | undefined }
+  | { type: "article"; article: LocalizedArticle }
 );
 
 /**
@@ -234,6 +243,11 @@ type Row = { key: string; date: NewsDate | null | undefined } & (
  * row are ordered by (newestFirst in lib/news.ts): undated entries, then
  * drafts, after everything dated; entries sharing a date with an article
  * come first, as they are added first and the sort is stable.
+ *
+ * The articles are the ones published in `locale` (visibleArticles): in
+ * English, those with an English version. An entry's link to its article,
+ * and the rule that a named article has no row of its own, work the same
+ * in both languages.
  *
  * Every entry's `article` must name a file in content/news, drafts
  * included, so a misspelt slug fails the build here rather than leaving an
@@ -253,7 +267,7 @@ function rowsFor(locale: Locale): Row[] {
     }
   }
 
-  const articles = locale === "ja" ? visibleArticles() : [];
+  const articles = visibleArticles(locale);
   const named = new Set(NEWS.map((entry) => entry.article));
 
   const rows: Row[] = [
@@ -367,9 +381,11 @@ function EntryRow({
   locale,
 }: {
   item: NewsEntry;
-  more: NewsArticle | undefined;
+  more: LocalizedArticle | undefined;
   locale: Locale;
 }) {
+  const label = ARTICLE_COPY[locale];
+
   return (
     <details className="group" data-news-photo={item.photo?.src}>
       {/*
@@ -486,9 +502,9 @@ function EntryRow({
             mark-1 with a faint underline that firms up on hover, as on the
             contact page — and the arrow that ButtonLink's hover brings in,
             which steps forward a pixel or two under the pointer where motion
-            is welcome. On its own "詳しく読む" says nothing about where it
-            goes, and there can be two in the list, so a screen reader also
-            hears the article's title.
+            is welcome. On its own "詳しく読む" (or "Read more") says nothing
+            about where it goes, and there can be two in the list, so a
+            screen reader also hears the article's title.
 
             A plain anchor, like every link between pages on this site: a
             full load, which is what Lenis has always started from.
@@ -496,11 +512,14 @@ function EntryRow({
           {more && (
             <p className="mt-4 text-[0.95rem]">
               <a
-                href={articlePath(more.slug)}
+                href={more.path}
                 className="group/more text-mark-1 underline decoration-mark-1/40 underline-offset-4 transition-colors duration-300 hover:decoration-mark-1"
               >
-                {ARTICLE_COPY.more}
-                <span className="sr-only">：{more.title}</span>
+                {label.more}
+                <span className="sr-only">
+                  {label.sep}
+                  {more.title}
+                </span>
                 <Icon
                   name="arrow_forward"
                   size={16}
@@ -547,10 +566,27 @@ function EntryRow({
 }
 
 /**
+ * An article row's title and summary, per language — whole class strings,
+ * because Tailwind only generates what it can read. Explained where they
+ * are used, in ArticleRow.
+ */
+const ARTICLE_TITLE: Record<Locale, string> = {
+  ja: "col-start-2 row-start-1 block text-pretty wrap-anywhere text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink [word-break:auto-phrase] md:pl-4 lg:pl-8",
+  en: "col-start-2 row-start-1 block text-balance wrap-anywhere text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink md:pl-4 lg:pl-8",
+};
+
+const ARTICLE_SUMMARY: Record<Locale, string> = {
+  ja: `${BODY_TYPE.ja} col-start-2 row-start-3 mt-3 block text-pretty text-[1.0625rem] text-muted [word-break:auto-phrase] md:row-start-2 md:pl-4 lg:pl-8`,
+  en: `${BODY_TYPE.en} col-start-2 row-start-3 mt-3 block text-[1.0625rem] text-muted md:row-start-2 md:pl-4 lg:pl-8`,
+};
+
+/**
  * An article no entry names: the same row as an entry's, closed, except
  * that it is a link to the article's page and shows its summary in place
- * of the sentence an entry keeps folded away. Japanese only, as the
- * articles are.
+ * of the sentence an entry keeps folded away. In the article's language,
+ * which is the page's: the title, category and summary are that language's
+ * file, the date is formatNewsDate's for it, and the link goes to the page
+ * in it.
  *
  * The link's name is the title alone, and the date, category and summary
  * are its description: read out whole, a row would be a paragraph before a
@@ -559,12 +595,13 @@ function EntryRow({
  * A plain anchor, like every link between pages on this site: a full load,
  * which is what Lenis has always started from.
  */
-function ArticleRow({ article }: { article: NewsArticle }) {
+function ArticleRow({ article }: { article: LocalizedArticle }) {
+  const { locale } = article;
   const id = `news-${article.slug}`;
 
   return (
     <a
-      href={articlePath(article.slug)}
+      href={article.path}
       aria-labelledby={`${id}-title`}
       aria-describedby={`${id}-meta ${id}-summary`}
       className="group/row block focus-visible:-outline-offset-4!"
@@ -582,7 +619,8 @@ function ArticleRow({ article }: { article: NewsArticle }) {
           than between any two characters, as in the footer and on the
           安全とプライバシー page; Chrome and Edge support it, and elsewhere
           it falls back to the ordinary break. text-pretty keeps a last line
-          from being a single character.
+          from being a single character. English breaks at its spaces and is
+          balanced instead, as the English step titles are (ARTICLE_TITLE).
 
           wrap-anywhere is the names' safety net again. auto-phrase keeps a
           phrase whole where it can, and a phrase can be wider than the
@@ -593,10 +631,7 @@ function ArticleRow({ article }: { article: NewsArticle }) {
           the screen. With it, a phrase too long for the line breaks where it
           must, and nothing changes for one that fits.
         */}
-        <span
-          id={`${id}-title`}
-          className="col-start-2 row-start-1 block text-pretty wrap-anywhere text-[clamp(1.35rem,2.4vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.025em] text-ink [word-break:auto-phrase] md:pl-4 lg:pl-8"
-        >
+        <span id={`${id}-title`} className={ARTICLE_TITLE[locale]}>
           {article.title}
         </span>
 
@@ -622,10 +657,10 @@ function ArticleRow({ article }: { article: NewsArticle }) {
             <span className="whitespace-nowrap">
               {article.date ? (
                 <time dateTime={article.date}>
-                  {formatNewsDate(article.date, "ja")}
+                  {formatNewsDate(article.date, locale)}
                 </time>
               ) : (
-                ARTICLE_COPY.undated
+                ARTICLE_COPY[locale].undated
               )}
             </span>
             {"\u00A0· "}
@@ -648,13 +683,10 @@ function ArticleRow({ article }: { article: NewsArticle }) {
         </span>
 
         {/*
-          The summary, in the opened entries' sentence style, under the
-          title's left edge.
+          The summary, in the opened entries' sentence style for the
+          language, under the title's left edge.
         */}
-        <span
-          id={`${id}-summary`}
-          className={`${BODY_TYPE.ja} col-start-2 row-start-3 mt-3 block text-pretty text-[1.0625rem] text-muted [word-break:auto-phrase] md:row-start-2 md:pl-4 lg:pl-8`}
-        >
+        <span id={`${id}-summary`} className={ARTICLE_SUMMARY[locale]}>
           {article.summary}
         </span>
       </span>

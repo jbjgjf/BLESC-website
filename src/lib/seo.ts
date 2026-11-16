@@ -16,10 +16,7 @@ import {
   otherLocale,
   type Locale,
 } from "@/lib/i18n";
-import {
-  CONTACT_EMAIL,
-  CONTACT_PATH,
-} from "@/lib/site";
+import { CONTACT_EMAIL, CONTACT_PATH } from "@/lib/site";
 
 /**
  * Absolute origin, no trailing slash.
@@ -111,6 +108,12 @@ export const pageTitle = (locale: Locale, name: string) =>
  * was dropped to pay for it: 可視化する carries the same meaning and is the
  * verb docs/claims.md §1 approves, so nothing about the claim changed.
  *
+ * 自分のタイミングで then became 毎日ホームルームで (2026-11: the company
+ * set it as 毎日、ホームルームの数分で, and the page copy says that in
+ * full). The full phrase would cost 4 and put 「…行いません。」 past the
+ * cut again; 毎日ホームルームで — the when and the where, without 数分 —
+ * is nine characters, as 自分のタイミングで was, so this is still 91.5.
+ *
  * If this copy changes again, re-measure. The budget is ~92 full-width, not
  * a character count — ASCII runs like "Blesc" and "AI" count half.
  *
@@ -123,13 +126,13 @@ export const pageTitle = (locale: Locale, name: string) =>
  * does, and the two negated clauses are wording docs/claims.md asks for.
  */
 export const DESCRIPTION =
-  "Blescは、生徒が自分のタイミングで綴る日記から書きぶりの変化を可視化する学校向けメンタルヘルスプラットフォーム。日記の本文が教員に公開されることはなく、心理的リスクの判定も行いません。";
+  "Blescは、生徒が毎日ホームルームで綴る日記から書きぶりの変化を可視化する学校向けメンタルヘルスプラットフォーム。日記の本文が教員に公開されることはなく、心理的リスクの判定も行いません。";
 
 /**
  * DESCRIPTION in English, for /en's meta description.
  *
  * Every claim of the Japanese and nothing more: what Blesc is, what it
- * makes visible, that the diary is written in the student's own time, that
+ * makes visible, that the diary is written every day in homeroom, that
  * teachers do not see the diary text, and that it does not assess
  * psychological risk. The two negations are the glossary's own wording and
  * stay negations.
@@ -140,20 +143,21 @@ export const DESCRIPTION =
  * cut, not past it — for the reason given above: it is the line a school
  * cares about most.
  *
- * 自分のタイミングで ("in their own time") stays in. An earlier draft left
- * it out to end the privacy line at 143, but when the diary is written is a
- * fact the Japanese states — and one the team corrected (see the note above
- * FAQ) — so the English says it too. It is folded into the one clause, "how
- * students write diaries in their own time", because spelled out separately
- * ("…in the diaries they keep in their own time") the first sentence runs
- * to 138 and the cut lands in the middle of the privacy line. If this is
- * reworded, re-count: the privacy sentence has one character to spare.
+ * 毎日ホームルームで ("daily in homeroom") stays in, because when the diary
+ * is written is a fact the Japanese states (see the note above FAQ), so the
+ * English says it too. It is folded into the one clause, "how students
+ * write diaries daily in homeroom", which is exactly as long as the "in
+ * their own time" it replaced. The company's own English, "each day during
+ * a few minutes of homeroom", is what the page copy says; here it would
+ * take the first sentence to 149 and put the cut in the middle of the
+ * privacy line. If this is reworded, re-count: the privacy sentence has
+ * one character to spare.
  *
  * Like DESCRIPTION, it is not only a snippet: siteJsonLd("en") puts it on
  * the three nodes of the English pages' structured data.
  */
 export const DESCRIPTION_EN =
-  "Blesc is a mental health platform for schools that makes visible the changes in how students write diaries in their own time. Teachers never see the diary text, and Blesc does not assess psychological risk.";
+  "Blesc is a mental health platform for schools that makes visible the changes in how students write diaries daily in homeroom. Teachers never see the diary text, and Blesc does not assess psychological risk.";
 
 /** Shorter variant for social cards, where the card itself truncates hard. */
 export const DESCRIPTION_SHORT =
@@ -300,10 +304,11 @@ const cardImage = (locale: Locale, route: "opengraph-image" | "twitter-image") =
 /**
  * hreflang for a page: itself in each language, and x-default.
  *
- * Every page but the news articles exists in both languages at the same
- * path under /en, so the pair is derived, not listed. (An article is
- * Japanese only and takes none: pageMetadata's `japaneseOnly`, and no
- * alternates in the sitemap.) x-default is the Japanese page — the site's
+ * Every page exists in both languages at the same path under /en, so the
+ * pair is derived, not listed. The one exception is a news article that has
+ * not been translated (no content/news/<slug>.en.md; ENGLISH_ARTICLES in
+ * lib/i18n), which takes none: pageMetadata's `japaneseOnly`, and no
+ * alternates in the sitemap. x-default is the Japanese page — the site's
  * default language and the one a reader of neither is best sent to. Google
  * honours the annotation only when both ends carry it; both ends are built
  * by this one function, so they always do.
@@ -330,9 +335,10 @@ export const languageAlternates = (path: string) => ({
  * says.
  *
  * `japaneseOnly` is for a page with no English counterpart — a news
- * article (lib/i18n, JAPANESE_ONLY). It drops the hreflang pair and the
- * card's alternate locale, both of which would name an English twin that
- * does not exist and send a crawler to a 404. The canonical stays.
+ * article not yet translated (lib/i18n, ENGLISH_ARTICLES). It drops the
+ * hreflang pair and the card's alternate locale, both of which would name
+ * an English twin that does not exist and send a crawler to a 404. The
+ * canonical stays.
  * `locale` is "ja" for such a page.
  *
  * `article` makes the card an Open Graph article rather than a website:
@@ -491,8 +497,9 @@ export function siteMetadata(locale: Locale): Metadata {
  * was made:
  *
  * - `features`: implemented features only (see the note in siteJsonLd), in
- *   the words the English pages already use — "in their own time", "one
- *   follow-up question", "how a student writes", "observations", "basis".
+ *   the words the English pages already use — "each day during a few
+ *   minutes of homeroom", "one follow-up question", "how a student
+ *   writes", "observations", "basis".
  *   The fourth says the graph is structured "with reference to" published
  *   guidelines, the FAQ's phrase for the same sources (lib/faqEn.ts), and
  *   not "based on" them: most of its links have no published source behind
@@ -507,7 +514,7 @@ const GRAPH_COPY: Record<
   ja: {
     subCategory: "学校向けメンタルヘルスプラットフォーム",
     features: [
-      "自分のタイミングで綴る日記による全生徒のセルフレポート",
+      "毎日ホームルームの数分で綴る日記による全生徒のセルフレポート",
       "独自AIによる一問一答の深掘り",
       "入力のためらいや書き直しといった書きぶりの計測",
       "公開されている医学的ガイドラインをもとに構造化したオントロジー知識グラフによる記述の整理",
@@ -518,7 +525,7 @@ const GRAPH_COPY: Record<
   en: {
     subCategory: "Mental health platform for schools",
     features: [
-      "Self-reports from all students, through a diary each writes in their own time",
+      "Self-reports from all students, through a diary they write each day during a few minutes of homeroom",
       "One follow-up question from Blesc’s own AI in reply to a diary entry",
       "Measurement of how a student writes, such as hesitation and rewriting while typing",
       "Organizing what is written with an ontology knowledge graph structured with reference to published medical guidelines",
@@ -578,10 +585,15 @@ export function siteJsonLd(locale: Locale) {
         contactPoint: [
           {
             "@type": "ContactPoint",
-            contactType: "customer support",
+            contactType: "sales",
             email: CONTACT_EMAIL,
             url: pageUrl(locale, CONTACT_PATH),
-            availableLanguage: ["ja"],
+            /*
+             * Enquiries are answered in Japanese and in English (the
+             * company's word, 2026-11), which is also what the English
+             * contact page and footer say to the reader.
+             */
+            availableLanguage: ["ja", "en"],
           },
         ],
       },
@@ -593,8 +605,8 @@ export function siteJsonLd(locale: Locale) {
         description,
         /*
          * The site, not this page: the site is in both languages (lib/
-         * i18n; only the news articles are Japanese alone), and this one
-         * node is emitted on every page.
+         * i18n; only an untranslated news article is Japanese alone), and
+         * this one node is emitted on every page.
          */
         inLanguage: LOCALES.map((each) => HTML_LANG[each]),
         publisher: { "@id": ORGANIZATION_ID },
@@ -626,10 +638,18 @@ export function siteJsonLd(locale: Locale) {
          */
         featureList: copy.features,
         /*
-         * No `offers` until adoption opens. It said InStock, which search
-         * engines read as "available now"; with nothing offered yet the
-         * honest structured data is none. Restore it when adoption opens.
+         * Schools can adopt Blesc now (2026-11), so the offer is back, and
+         * InStock says so. It carries no price. The one price the company
+         * publishes, 生徒1人あたり月500円（税別）, is per student per month,
+         * and a bare `price` here would be read as the cost of the software;
+         * the quote line this used to carry (お見積りはお問い合わせください)
+         * is gone because that is no longer how the price is given.
          */
+        offers: {
+          "@type": "Offer",
+          category: "SaaS",
+          availability: "https://schema.org/InStock",
+        },
       },
     ],
   };
@@ -676,16 +696,18 @@ export function breadcrumbJsonLd(
  * the markup and the structured data cannot diverge.
  */
 /*
- * The diary is written in the student's own time — not a fixed five minutes,
- * and not in homeroom. The team corrected that description (2026-09), and the
- * page's own copy (仕組み 01–02) now says 自分のタイミングで and 内容も長さも自由,
- * so the answers below say the same: an FAQ answer that the page does not
+ * The diary is written every day, in a few minutes of homeroom: 毎日、
+ * ホームルームの数分で. The company set this in 2026-11, replacing the
+ * 自分のタイミングで ("in the student's own time") that the team's 2026-09
+ * correction had put on the page. The page's own copy (Intro, 仕組み 02,
+ * プロダクト) now says 毎日、ホームルームの数分で and 内容も長さも自由, so
+ * the answers below say the same: an FAQ answer that the page does not
  * support is the mismatch this comment block above warns against.
  */
 export const FAQ: { q: string; a: string }[] = [
   {
     q: "Blescとは何ですか？",
-    a: "Blescは、生徒が自分のタイミングで綴る日記を独自のAIが深掘りし、言葉づかいや書きぶりの変化を捉えて可視化する学校向けのメンタルヘルスプラットフォームです。心理的リスクの判定や、心身の状態の診断は行いません。",
+    a: "Blescは、生徒が毎日ホームルームの数分で綴る日記を独自のAIが深掘りし、言葉づかいや書きぶりの変化を捉えて可視化する学校向けのメンタルヘルスプラットフォームです。心理的リスクの判定や、心身の状態の診断は行いません。",
   },
   {
     q: "生徒が書いた日記の内容は、先生に読まれますか？",
@@ -693,7 +715,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "生徒の負担はどのくらいですか？",
-    a: "日記は生徒が自分のタイミングで書くもので、内容も長さも自由です。対象は希望者ではなく全生徒で、新しい習慣も専用の準備も必要ありません。",
+    a: "日記は生徒が毎日ホームルームの数分で書くもので、内容も長さも自由です。対象は希望者ではなく全生徒で、新しい習慣も専用の準備も必要ありません。",
   },
   /*
    * The two ontology answers below say what テクノロジー says, in the same
@@ -703,12 +725,18 @@ export const FAQ: { q: string; a: string }[] = [
    * what drives the product's analysis, which is the open claim. Association,
    * not cause, because that is the most the seed records for any relation —
    * and worded as what the seed RECORDS (「出典として関連を記録」), never as
-   * what WHO or NICE "reports": a spot check found the WHO fact sheet silent
-   * on two relations the seed cites it for (header of lib/ontologySeed.ts).
+   * what WHO or NICE "reports". Every citation was checked against its
+   * source on 2026-11-16 and corrected: citations the source does not
+   * support were dropped or replaced, and the MHLW sleep guide was added
+   * (the list of changes is in the header of lib/ontologySeed.ts).
    *
    * The counts are typed here, not imported, and have to match COUNTS in
-   * src/lib/ontologySeed.ts: 42 relations, 15 recorded as "association",
-   * 27 not. If the seed is regenerated, change them with it.
+   * src/lib/ontologySeed.ts: 42 relations, 13 recorded as "association",
+   * 29 not. If the seed is regenerated, change them with it.
+   *
+   * The review is 予定しています, in the company's words (2026-11), and
+   * names no reviewer: none is to be named yet. テクノロジー's own line for
+   * it (components/sections/Technology, `sourced`) has to say the same.
    */
   {
     q: "汎用のAIチャットとは何が違うのですか？",
@@ -726,14 +754,21 @@ export const FAQ: { q: string; a: string }[] = [
    * 端末等を活用した「心の健康観察」の導入推進」, Mar 2025: 児童生徒の心や体調
    * の変化を把握し、早期発見、早期支援につなげる), and the contrast drawn is
    * only the one that source supports — its examples are web stress checks,
-   * forms and apps, i.e. questions answered. The last sentence disclaims
+   * forms and apps, i.e. questions answered. That March 2025 page has since
+   * been taken down. On 2026-11-16 the answer was checked against MEXT's
+   * July 2026 別添資料７ instead
+   * (https://www.mext.go.jp/content/20260707-mext_jidou01-000050895_7.pdf),
+   * which uses the same words for the initiative and gives a paid app,
+   * Google Forms and a web stress check as examples. The app example is
+   * described by its consultation counts rather than its questions, so
+   * 質問への回答を集める fits it least well. The last sentence disclaims
    * endorsement the same way 技術的な裏づけ does. There is deliberately no
    * claim that Blesc can be used alongside it, replaces it, or is listed by
    * it: nobody on the team has confirmed any of those, so none is written.
    */
   {
     q: "「心の健康観察」とは何ですか？ Blescとの違いは？",
-    a: "「心の健康観察」は、文部科学省が全国の学校での実施を目指して導入を進めている取り組みで、1人1台端末などを使って児童生徒の心や体調の変化を把握し、早期発見・早期支援につなげるものです。文部科学省の資料に示された実施例は、ウェブ上のストレスチェックやフォーム、アプリなど、質問への回答を集める形のものです。Blescは回答を選ぶ形式ではなく、生徒が自分のタイミングで綴る日記から、言葉づかいや書きぶりの変化を捉えて可視化します。なお、これは文部科学省の取り組みの説明であり、文部科学省がBlescを推奨・承認するものではありません。",
+    a: "「心の健康観察」は、文部科学省が全国の学校での実施を目指して導入を進めている取り組みで、1人1台端末などを使って児童生徒の心や体調の変化を把握し、早期発見・早期支援につなげるものです。文部科学省の資料に示された実施例は、ウェブ上のストレスチェックやフォーム、アプリなど、質問への回答を集める形のものです。Blescは回答を選ぶ形式ではなく、生徒が毎日ホームルームの数分で綴る日記から、言葉づかいや書きぶりの変化を捉えて可視化します。なお、これは文部科学省の取り組みの説明であり、文部科学省がBlescを推奨・承認するものではありません。",
   },
   {
     q: "一日の落ち込みと、続いている変化は見分けられますか？",
@@ -741,7 +776,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Blescでいじめの早期発見はできますか？",
-    a: "Blescは、いじめがあるかどうかを判定したり、見つけ出したりするものではありません。生徒が自分のタイミングで綴る日記から、言葉づかいや書きぶりの変化を捉えて可視化し、観測された記述をその時刻と根拠とともに教員にお届けします。それは教員が気づくための手がかりであり、いじめの有無を判断し、対応を決めるのは学校と教員です。",
+    a: "Blescは、いじめがあるかどうかを判定したり、見つけ出したりするものではありません。生徒が毎日ホームルームの数分で綴る日記から、言葉づかいや書きぶりの変化を捉えて可視化し、観測された記述をその時刻と根拠とともに教員にお届けします。それは教員が気づくための手がかりであり、いじめの有無を判断し、対応を決めるのは学校と教員です。",
   },
   {
     q: "不登校の予防にBlescは使えますか？",
@@ -749,7 +784,11 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "技術的な裏づけはありますか？",
-    a: "知識グラフは、WHOのファクトシート「Mental health of adolescents」、NICEガイドライン NG134、WHOの mhGAP Intervention Guide、文部科学省の生徒指導提要を参照して、社内でまとめています。42のつながりのうち、公開資料を出典として関連を記録しているのは15で、残る27は公開資料の裏付けがなく、社内の判断であることを明記しています。出典のあるつながりも関連として記録したもので、どちらが原因かを示すものではありません。掲載の各機関は、Blescを推奨・承認するものではありません。臨床の専門家によるレビューを準備しています。",
+    a: "知識グラフは、WHOのファクトシート「Mental health of adolescents」、NICEガイドライン NG134、WHOの mhGAP Intervention Guide、厚生労働省の「健康づくりのための睡眠ガイド2023」、文部科学省の生徒指導提要を参照して、社内でまとめています。42のつながりのうち、公開資料を出典として関連を記録しているのは13で、残る29は公開資料の裏付けがなく、社内の判断であることを明記しています。出典のあるつながりも関連として記録したもので、どちらが原因かを示すものではありません。掲載の各機関は、Blescを推奨・承認するものではありません。臨床の専門家によるレビューを予定しています。",
+  },
+  {
+    q: "導入について相談するにはどうすればよいですか？",
+    a: "お問い合わせフォームより、資料請求または導入のご相談としてご連絡ください。内容を確認のうえ、担当者より数営業日以内にご返信いたします。",
   },
 ];
 

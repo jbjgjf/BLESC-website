@@ -5,7 +5,7 @@ import { Reveal } from "@/components/Reveal";
 import { TRUST_TYPE, TrustSections } from "@/components/trust/TrustSections";
 import { ButtonLink, Container } from "@/components/ui";
 import type { Locale } from "@/lib/i18n";
-import { ADOPTION_STATUS, ctaFor } from "@/lib/site";
+import { ctaFor } from "@/lib/site";
 import { ABOUT, TRUST_TITLE } from "@/lib/trust";
 
 /**
@@ -45,6 +45,14 @@ import { ABOUT, TRUST_TITLE } from "@/lib/trust";
  * 720px on a small laptop. At 320px it runs up to some 90px past a 460px
  * viewport, which is the one case left over.
  *
+ * Those figures are for the paragraph as it was before 2026-11-16, when
+ * 好きなときに / "in their own time" became 毎日、ホームルームの数分で /
+ * "each day during a few minutes of homeroom": 7 more characters in
+ * Japanese and 24 in English. They have not been worked out again. That is
+ * at most about a line more — 35–38px at 1280px, 27–32px on a phone —
+ * which leaves every case above inside its viewport but the 320px one,
+ * which runs that much further past.
+ *
  * The English figures are for a one-line heading. "Safety & Privacy" is
  * 6.95em in Helvetica Neue Light and 7.59em in Inter at 300, less 0.32em of
  * tracking: 172px and 189px of the 272px a 320px phone leaves, so it never
@@ -56,9 +64,10 @@ import { ABOUT, TRUST_TITLE } from "@/lib/trust";
  *
  * A div, not a <main>: the root layout already wraps every page in one.
  *
- * Text is ink throughout. Size and weight carry the hierarchy, and these
- * are the sentences the page is for. On the page ground that is 19.43:1,
- * and 18.04:1 where the flower wash lies behind it.
+ * Text is ink, but for the quiet line after a list (see TrustSection).
+ * Size and weight carry the hierarchy, and these are the sentences the page
+ * is for. On the page ground that is 19.43:1, and 18.04:1 where the flower
+ * wash lies behind it.
  */
 export function TrustPage({ locale }: { locale: Locale }) {
   const type = TRUST_TYPE[locale];
@@ -127,35 +136,31 @@ export function TrustPage({ locale }: { locale: Locale }) {
       <TrustSections locale={locale} />
 
       {/*
-        The closing line: one more rule, then the two enquiries in a row.
-        Stacked and left-aligned on a phone, where items-start keeps each
-        button at its own width rather than stretched to the column.
+        The closing line: one more rule, then the two enquiries in a row —
+        資料請求 and 導入のご相談, the invitations to adopt Blesc that the hero
+        and the footer make (ctaFor in lib/site). Stacked and left-aligned
+        on a phone, where items-start keeps each button at its own width
+        rather than stretched to the column.
 
-        The English pair is the wider, and still a row from sm; stacked on
-        a phone each keeps its own width.
+        From 2026-11-02 the page said adoption was "Coming soon" here, over
+        a different pair. Schools can adopt Blesc now (2026-11), so the
+        buttons are what this line says, as they were before.
+
+        The English pair is wider — "Request information" and "Book a
+        consultation" are about 206px each against 118px and 150px — and
+        needs nothing changed: side by side from sm they are about 436px
+        with the gap, of the 592px a 640px screen leaves, and stacked on a
+        phone the wider is 210px of the 272px at 320px.
       */}
       <Container className="relative">
         <div className="relative pt-[clamp(2.5rem,5vw,3.5rem)] pb-[clamp(4rem,9vw,7rem)]">
           <DrawnRule className="top-0" />
-          {/*
-            The page about privacy and safety is where the reason adoption
-            is not open yet belongs most, so the whole statement is said
-            here, over the buttons (lib/site, ADOPTION_STATUS).
-          */}
-          <Reveal>
-            <p className="text-[0.85rem] font-medium tracking-[0.06em] text-mark-1">
-              {ADOPTION_STATUS[locale].label}
-            </p>
-            <p className="mt-3 max-w-2xl text-pretty text-[1rem] leading-relaxed text-ink [word-break:auto-phrase]">
-              {ADOPTION_STATUS[locale].safety}
-            </p>
-          </Reveal>
-          <Reveal className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-x-6">
-            <ButtonLink variant="secondary" href={cta.notify.href}>
-              {cta.notify.label}
+          <Reveal className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-x-6">
+            <ButtonLink variant="secondary" href={cta.document.href}>
+              {cta.document.label}
             </ButtonLink>
-            <ButtonLink variant="primary" href={cta.general.href}>
-              {cta.general.label}
+            <ButtonLink variant="primary" href={cta.consult.href}>
+              {cta.consult.label}
             </ButtonLink>
           </Reveal>
         </div>

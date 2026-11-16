@@ -53,19 +53,20 @@
  *   make a link more than an association, which "also" would lose. If the
  *   section's English changes, change it here.
  *
- * The counts in the ontology answer (42 links, 15 with a published source,
- * 27 without) are typed here as they are typed in lib/seo.ts, and both have
+ * The counts in the ontology answer (42 links, 13 with a published source,
+ * 29 without) are typed here as they are typed in lib/seo.ts, and both have
  * to match COUNTS in lib/ontologySeed.ts.
  *
  * The two enquiry names in the last answer are read from lib/site.ts, so
  * the answer names the options by the words the form's own buttons use.
  */
 
+import { ENQUIRY_LABELS } from "@/lib/site";
 
 export const FAQ_EN: readonly { q: string; a: string }[] = [
   {
     q: "What is Blesc?",
-    a: "Blesc is a mental health platform for schools. Its own AI follows up on the diary each student writes in their own time, and Blesc captures changes in wording and in how a student writes and makes them visible. Blesc does not assess psychological risk, and it does not diagnose a student’s mental or physical condition.",
+    a: "Blesc is a mental health platform for schools. Its own AI follows up on the diary each student writes every day during a few minutes of homeroom, and Blesc captures changes in wording and in how a student writes and makes them visible. Blesc does not assess psychological risk, and it does not diagnose a student’s mental or physical condition.",
   },
   {
     q: "Do teachers read what students write in their diaries?",
@@ -73,7 +74,7 @@ export const FAQ_EN: readonly { q: string; a: string }[] = [
   },
   {
     q: "How much does it ask of students?",
-    a: "Students write the diary in their own time, and what they write and how much are up to them. It is for all students, not only those who choose to take part, and it needs no new routine and no special preparation.",
+    a: "Students write the diary each day during a few minutes of homeroom, and what they write and how much are up to them. It is for all students, not only those who choose to take part, and it needs no new routine and no special preparation.",
   },
   {
     q: "How is Blesc different from a general-purpose AI assistant?",
@@ -81,7 +82,7 @@ export const FAQ_EN: readonly { q: string; a: string }[] = [
   },
   {
     q: "What is “mental health observation,” and how is Blesc different?",
-    a: "“Mental health observation” (kokoro no kenkō kansatsu) is an initiative that MEXT (Japan’s Ministry of Education) is introducing with the aim of having it carried out in schools nationwide. It uses tools such as the devices issued one per student to keep track of changes in students’ state of mind and physical condition, so that this leads to early identification and early support. The examples given in MEXT’s materials, such as web-based stress checks, forms, and apps, collect answers to questions. Blesc does not use a format where students select answers. From the diary each student writes in their own time, it captures changes in wording and in how a student writes and makes them visible. Note that this is a description of MEXT’s initiative. It does not mean that MEXT recommends or endorses Blesc.",
+    a: "“Mental health observation” (kokoro no kenkō kansatsu) is an initiative that MEXT (Japan’s Ministry of Education) is introducing with the aim of having it carried out in schools nationwide. It uses tools such as the devices issued one per student to keep track of changes in students’ state of mind and physical condition, so that this leads to early identification and early support. The examples given in MEXT’s materials, such as web-based stress checks, forms, and apps, collect answers to questions. Blesc does not use a format where students select answers. From the diary each student writes every day during a few minutes of homeroom, it captures changes in wording and in how a student writes and makes them visible. Note that this is a description of MEXT’s initiative. It does not mean that MEXT recommends or endorses Blesc.",
   },
   {
     q: "Can one low day be told apart from a change that continues?",
@@ -89,7 +90,7 @@ export const FAQ_EN: readonly { q: string; a: string }[] = [
   },
   {
     q: "Can Blesc be used to identify bullying early?",
-    a: "Blesc does not determine whether bullying is taking place, and it does not find bullying. From the diary each student writes in their own time, it captures changes in wording and in how a student writes and makes them visible, and it delivers what was observed in the writing to teachers, together with its time and its basis. That is a clue to help teachers notice. It is the school and its teachers who judge whether bullying is taking place and decide how to respond.",
+    a: "Blesc does not determine whether bullying is taking place, and it does not find bullying. From the diary each student writes every day during a few minutes of homeroom, it captures changes in wording and in how a student writes and makes them visible, and it delivers what was observed in the writing to teachers, together with its time and its basis. That is a clue to help teachers notice. It is the school and its teachers who judge whether bullying is taking place and decide how to respond.",
   },
   {
     q: "Can Blesc be used to prevent school non-attendance?",
@@ -97,6 +98,10 @@ export const FAQ_EN: readonly { q: string; a: string }[] = [
   },
   {
     q: "Is there technical backing for Blesc?",
-    a: "The knowledge graph is compiled in-house with reference to the WHO fact sheet “Mental health of adolescents,” NICE guideline NG134, the WHO mhGAP Intervention Guide, and Seito Shidō Teiyō, the Student Guidance Guidelines of MEXT (Japan’s Ministry of Education). Of its 42 links, 15 are recorded as associations with a published source cited. The remaining 27 have no published source behind them, and are clearly marked as our own judgment. Even the links that have a source are recorded as associations. They do not show which one is the cause. The organizations listed do not recommend or endorse Blesc. We are preparing a review by clinical experts.",
+    a: "The knowledge graph is compiled in-house with reference to the WHO fact sheet “Mental health of adolescents,” NICE guideline NG134, the WHO mhGAP Intervention Guide, the Sleep Guide for Health Promotion 2023 of MHLW (Japan’s Ministry of Health, Labour and Welfare), and Seito Shidō Teiyō, the Student Guidance Guidelines of MEXT (Japan’s Ministry of Education). Of its 42 links, 13 are recorded as associations with a published source cited. The remaining 29 have no published source behind them, and are clearly marked as our own judgment. Even the links that have a source are recorded as associations. They do not show which one is the cause. The organizations listed do not recommend or endorse Blesc. We are planning a review by clinical experts.",
+  },
+  {
+    q: "How do we get in touch about adopting Blesc?",
+    a: `Please contact us through the contact form, choosing “${ENQUIRY_LABELS.en.document}” or “${ENQUIRY_LABELS.en.consult}.” We will review your message, and a member of our team will reply within a few business days.`,
   },
 ];

@@ -1,5 +1,5 @@
 ---
-date: TODO
+date: 2026-04-29
 category: 登壇
 title: SusHi Tech Tokyoでピッチしました
 summary: 東京都が主催するイノベーションカンファレンス「SusHi Tech Tokyo」にてピッチを行いました。

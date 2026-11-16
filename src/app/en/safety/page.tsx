@@ -6,8 +6,8 @@ import { PRIVACY, TRUST_PATH, TRUST_TITLE } from "@/lib/trust";
 /**
  * The same two sentences the Japanese page's description is made of, in
  * lib/trust.ts's English: diary text is never shown to teachers, parents or
- * other students, and diaries are never sold, used for ads or used to train
- * AI models. 132 characters, inside the ~155 an English result shows.
+ * other students, and diaries are never sold or used for ads. 106
+ * characters, inside the ~155 an English result shows.
  */
 const DESCRIPTION = `${PRIVACY.en.items[0]} ${PRIVACY.en.items[2]}`;
 

@@ -9,10 +9,69 @@
  *
  * Copied from those files as they stood on 2026-09-30. Nothing links the two
  * repositories, so an edit upstream does NOT reach this page: when the seed
- * changes, regenerate this file from the YAML rather than editing it by hand.
- * The per-edge scope notes — what each source supports and what it does not
- * — live upstream and are not copied; they are prose for reviewers, and this
- * page only needs the fields below.
+ * changes, regenerate this file from the YAML rather than editing it by hand
+ * — and then re-apply the citation corrections below, unless upstream has
+ * made them by then. The per-edge scope notes — what each source supports
+ * and what it does not — live upstream and are not copied; they are prose
+ * for reviewers, and this page only needs the fields below.
+ *
+ * THIS SNAPSHOT DIFFERS FROM UPSTREAM ON CITATIONS (2026-11-16). Every
+ * relation that cites a published source was checked against the source
+ * itself: the WHO fact sheet as dated 1 September 2025; NICE NG134 through
+ * the UK Government Web Archive's copy of 2026-05-07 (nice.org.uk refuses
+ * automated fetches); mhGAP-IG 2.0; 生徒指導提要（改訂版）; and
+ * 厚生労働省「健康づくりのための睡眠ガイド2023」. Of the fifteen relations
+ * then recorded as association, seven cited nothing that says them, seven
+ * were only partly supported, and one was supported as cited. Where the
+ * cited source does not say what the relation says, the citation was changed
+ * here by hand, and upstream needs the same fix — jbjgjf/BLESC,
+ * sentra/backend/app/ontology: the three seed files, and sources.py, which
+ * has no entry for the MHLW sleep guide (its one MHLW entry, mhlw_kokoro,
+ * is a different document). Page numbers are the documents' printed ones.
+ * Two mhGAP passages are given by section alone: they were read in WHO's
+ * text extract, which does not settle which printed page they fall on.
+ *   sleep_deprivation → cognitive_impairment
+ *       WHO fact sheet → MHLW guide (p.1 attention and judgement; p.17)
+ *   cognitive_impairment → depressed_mood
+ *       NICE NG134, WHO fact sheet → mhGAP (DEP 1 p.22; CMH p.80)
+ *   sleep_deprivation → depressed_mood
+ *       WHO fact sheet, NICE NG134 → MHLW guide (p.15, 抑うつ傾向)
+ *   sleep_deprivation → irritability
+ *       WHO fact sheet → MHLW guide (p.1, 情動不安定)
+ *   depressed_mood → sleep_deprivation
+ *       NICE NG134 → mhGAP (DEP 1 p.22), MHLW guide (p.1)
+ *   depressed_mood → social_withdrawal
+ *       NICE NG134 → mhGAP (CMH Table 1, adolescents)
+ *   depressed_mood ⇄ anxiety (co_occurs)
+ *       WHO fact sheet → NICE NG134 (Context)
+ *   regular_sleep_schedule ⊣ sleep_deprivation
+ *       WHO fact sheet → MHLW guide (p.16)
+ *   trusted_adult_contact ⊣ depressed_mood
+ *       mhGAP, 生徒指導提要 → mhGAP (DEP 2.2–2.3)
+ *   peer_conflict → social_withdrawal
+ *       WHO fact sheet, 生徒指導提要 → 生徒指導提要 (pp.124, 138, 223)
+ *   family_support ⊣ depressed_mood
+ *       WHO fact sheet → WHO fact sheet, NICE NG134 (1.3.1, family discord)
+ *   loneliness → depressed_mood
+ *       WHO fact sheet, association → no source, expert_judgement
+ *   peer_friendship ⊣ loneliness
+ *       WHO fact sheet, association → no source, expert_judgement
+ * The last two have nothing in the cited source behind them and no other
+ * source was found, so they are recorded the way upstream records any
+ * unsourced relation. That moves the counts: 13 relations are association
+ * (was 15) and 29 have no published source (was 27). Unchanged and kept as
+ * upstream has them: depressed_mood → anhedonia (NICE NG134, supported) and
+ * peer_conflict → anxiety (WHO fact sheet, partly — see below). The
+ * concepts' own source_refs are upstream's, unchanged; the page prints no
+ * concept's sources, only relations'.
+ *
+ * Not done here, for upstream's curator to decide, because each would move
+ * a relation from no source to association: the MHLW guide also states
+ * sleep_deprivation → fatigue (p.1), late_night_screen_use →
+ * sleep_deprivation and all_nighter_studying → sleep_deprivation (p.16), and
+ * in part sleep_deprivation → school_absence (p.16) and cognitive_impairment
+ * → academic_difficulty (p.1); the WHO fact sheet states social_withdrawal →
+ * loneliness ("Social withdrawal can exacerbate isolation and loneliness").
  *
  * WHY THIS FILE EXISTS. テクノロジー used to draw an illustration: twelve
  * constructs, nine of which were not in Blesc's ontology at all, and a legend
@@ -51,28 +110,34 @@
  *     no published source supports the relation (sources.py: "Author
  *     judgement. No published source identified."). There is no stronger
  *     value: nothing in the seed is sourced as causal, even where the
- *     relation type is `causes` (the graph models a direction; the source
- *     reports, at most, a correlation).
+ *     relation type is `causes` (the graph models a direction; the seed
+ *     records, at most, that a source reports the two together — even
+ *     where the source itself states a direction, as the MHLW guide does;
+ *     see below).
  *   source_refs — what was consulted. Four relations cite 生徒指導提要 and
  *     are still expert_judgement, because the guideline describes what a
  *     school does, not the relation itself. So "cites a published source"
- *     (19) and "recorded as association" (15) are different numbers, and
+ *     (17) and "recorded as association" (13) are different numbers, and
  *     the page uses the second.
  *
  * WHAT THE PAGE SAYS ABOUT THE SOURCES, AND WHY IT IS WORDED AS A RECORD.
- * "association" is the curator's reading of each source, and this snapshot
- * inherits it; it is not re-verified here. Spot-checked on 2026-09-30
- * against the live WHO fact sheet (the 1 September 2025 version, which is
- * also the one sources.py retrieved on 2026-08-09), it holds for some
- * relations — the sheet names bullying, home life and peer relationships
- * among the risks and determinants — and not for others: it says nothing
- * about sleep and concentration, or sleep and irritability, which the seed
- * cites it for (sleep_deprivation → cognitive_impairment, → irritability).
- * NICE blocks automated fetches, so NG134 was not checked. The page
- * therefore says what the seed RECORDS — 「公開資料を出典として関連を記録」,
- * 「出典：」, and in English "association recorded with a published source",
- * "Source:" — and never that WHO or NICE "reports" a relation. Fixing the
- * citations is upstream's job; when it happens, regenerate this file.
+ * "association" is a reading of each source — upstream's curator's, and
+ * since 2026-11-16 checked here against the sources themselves (above). It
+ * means the source reports the two things together. Several of the thirteen
+ * are partial, the source naming a broader or neighbouring term rather than
+ * the concept itself: 情動不安定 for いらだち・情動反応の高まり, sleep
+ * problems ("disturbed sleep or sleeping too much") for 睡眠不足, "often
+ * wanting to be alone or stay home" for 人との関わりを避ける, bullying as a
+ * risk to mental health rather than to 不安 in particular, isolation and
+ * long absence rather than withdrawal, and family discord as a risk rather
+ * than family support as a buffer. None of it is recorded as a direction,
+ * though one source does state one — the MHLW guide says sleep deprivation
+ * affects attention and judgement (p.1) and is reported to strengthen
+ * 抑うつ傾向 (p.15); the seed has no value for that, and the page claims no
+ * direction for any relation. The page therefore says what the seed
+ * RECORDS — 「公開資料を出典として関連を記録」, 「出典：」, and in English
+ * "association recorded with a published source", "Source:" — and never
+ * that a source "reports" or "shows" a relation.
  *
  * THE TWO LANGUAGES. Every concept carries upstream's own two labels,
  * label_ja and label_en, and the English page prints label_en as it stands:
@@ -81,8 +146,8 @@
  * pairs were compared with the three YAML files on main on 2026-10-11 and
  * match character for character; every node upstream has both labels. What
  * upstream does not carry in two languages — the three areas' names, the
- * short names of the sources and the gloss of the one Japanese title — is
- * written here, on the entry it belongs to.
+ * short names of the sources and the English titles of the two Japanese
+ * documents — is written here, on the entry it belongs to.
  */
 
 import type { Locale } from "@/lib/i18n";
@@ -108,12 +173,16 @@ export type Relation =
 
 export type EvidenceStrength = "association" | "expert_judgement";
 
-/** The registry ids the seed actually uses. sources.py holds more. */
+/**
+ * The registry ids the seed actually uses. sources.py holds more, and does
+ * not hold mhlw_sleep_guide, which is this snapshot's own (see the header).
+ */
 export type SourceId =
   | "who_adolescent_mh"
   | "nice_ng134"
   | "who_mhgap"
   | "mext_seitoshido"
+  | "mhlw_sleep_guide"
   | "expert_judgement";
 
 export type PublishedSourceId = Exclude<SourceId, "expert_judgement">;
@@ -184,9 +253,10 @@ export type PublishedSource = {
   /** The language of the document, and so of `title`. */
   lang: Locale;
   /**
-   * An English gloss of a title that is not in English, for the English
-   * page. A gloss, not the document's name: the title a reader can search
-   * for is still `title`, and the page keeps it in the link's name.
+   * An English title for a document that is not in English, for the English
+   * page: a gloss, or the title of the publisher's own English edition where
+   * there is one. Either way the document cited is still `title`, and the
+   * page keeps it in the link's name.
    */
   title_en?: string;
   /** What kind of document, where the title does not already say. In Japanese; not printed. */
@@ -199,23 +269,41 @@ export type PublishedSource = {
 };
 
 /**
- * The four published sources the seed cites, in the order a reader should
- * meet them. Titles are the documents' own, so a reader can search for them.
+ * The five published sources the seed cites: the three international ones
+ * first, then Japan's two. Titles are the documents' own, so a reader can
+ * search for them.
+ *
+ * The last two are in this order for テクノロジー's source strip, which sets
+ * them in two columns, the first sized to its entries: the MHLW guide's long
+ * Japanese title falls in the second column, where there is room for it,
+ * and 生徒指導提要's short one in the first, which so stays as narrow on the
+ * Japanese page as it was with four.
  *
  * Years: the WHO fact sheet is revised in place, and the version consulted
  * (sources.py records retrieval on 2026-08-09) is the one dated 1 September
- * 2025 — the date the live page still carries on 2026-09-30; NG134 is 2019,
+ * 2025 — the date the live page still carries on 2026-11-16; NG134 is 2019,
  * as sources.py cites it; mhGAP-IG v2.0 is the 2016 second version, which is
  * what ISBN 978-92-4-154979-0 identifies (WHO's page shows it dated 24 June
  * 2019, its upload date there); 生徒指導提要 is the revision published in
- * 令和4年12月, i.e. December 2022.
+ * 令和4年12月, i.e. December 2022; the MHLW guide is dated 令和6年2月 on its
+ * cover (with a partial correction of 令和6年9月18日 in the PDF), so 2024,
+ * though its title says 2023.
  *
- * URLs are sources.py's, with one exception: the registry points 文部科学省
+ * URLs are sources.py's, with two exceptions. The registry points 文部科学省
  * at the 生徒指導 index page, and this links the 改訂版 page on it, which is
  * the document actually cited — the index also links the superseded 2010
  * edition, and a reader checking the claim should land on the right one.
  * Checked on 2026-09-30: that page's heading is 「生徒指導提要（改訂版）」
- * and it dates the revision to 令和4年12月.
+ * and it dates the revision to 令和4年12月. And the MHLW guide is not in
+ * sources.py at all: it links the original document, the 51-page PDF on
+ * MHLW's site, which MHLW's sleep page links under the guide's heading
+ * (https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/kenkou/suimin/index.html).
+ * Its title is written as MHLW's page and the PDF's metadata write it, with
+ * no space before 2023 (the cover sets one). Its title_en is MHLW's own: the
+ * ministry publishes an English edition, "Sleep Guide for Health Promotion
+ * 2023" (https://www.mhlw.go.jp/content/001732662.pdf). The link stays on
+ * the Japanese original, which is the document the page numbers in the
+ * header refer to.
  *
  * This list names institutions whose published material Blesc uses. It is
  * not an endorsement by any of them, and the page says so in words. No logos:
@@ -254,6 +342,17 @@ export const SOURCES: readonly PublishedSource[] = [
     year: 2016,
     url: "https://www.who.int/publications/i/item/9789241549790",
     short: { ja: "WHO mhGAP", en: "WHO mhGAP" },
+  },
+  {
+    id: "mhlw_sleep_guide",
+    publisher: "厚生労働省",
+    title: "健康づくりのための睡眠ガイド2023",
+    lang: "ja",
+    title_en: "Sleep Guide for Health Promotion 2023",
+    year: 2024,
+    url: "https://www.mhlw.go.jp/content/001305530.pdf",
+    // "MHLW" in the English one, as "MEXT" in the next: whose guide it is.
+    short: { ja: "厚生労働省 睡眠ガイド", en: "MHLW Sleep Guide" },
   },
   {
     id: "mext_seitoshido",
@@ -318,30 +417,30 @@ export const NODES: readonly SeedNode[] = [
 ];
 
 export const EDGES: readonly SeedEdge[] = [
-  { from: "sleep_deprivation", to: "cognitive_impairment", relation: "causes", evidence_strength: "association", source_refs: ["who_adolescent_mh"], subgraphs: ["sleep", "academic_pressure"] },
-  { from: "cognitive_impairment", to: "depressed_mood", relation: "causes", evidence_strength: "association", source_refs: ["nice_ng134", "who_adolescent_mh"], subgraphs: ["sleep", "academic_pressure"] },
-  { from: "sleep_deprivation", to: "depressed_mood", relation: "causes", evidence_strength: "association", source_refs: ["who_adolescent_mh", "nice_ng134"], subgraphs: ["sleep"] },
-  { from: "sleep_deprivation", to: "irritability", relation: "causes", evidence_strength: "association", source_refs: ["who_adolescent_mh"], subgraphs: ["sleep"] },
+  { from: "sleep_deprivation", to: "cognitive_impairment", relation: "causes", evidence_strength: "association", source_refs: ["mhlw_sleep_guide"], subgraphs: ["sleep", "academic_pressure"] },
+  { from: "cognitive_impairment", to: "depressed_mood", relation: "causes", evidence_strength: "association", source_refs: ["who_mhgap"], subgraphs: ["sleep", "academic_pressure"] },
+  { from: "sleep_deprivation", to: "depressed_mood", relation: "causes", evidence_strength: "association", source_refs: ["mhlw_sleep_guide"], subgraphs: ["sleep"] },
+  { from: "sleep_deprivation", to: "irritability", relation: "causes", evidence_strength: "association", source_refs: ["mhlw_sleep_guide"], subgraphs: ["sleep"] },
   { from: "sleep_deprivation", to: "fatigue", relation: "causes", evidence_strength: "expert_judgement", source_refs: ["expert_judgement"], subgraphs: ["sleep"] },
-  { from: "depressed_mood", to: "sleep_deprivation", relation: "causes", evidence_strength: "association", source_refs: ["nice_ng134"], subgraphs: ["sleep"] },
+  { from: "depressed_mood", to: "sleep_deprivation", relation: "causes", evidence_strength: "association", source_refs: ["who_mhgap", "mhlw_sleep_guide"], subgraphs: ["sleep"] },
   { from: "cognitive_impairment", to: "academic_difficulty", relation: "causes", evidence_strength: "expert_judgement", source_refs: ["expert_judgement"], subgraphs: ["sleep", "academic_pressure"] },
   { from: "sleep_deprivation", to: "school_absence", relation: "causes", evidence_strength: "expert_judgement", source_refs: ["expert_judgement"], subgraphs: ["sleep"] },
-  { from: "depressed_mood", to: "social_withdrawal", relation: "causes", evidence_strength: "association", source_refs: ["nice_ng134"], subgraphs: ["sleep", "social_withdrawal"] },
-  { from: "depressed_mood", to: "anxiety", relation: "co_occurs", evidence_strength: "association", source_refs: ["who_adolescent_mh"], subgraphs: ["sleep"] },
+  { from: "depressed_mood", to: "social_withdrawal", relation: "causes", evidence_strength: "association", source_refs: ["who_mhgap"], subgraphs: ["sleep", "social_withdrawal"] },
+  { from: "depressed_mood", to: "anxiety", relation: "co_occurs", evidence_strength: "association", source_refs: ["nice_ng134"], subgraphs: ["sleep"] },
   { from: "irritability", to: "social_withdrawal", relation: "precedes", evidence_strength: "expert_judgement", source_refs: ["expert_judgement"], subgraphs: ["sleep"] },
-  { from: "regular_sleep_schedule", to: "sleep_deprivation", relation: "buffers", evidence_strength: "association", source_refs: ["who_adolescent_mh"], subgraphs: ["sleep", "academic_pressure"] },
-  { from: "trusted_adult_contact", to: "depressed_mood", relation: "buffers", evidence_strength: "association", source_refs: ["who_mhgap", "mext_seitoshido"], subgraphs: ["sleep", "social_withdrawal", "academic_pressure"] },
+  { from: "regular_sleep_schedule", to: "sleep_deprivation", relation: "buffers", evidence_strength: "association", source_refs: ["mhlw_sleep_guide"], subgraphs: ["sleep", "academic_pressure"] },
+  { from: "trusted_adult_contact", to: "depressed_mood", relation: "buffers", evidence_strength: "association", source_refs: ["who_mhgap"], subgraphs: ["sleep", "social_withdrawal", "academic_pressure"] },
   { from: "late_night_screen_use", to: "sleep_deprivation", relation: "causes", evidence_strength: "expert_judgement", source_refs: ["expert_judgement"], subgraphs: ["sleep"] },
   { from: "school_absence", to: "social_withdrawal", relation: "co_occurs", evidence_strength: "expert_judgement", source_refs: ["expert_judgement"], subgraphs: ["sleep", "social_withdrawal"] },
   { from: "peer_conflict", to: "anxiety", relation: "causes", evidence_strength: "association", source_refs: ["who_adolescent_mh"], subgraphs: ["social_withdrawal"] },
-  { from: "peer_conflict", to: "social_withdrawal", relation: "causes", evidence_strength: "association", source_refs: ["who_adolescent_mh", "mext_seitoshido"], subgraphs: ["social_withdrawal"] },
+  { from: "peer_conflict", to: "social_withdrawal", relation: "causes", evidence_strength: "association", source_refs: ["mext_seitoshido"], subgraphs: ["social_withdrawal"] },
   { from: "shame_about_returning", to: "social_withdrawal", relation: "escalates", evidence_strength: "expert_judgement", source_refs: ["expert_judgement"], subgraphs: ["social_withdrawal"] },
   { from: "social_withdrawal", to: "loneliness", relation: "causes", evidence_strength: "expert_judgement", source_refs: ["expert_judgement"], subgraphs: ["social_withdrawal"] },
-  { from: "loneliness", to: "depressed_mood", relation: "causes", evidence_strength: "association", source_refs: ["who_adolescent_mh"], subgraphs: ["social_withdrawal"] },
+  { from: "loneliness", to: "depressed_mood", relation: "causes", evidence_strength: "expert_judgement", source_refs: ["expert_judgement"], subgraphs: ["social_withdrawal"] },
   { from: "social_withdrawal", to: "help_seeking", relation: "avoids", evidence_strength: "expert_judgement", source_refs: ["expert_judgement"], subgraphs: ["social_withdrawal"] },
   { from: "social_withdrawal", to: "trusted_adult_contact", relation: "avoids", evidence_strength: "expert_judgement", source_refs: ["mext_seitoshido"], subgraphs: ["social_withdrawal"] },
-  { from: "peer_friendship", to: "loneliness", relation: "buffers", evidence_strength: "association", source_refs: ["who_adolescent_mh"], subgraphs: ["social_withdrawal"] },
-  { from: "family_support", to: "depressed_mood", relation: "buffers", evidence_strength: "association", source_refs: ["who_adolescent_mh"], subgraphs: ["social_withdrawal"] },
+  { from: "peer_friendship", to: "loneliness", relation: "buffers", evidence_strength: "expert_judgement", source_refs: ["expert_judgement"], subgraphs: ["social_withdrawal"] },
+  { from: "family_support", to: "depressed_mood", relation: "buffers", evidence_strength: "association", source_refs: ["who_adolescent_mh", "nice_ng134"], subgraphs: ["social_withdrawal"] },
   { from: "school_counselor_access", to: "help_seeking", relation: "precedes", evidence_strength: "expert_judgement", source_refs: ["mext_seitoshido"], subgraphs: ["social_withdrawal"] },
   { from: "school_absence", to: "futoko", relation: "precedes", evidence_strength: "expert_judgement", source_refs: ["mext_seitoshido"], subgraphs: ["social_withdrawal"] },
   { from: "social_withdrawal", to: "futoko", relation: "precedes", evidence_strength: "expert_judgement", source_refs: ["expert_judgement"], subgraphs: ["social_withdrawal"] },
@@ -409,8 +508,8 @@ export const COUNTS = {
   sharedRelations: EDGES.filter((e) => e.subgraphs.length > 1).length,
   /**
    * evidence_strength "association": the seed records a cited source as
-   * reporting the pair together. The curator's reading, not re-verified —
-   * see the header.
+   * reporting the pair together. Upstream's curator's reading, checked
+   * against the sources and corrected here on 2026-11-16 — see the header.
    */
   supported: supported.length,
   /** evidence_strength "expert_judgement": no published source supports it. */
@@ -437,16 +536,18 @@ const PATH_IDS = ["sleep_deprivation", "cognitive_impairment", "depressed_mood"]
  * 睡眠不足 → 認知機能の低下 → 抑うつ傾向: the chain the page has always used
  * as its example, and which upstream's sleep.yaml was written to encode. Both
  * legs are in the seed, both are "association", and both cite a published
- * source — WHO for the first, NICE NG134 and WHO for the second. Upstream
- * calls the second leg the weakest link in the chain (NG134 lists reduced
- * concentration as a feature of depression, so the direction is a modelling
- * choice), which is why the page says the legs are recorded as association
- * and not as a direction.
+ * source — the MHLW sleep guide for the first, WHO mhGAP for the second.
  *
- * NOTE, 2026-09-30: the WHO fact sheet the first leg cites does not mention
- * sleep and concentration (see the header). The page names the citation as
- * the seed records it — 「出典：」 — without saying WHO reports the link, and
- * the upstream citation needs correcting or the example changing.
+ * Both citations are this snapshot's correction (2026-11-16; see the header).
+ * Upstream cites the WHO fact sheet for the first leg, and it says nothing
+ * about sleep and concentration; the MHLW guide does (p.1: sleep deprivation
+ * lowers attention and judgement; p.17: enough sleep raises concentration).
+ * For the second, upstream cites NICE NG134 and the fact sheet, and neither
+ * names reduced concentration; mhGAP lists it among the additional symptoms
+ * of depression (DEP 1, p.22; for adolescents, CMH p.80). That is a feature
+ * of the same condition, not a direction — upstream already calls this leg
+ * the weakest in the chain, its direction a modelling choice — which is why
+ * the page says the legs are recorded as association and not as a direction.
  *
  * Resolved against EDGES rather than restated: if either leg ever leaves the
  * seed, this throws at build time instead of the page naming a path that

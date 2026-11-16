@@ -3,10 +3,11 @@
  *
  * Japanese is the default and keeps the bare paths (/, /contact, /safety).
  * English is the same page tree under /en (/en, /en/contact, /en/safety).
- * Every page exists in both, with one exception: the news articles
- * (/news/<slug>) are written in Japanese only. Nothing is English-only.
- * switchLocalePath, at the bottom, is what keeps a language switch from
- * leading to a page that is not there.
+ * Every page exists in both, with one exception: a news article
+ * (/news/<slug>) is always in Japanese, and in English (/en/news/<slug>)
+ * only when it has been translated — ENGLISH_ARTICLES, below. Nothing is
+ * English-only. switchLocalePath, at the bottom, is what keeps a language
+ * switch from leading to a page that is not there.
  *
  * How a component learns its language:
  * - a server component takes a `locale` prop, handed down from the page;
@@ -59,30 +60,54 @@ export const otherLocale = (locale: Locale): Locale =>
   locale === "ja" ? "en" : "ja";
 
 /**
- * Japanese pages with no English counterpart, by path prefix, and the
- * English page the switch leads to from each instead.
+ * The news articles that have an English version, by slug: those with a
+ * content/news/<slug>.en.md beside the Japanese <slug>.md (lib/newsArticles).
  *
- * A news article is written in Japanese only (content/news, lib/
- * newsArticles), so /en/news/<slug> is a 404. The nearest English page is
- * the News section of the English home page, the counterpart of the list
- * the article is filed in — written here as the bare path, "/#news",
- * which localePath turns into /en#news.
+ * Written out here because the language switch is drawn by client
+ * components (Nav, Footer), which cannot read the content folder, and
+ * switchLocalePath has to stay a plain function of the pathname. It is not
+ * left to drift: lib/newsArticles compares it with the folder on every
+ * build, and the build stops, naming the slug to add or remove, the moment
+ * the two disagree. So adding an English version is adding its file and its
+ * slug here.
+ *
+ * Whether the article is published does not enter into it. An article's
+ * date is in its Japanese file alone, so the two pages are published
+ * together: a reader on /news/<slug> is on a published article (or a draft
+ * on the dev server, which shows English drafts too), and its English page
+ * exists exactly when it is listed here.
  */
-const JAPANESE_ONLY: readonly { prefix: string; english: string }[] = [
-  { prefix: "/news/", english: "/#news" },
+export const ENGLISH_ARTICLES: readonly string[] = [
+  "ivs-pitch",
+  "rd-team-launch",
+  "service-launch",
+  "sushi-tech-tokyo-pitch",
+  "unu-pitch",
 ];
+
+/** A news article's path, in either language once the prefix is off. */
+const ARTICLE_PATH = /^\/news\/([^/]+)$/;
 
 /**
  * Where the language switch on `pathname` leads: the same page in the
- * other language, or — from a Japanese-only page (JAPANESE_ONLY) — the
- * English page nearest to it.
+ * other language — or, from a news article that is in one language only,
+ * the News section of the other language's home page (/en#news, /#news),
+ * the counterpart of the list the article is filed in.
+ *
+ * Only an article missing from ENGLISH_ARTICLES falls back, and in
+ * practice only from Japanese: an English article's Japanese page always
+ * exists. The rule is written for both directions anyway, so a mistyped
+ * /en/news/ URL does not lead to a second 404.
  */
 export const switchLocalePath = (pathname: string): string => {
   const locale = localeFromPath(pathname);
   const path = stripLocale(pathname);
-  if (locale === "ja") {
-    const only = JAPANESE_ONLY.find(({ prefix }) => path.startsWith(prefix));
-    if (only) return localePath("en", only.english);
+  const to = otherLocale(locale);
+  if (path.startsWith("/news/")) {
+    const slug = ARTICLE_PATH.exec(path)?.[1];
+    if (slug === undefined || !ENGLISH_ARTICLES.includes(slug)) {
+      return localePath(to, "/#news");
+    }
   }
-  return localePath(otherLocale(locale), path);
+  return localePath(to, path);
 };

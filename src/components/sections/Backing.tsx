@@ -1,67 +1,65 @@
-"use client";
-
-import { motion, useScroll, useTransform, type Variants } from "motion/react";
-import Image from "next/image";
-import { Fragment, useRef } from "react";
-import { useLocale } from "@/components/LocaleProvider";
-import { Container } from "@/components/ui";
-import { FLOWER_PATH, FLOWER_SPIN_VIEWBOX } from "@/lib/flower";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+import {
+  BackingBand,
+  type Backer,
+  type BackerLogo,
+} from "@/components/sections/BackingBand";
 import type { Locale } from "@/lib/i18n";
-import { EXPO_OUT, VIEWPORT } from "@/lib/motion";
-import { usePrefersReducedMotion } from "@/lib/reducedMotion";
 
 /**
- * An optional logo file for an entry. When it is present it replaces the
- * typeset name, and the entry's `name` becomes the image's alt, so the claim
- * is still text. There is deliberately no separate alt field: a logo is the
- * organisation's name drawn, and a second string for it could only drift
- * from the first.
- *
- * `width` and `height` are the file's intrinsic size, which next/image needs
- * for the aspect ratio. The rendered size is set by the band, not by them —
- * every logo is drawn at the wordmark's height (see LOGO_HEIGHT), so marks
- * of very different proportions still read as one row.
+ * An entry as it is written here: the band's entry without its logo, and
+ * the name of the file the logo is looked for under (see findLogo).
  */
-type BackerLogo = {
-  src: string;
-  width: number;
-  height: number;
-};
-
-type Backer = {
+type BackerSource = Omit<Backer, "logo"> & {
   /**
-   * The organisation's own name, spelled the way it spells it — in each of
-   * the site's languages, since a university has a name in both.
+   * The logo's file name in public/backers/, without its extension. Fixed,
+   * so that whoever has the file only has to save it there under this name
+   * (public/backers/README.md says the same).
    */
-  name: Record<Locale, string>;
-  /**
-   * What the relationship is, in the words the Blesc team confirmed and no
-   * others. This line is the claim; the name above it is only who it is
-   * about. See the note on BACKERS before adding a word to it.
-   *
-   * A line break written into a line (`\n`) is the one place it may wrap:
-   * each side of it is a phrase that holds together (see ScopeLine). A line
-   * without one is set as plain text, as the Japanese lines are.
-   */
-  scope: Record<Locale, string>;
-  logo?: BackerLogo;
+  logoFile: string;
 };
 
 /**
- * Who stands behind Blesc, as the Blesc team stated it on 2026-09-30.
+ * Who stands behind Blesc, in the words the company confirmed: the Blesc
+ * team on 2026-09-30, and the CEO on 2026-11-16.
  *
  * Each scope line is exactly what was confirmed, and it is kept to that on
  * purpose. docs/claims.md §3 does not allow an unscoped relationship word:
  * 共同研究, 監修, 協働, 提携 and 連携 each say something specific about what
- * an institution did, and none of them has been confirmed for either entry.
- * A word that is true in spirit is still a claim about someone else's name,
- * in copy read by schools and boards of education — the kind of line that
- * is most expensive to take back.
+ * an institution did. A word that is true in spirit is still a claim about
+ * someone else's name, in copy read by schools and boards of education —
+ * the kind of line that is most expensive to take back.
  *
- * 京都大学 — the team's word was 支援, and the written permission is on
- * file (recorded in scripts/check-claims.mjs PERMITTED_ORGS). The claims
- * check keeps it scoped as well as named: 共同研究, 監修 and the rest beside
- * 京都大学 fail CI (unscoped-relationship).
+ * 京都大学 — the written permission to name it is on file (2026-09-30,
+ * recorded in scripts/check-claims.mjs PERMITTED_ORGS), with 支援 as its
+ * first scope. On 2026-11-16 the CEO confirmed what the relationship is:
+ * joint research with one research centre of the university, named in
+ * full — 「京都大学大学院 教育学研究科 附属臨床教育実践研究センターとの共同研究」.
+ * The line is that statement, word for word. The joint research is with
+ * the centre, so the line names the centre and not the university alone;
+ * the claims check passes 共同研究 beside 京都大学 only in this wording
+ * (PERMITTED_RELATIONSHIPS) and still fails 監修 and the rest, with or
+ * without the centre (unscoped-relationship). The wordmark above it stays
+ * the university's name, which is who the centre belongs to.
+ *
+ * The English is the same statement with the centre under its own English
+ * name, "Praxis and Research Center for Clinical Psychology and Education"
+ * — the name Kyoto University's Graduate School of Education gives it in
+ * its English overview: "1997 Praxis and Research Center for Clinical
+ * Psychology and Education established", in
+ * https://www.educ.kyoto-u.ac.jp/en/wp/wp-content/uploads/2026/06/overview_2026.pdf
+ * — followed by the school and the university, as the Japanese names them.
+ * It is written as one string so that the claims check can read it whole.
+ *
+ * The `\n` in the Japanese line is not part of the wording. It marks the
+ * one place, besides the line's own two spaces, where the line may break —
+ * before との — and is drawn as a <wbr>, with no space (see ScopeLine in
+ * BackingBand). Without it the line's longest unbroken run would be
+ * 附属臨床教育実践研究センターとの共同研究, twenty ems, wider than a 320px
+ * phone leaves. `measure` holds each language's line to a width that sets
+ * it as the band's layout expects (the numbers are in the note on
+ * BackingBand).
  *
  * ANOBAKA — the relationship is selection into a named programme, so the
  * line is the programme and the result: 「U-25 AI Accelerator 第2期 採択」.
@@ -69,7 +67,14 @@ type Backer = {
  * capital firm — the reviewer's own shorthand was "ANOBAKA VC" — which is
  * exactly why VC / 出資 / 投資 must never appear beside it: a reader would
  * take them as a statement that it holds equity in Blesc. The check
- * enforces that too (accelerator-as-investment).
+ * enforces that too (accelerator-as-investment). The English is the same
+ * claim: 第2期 採択 is "Cohort 2 — selected".
+ *
+ * Logos — both may be shown (the CEO, 2026-11-16). An entry shows its
+ * wordmark until a file is saved under public/backers/ with the name in
+ * `logoFile`, and its logo from the next build; nothing else has to
+ * change. A logo replaces the name only. The scope line stays, because it
+ * is the claim.
  *
  * No amount is printed here. An amount is an event, not a relationship, so
  * it goes in ニュース (src/lib/news.ts), with the selection it came with.
@@ -79,15 +84,19 @@ type Backer = {
  * collaboration line テクノロジー once carried, and had to drop, before any
  * permission existed.
  *
- * The English lines are the same two claims and nothing wider. 支援 is
- * "Support"; 第2期 採択 is "Cohort 2 — selected". The claims check only
- * knows a handful of English stems, so the rule is kept by hand here: no
- * word beside either name that says more than these do.
+ * The claims check only knows a handful of English stems, so the English
+ * rule is kept by hand here as well: no word beside either name that says
+ * more than these lines do.
  */
-const BACKERS: Backer[] = [
+const BACKERS: BackerSource[] = [
   {
     name: { ja: "京都大学", en: "Kyoto University" },
-    scope: { ja: "支援", en: "Support" },
+    scope: {
+      ja: "京都大学大学院 教育学研究科 附属臨床教育実践研究センター\nとの共同研究",
+      en: "Joint research with the Praxis and Research Center for Clinical Psychology and Education, Graduate School of Education, Kyoto University",
+    },
+    measure: { ja: "w-min", en: "max-w-[18rem]" },
+    logoFile: "kyoto-university",
   },
   {
     name: { ja: "ANOBAKA", en: "ANOBAKA" },
@@ -95,411 +104,122 @@ const BACKERS: Backer[] = [
       ja: "U-25 AI Accelerator 第2期 採択",
       en: "U-25 AI Accelerator,\nCohort 2 — selected",
     },
+    logoFile: "anobaka",
   },
 ];
 
 /**
- * The band's label.
+ * The band's label: what the entries under it are to Blesc, and nothing
+ * more.
  *
- * "Backed by" is the name the site's English glossary gives this band. See
- * the note on Backing for what that wording has to be kept beside.
+ * 共同研究・採択 is exactly the two relationships below it — the joint
+ * research and the programme selection — the way 支援・採択 was before the
+ * joint research was confirmed. It says nothing they do not, and it does
+ * not repeat either line word for word.
+ *
+ * "Research and programs" is the same pair in English: 京都大学's entry is
+ * research, ANOBAKA's a programme. It replaces "Backed by", which named
+ * one relationship that no longer describes both — and which, beside the
+ * name of a firm that runs a venture fund, could be read as an
+ * investment, the one thing that must not be implied about ANOBAKA.
+ * Nothing is to be added to either label: no partner, investor, sponsor or
+ * affiliate. Each says what kind of relationship the band lists; the line
+ * under each name says exactly which.
  */
-const COPY = {
-  ja: { label: "支援・採択" },
-  en: { label: "Backed by" },
-} as const;
+const LABEL: Record<Locale, string> = {
+  ja: "共同研究・採択",
+  en: "Research and programs",
+};
+
+/** Where logos are looked for, and the types looked for, best first. */
+const LOGO_DIR = path.join(process.cwd(), "public", "backers");
+const LOGO_TYPES = ["svg", "png"] as const;
 
 /**
- * The scope line under a name, per language.
+ * An entry's logo, if a file for it has been saved: public/backers/
+ * <logoFile>.svg, or .png when there is no SVG.
  *
- * English adds two width classes for the stretch from md to lg, where the
- * row cannot hold ANOBAKA's line whole (the numbers are in the note on
- * Backing): md:w-min sets the line at its min-content width, which is its
- * longer phrase, so it stands as two lines; lg:w-auto lets it back out to
- * one. On a one-word line such as "Support" neither changes anything.
+ * This is why Backing is a server component. It runs when the page is
+ * built (and on every request on the dev server), so a file dropped into
+ * public/backers/ is picked up by the next deploy with no code changed,
+ * and a missing one costs nothing — the entry keeps its wordmark.
  *
- * Whole class strings, picked by language — Tailwind only generates what
- * it can read.
+ * A file that is there but whose size cannot be read stops the build
+ * rather than being skipped: a logo saved and silently not shown would be
+ * a harder fault to find than a build that names the file.
  */
-const SCOPE_CLASS = {
-  ja: "mt-1.5 text-balance break-keep text-[0.875rem] leading-[1.5] text-muted",
-  en: "mt-1.5 text-balance break-keep text-[0.875rem] leading-[1.5] text-muted md:w-min lg:w-auto",
-} as const;
-
-/**
- * A scope line, wrapping only where its author allowed.
- *
- * A line with a `\n` in it is set as phrases: each is an inline-block that
- * does not wrap inside, with an ordinary space between them, so the line is
- * read as one sentence and breaks only between two phrases. That is what
- * keeps "U-25 AI Accelerator," whole — left to the browser the line can
- * break after the hyphen of "U-25", or strand "selected" on a line of its
- * own. A line without a `\n` is returned as the plain string it is.
- */
-function ScopeLine({ text }: { text: string }) {
-  const phrases = text.split("\n");
-  if (phrases.length === 1) return text;
-  return phrases.map((phrase, i) => (
-    <Fragment key={phrase}>
-      {i > 0 && " "}
-      <span className="inline-block whitespace-nowrap">{phrase}</span>
-    </Fragment>
-  ));
-}
-
-/**
- * A Latin name is set larger than a Japanese one, so that the two read as
- * the same size.
- *
- * At one font size they do not. A kanji fills most of its em square, while
- * Helvetica Neue's capitals stand about 0.71em tall, so at one size 京都大学
- * has roughly a fifth more ink than ANOBAKA beside it — the university's
- * name looked a size up from the programme, which is a ranking nobody
- * chose. Every term of the Japanese clamp is five sixths of the Latin one,
- * so the correction holds at every width: at the cap, 2.1875rem kanji and
- * 2.625rem capitals both put about 30px of ink on the line.
- *
- * Strip size, not display size. These are marks in a row of backers, the
- * way a startup page shows the names behind it, and they only need to be
- * unmistakably the largest thing in the band — a heading-sized pair here
- * was most of why the band used to stand as tall as a section.
- *
- * The test is on the string rather than a field in the data: whoever adds
- * an entry should only have to type the name. Printable ASCII is a Latin
- * wordmark; anything else is set as Japanese.
- *
- * Written out in full — Tailwind only generates classes it can read.
- */
-const WORDMARK_SIZE = {
-  latin: "text-[clamp(1.875rem,3.2vw,2.625rem)]",
-  japanese: "text-[clamp(1.5625rem,2.667vw,2.1875rem)]",
-} as const;
-
-function isLatin(name: string) {
-  return /^[ -~]+$/.test(name);
-}
-
-/**
- * A logo is drawn at the height of the larger wordmark's line box (the
- * Latin clamp times its 1.1 leading), which is also the minimum height of
- * every name cell. That keeps each scope line on the same baseline across
- * the row, whichever mix of wordmarks and logos the row holds.
- */
-const LOGO_HEIGHT = "h-[clamp(2.0625rem,3.52vw,2.8875rem)]";
-const NAME_CELL = "min-h-[clamp(2.0625rem,3.52vw,2.8875rem)]";
-
-/**
- * The band's arrival: the label comes in from the left, the names from the
- * right, and both close on the hairline between them as it draws. Offsets
- * are the page reveal's 24px and its expo-out, turned on their side, so the
- * band moves like everything else on the page and not like a widget.
- *
- * Under reduced motion only the opacity moves. The x and blur are still
- * named in `show`, with no duration, because the flag behind `reduce` reads
- * false through hydration: an element can mount with the moving `hidden`
- * and only learn afterwards that the visitor asked for stillness. Leaving
- * x out of the reduced `show` would leave it parked 24px off and blurred.
- */
-function arrive(from: number, delay: number, reduce: boolean): Variants {
-  if (reduce) {
-    return {
-      hidden: { opacity: 0 },
-      show: {
-        opacity: 1,
-        x: 0,
-        filter: "blur(0px)",
-        transition: {
-          duration: 0.3,
-          ease: "linear",
-          x: { duration: 0 },
-          filter: { duration: 0 },
-        },
-      },
-    };
+function findLogo(file: string): BackerLogo | undefined {
+  for (const type of LOGO_TYPES) {
+    const full = path.join(LOGO_DIR, `${file}.${type}`);
+    if (!existsSync(full)) continue;
+    const size =
+      type === "svg"
+        ? svgSize(readFileSync(full, "utf8"))
+        : pngSize(readFileSync(full));
+    if (!size) {
+      throw new Error(
+        `public/backers/${file}.${type}: cannot read the logo's size. ${
+          type === "svg"
+            ? "Give the <svg> a viewBox, or a width and height in px."
+            : "Save it as a PNG file."
+        }`,
+      );
+    }
+    return { src: `/backers/${file}.${type}`, ...size };
   }
-  return {
-    hidden: { opacity: 0, x: from, filter: "blur(4px)" },
-    show: {
-      opacity: 1,
-      x: 0,
-      filter: "blur(0px)",
-      transition: { duration: 0.7, ease: EXPO_OUT, delay },
-    },
-  };
+  return undefined;
 }
 
 /**
- * The hairline between the label and the names, drawn out from its middle.
- * It is horizontal under the label on a phone and vertical beside it from
- * md, so there are two of them and each scales along its own length. A
- * uniform scale would serve both, but it would also thin the line while it
- * grew. Reduced motion gets the drawn line, at once.
+ * An SVG's own size, from the root element: its viewBox, which every
+ * design tool writes, or failing that a width and height in px or with no
+ * unit. Only the ratio is used, to hold the logo's box before it loads.
  */
-function drawn(axis: "x" | "y", reduce: boolean): Variants {
-  const transition = reduce
-    ? { duration: 0 }
-    : { duration: 0.9, ease: EXPO_OUT, delay: 0.1 };
-  return axis === "x"
-    ? { hidden: { scaleX: reduce ? 1 : 0 }, show: { scaleX: 1, transition } }
-    : { hidden: { scaleY: reduce ? 1 : 0 }, show: { scaleY: 1, transition } };
+function svgSize(svg: string) {
+  const root = svg.match(/<svg\b[^>]*>/i)?.[0];
+  if (!root) return null;
+  const viewBox = root.match(/\sviewBox\s*=\s*["']([^"']+)["']/i)?.[1];
+  if (viewBox) {
+    const [, , width, height] = viewBox.trim().split(/[\s,]+/).map(Number);
+    if (width > 0 && height > 0) return { width, height };
+  }
+  const width = pixels(root.match(/\swidth\s*=\s*["']([^"']+)["']/i)?.[1]);
+  const height = pixels(root.match(/\sheight\s*=\s*["']([^"']+)["']/i)?.[1]);
+  return width && height ? { width, height } : null;
+}
+
+/** A length in px or with no unit; anything else (%, mm, em) is unknown. */
+function pixels(value: string | undefined) {
+  const n = value?.trim().match(/^(\d+(?:\.\d+)?)(?:px)?$/)?.[1];
+  return n && Number(n) > 0 ? Number(n) : null;
+}
+
+/** A PNG's size in pixels, from its IHDR chunk, which always comes first. */
+function pngSize(file: Buffer) {
+  const signature = "89504e470d0a1a0a";
+  if (file.length < 24 || file.subarray(0, 8).toString("hex") !== signature) {
+    return null;
+  }
+  if (file.subarray(12, 16).toString("latin1") !== "IHDR") return null;
+  const width = file.readUInt32BE(16);
+  const height = file.readUInt32BE(20);
+  return width > 0 && height > 0 ? { width, height } : null;
 }
 
 /**
- * How far the flower turns across the band's pass through the viewport,
- * either side of upright. One petal's worth: the mark's five petal tips sit
- * 72° apart, so a turn of 72° lands on the same silhouette it started from,
- * and the flower reads as upright at both ends of the pass, in the middle
- * of it, and in the server HTML, which is drawn at the start of the pass.
+ * 共同研究・採択 — a band, not a section, between チーム and ニュース.
  *
- * On an ordinary load the band is below the fold, at the start of its
- * pass, so the first scroll read changes nothing. Landing with the band
- * already on screen — a deep link, a restored scroll — sets the mark to the
- * angle for that position on the first read: a single step of at most
- * half a petal (36°) on an 18px mark, which is accepted. Without
- * JavaScript the still, upright mark is the one the page draws.
+ * A server component: it reads the entries' logos from public/backers/
+ * (findLogo) and hands the band its words in both languages. How the band
+ * is laid out and moves is in BackingBand, the client component that draws
+ * it — it has to be one, to read the scroll that turns its flower. So is
+ * the type: why a Latin name is set a size above a Japanese one, which
+ * other pages cite as the reason Backing gives, is WORDMARK_SIZE there.
  */
-const FLOWER_TURN = 72;
-
-/**
- * 支援・採択 — a band, not a section.
- *
- * Built the way a startup page shows who backs it: a small label, a
- * hairline, the names in a row, on the plain white ground. It sits between
- * チーム and ニュース, both full sections with their own air, so the band
- * brings almost none of its own. It used to be a section of its own: 102px
- * of padding above and below at 1280, a 56px gap under the label and
- * 60px names, 390px in all, which put more than 230px of white either side
- * of two names. At 1280 it is now 136px — 32px above and below and one
- * 72px row — and at 768 116px against 289px. On a phone the names stack
- * under the label, 251px against 397px.
- *
- * There is no SectionTitle. Another display-size heading would put this on
- * the same footing as the argument the page makes, and a list of two names
- * is not an argument. The label is still the h2, so the band is a real stop
- * in the document outline and in a screen reader's heading list — it is
- * only set at label size.
- *
- * The Japanese heading is 支援・採択 rather than 支援 alone, which would
- * repeat 京都大学's own scope line word for word. 支援・採択 is exactly the
- * two relationships below it, and says nothing they do not.
- *
- * The English heading is "Backed by", which is what the site's English
- * glossary calls this band. It carries a caution that was written here
- * when the same words were weighed, and turned down, as a heading for the
- * Japanese page: beside the name of a firm that runs a venture fund,
- * "backed by" can be read as an investment, and that is the one thing that
- * must not be implied about ANOBAKA. What answers that reading is the line
- * directly under the name, which says what the relationship is — a named
- * programme, and "selected". So the English label is never to be shown
- * without the scope lines, and nothing is to be added to it: no investor,
- * partner or sponsor. If the reading is ever judged too close all the
- * same, "Support & selection" is 支援・採択 word for word, and changing
- * COPY.en.label to it changes nothing else here.
- *
- * The entries are a description list: an organisation, then what it is to
- * Blesc. That is the claim as a screen reader should hear it — "京都大学,
- * 支援" — and the names are real text unless a logo has replaced one, in
- * which case its alt carries the name. Each entry is a motion.div wrapping
- * one dt and its dd, which is valid inside a dl; the reveal reaches the
- * entries through motion's context rather than the DOM, so the dl between
- * them and the band costs nothing.
- *
- * Layout. From md the whole band is one centred row — label, hairline,
- * names — and the names wrap as a group if a third or fourth is ever added.
- * Below md the label, the hairline and the names stack and centre; from sm
- * the names sit side by side under the label, and below sm they stack as
- * well, because ANOBAKA's scope line is wider than half a phone and would
- * otherwise wrap in the middle of the programme's name. Names are
- * break-keep: a Japanese name breaks only where it has a space, so 京都大学
- * is never split, and a Latin name still may wrap at its spaces rather than
- * run off a narrow screen.
- *
- * English layout. The label is the same width as the Japanese one (about
- * 72px either way), but the entries are not: "Kyoto University" is a Latin
- * wordmark of 201px at the 1.875rem floor where 京都大学 is 100px, and
- * ANOBAKA's scope line is 260px against 195px. Those are Helvetica Neue;
- * in Inter, which is what Android and Windows draw, they are 222px and
- * 276px. At 768px the Container leaves 688px, and the row — label,
- * hairline, both entries and the gaps between them — comes to 664px in
- * Helvetica Neue and 702px in Inter, so on Inter the second entry would
- * drop to a row of its own. From md to lg the English scope line is
- * therefore set as two lines (SCOPE_CLASS, ScopeLine): the programme, then
- * "Cohort 2 — selected". The row is then 540–568px, and the band is one
- * 21px line taller there. From lg the line is whole again: 751px of the
- * 944px the Container leaves at 1024px, in Inter. Below md nothing differs
- * from the Japanese: side by side from sm (546px of 592px at 640px), and
- * stacked below it, where the line fits whole down to about 325px and
- * breaks between its two phrases under that. None of this applies to the
- * Japanese page, whose classes are the ones it had.
- *
- * Motion is what keeps a band this small from sitting there. The pieces
- * close in on the hairline as it draws (see arrive and drawn), and the
- * flower beside the label turns two petals' worth as the band passes
- * through the screen (see FLOWER_TURN), tied to the scroll so it moves only
- * while the reader does. It is not a marquee: a loop of two names reads as
- * padding. And there is no hover state, because nothing here is a link — a
- * name that lights up under the pointer promises a click it cannot keep.
- *
- * Without JavaScript the layout's noscript rule sets every inline-styled
- * element in <main> to full opacity with no filter or transform, so the
- * names, the drawn line and the upright flower are simply there. That is
- * also why this became a client component: the scroll that turns the
- * flower can only be read in the browser.
- *
- * Measured against the tokens in globals.css on bg-canvas (#ffffff): the
- * names in ink 19.43:1, the label and the scope lines in muted 6.25:1 (AA
- * at their 0.85 and 0.875rem), the hairline in line-strong 3.72:1 and the
- * flower in mark-1 5.44:1 — both decorative, and both clear the 3:1
- * non-text line anyway.
- */
-export function Backing({ locale: fromPage }: { locale?: Locale }) {
-  const ref = useRef<HTMLElement>(null);
-  const reduce = usePrefersReducedMotion();
-  /*
-   * The page hands every section its language as a prop, and the layout's
-   * provider holds the same one for client components. They cannot differ
-   * on a page; the prop is read first only so that the band can be rendered
-   * outside a provider and still be told what to say.
-   */
-  const fromLayout = useLocale();
-  const locale = fromPage ?? fromLayout;
-
-  /*
-   * The band's own box from entering the bottom of the viewport to leaving
-   * the top, so the angle is a pure function of where the page is — right
-   * on a deep link or a Lenis anchor jump, with no state per frame. Under
-   * reduced motion the range collapses rather than the style being dropped,
-   * so motion keeps writing the upright mark (the same pattern as Drift).
-   */
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
+export function Backing({ locale }: { locale?: Locale }) {
+  const backers: Backer[] = BACKERS.map(({ logoFile, ...backer }) => {
+    const logo = findLogo(logoFile);
+    return logo ? { ...backer, logo } : backer;
   });
-  const rotate = useTransform(
-    scrollYProgress,
-    [0, 1],
-    reduce ? [0, 0] : [-FLOWER_TURN, FLOWER_TURN],
-  );
-
-  return (
-    <section
-      ref={ref}
-      id="backing"
-      aria-labelledby="backing-title"
-      className="scroll-mt-24 bg-canvas py-[clamp(1.75rem,2.5vw,2.25rem)]"
-    >
-      <Container>
-        <motion.div
-          className="flex flex-col items-center gap-y-4 md:flex-row md:items-stretch md:justify-center md:gap-x-[clamp(2rem,4vw,3.5rem)]"
-          initial="hidden"
-          whileInView="show"
-          viewport={VIEWPORT}
-        >
-          {/*
-            The brand flower as the band's mark, the same way it marks each
-            row of ニュース, beside the label so the label stays one quiet
-            line. Drawn in the square box centred on the flower
-            (FLOWER_SPIN_VIEWBOX), so it turns in place rather than wobbling
-            about the artwork's off-centre box. Centred on the whole entry
-            from md — name and scope together — the way a label sits beside
-            a two-line item.
-          */}
-          <motion.div
-            variants={arrive(-24, 0, reduce)}
-            className="flex shrink-0 items-center gap-2 md:self-center"
-          >
-            <motion.span
-              aria-hidden
-              className="block size-[18px] shrink-0 text-mark-1"
-              style={{ rotate }}
-            >
-              <svg
-                focusable="false"
-                viewBox={FLOWER_SPIN_VIEWBOX}
-                className="size-full"
-              >
-                <path d={FLOWER_PATH} fill="currentColor" fillRule="evenodd" />
-              </svg>
-            </motion.span>
-            <h2
-              id="backing-title"
-              className="whitespace-nowrap text-[0.85rem] font-medium tracking-[0.04em] text-muted"
-            >
-              {COPY[locale].label}
-            </h2>
-          </motion.div>
-
-          {/*
-            line-strong, as DrawnRule argues for it: this line is structure —
-            it is what makes a label and two names read as one band — and
-            line-strong is the token that holds 3:1 on white.
-          */}
-          <motion.span
-            aria-hidden
-            variants={drawn("x", reduce)}
-            className="block h-px w-10 bg-line-strong md:hidden"
-          />
-          <motion.span
-            aria-hidden
-            variants={drawn("y", reduce)}
-            className="hidden w-px bg-line-strong md:block"
-          />
-
-          <dl className="flex flex-col items-center gap-y-5 sm:flex-row sm:flex-wrap sm:items-start sm:justify-center sm:gap-x-12 md:justify-start md:gap-x-[clamp(2.5rem,5vw,4.5rem)]">
-            {BACKERS.map((backer, i) => {
-              const name = backer.name[locale];
-              return (
-                /*
-                  Keyed by the Japanese name in either language: it is the
-                  entry's identity, not what the entry shows.
-                */
-                <motion.div
-                  key={backer.name.ja}
-                  variants={arrive(24, 0.2 + i * 0.1, reduce)}
-                  className="flex flex-col items-center text-center md:items-start md:text-left"
-                >
-                  <dt
-                    className={`flex items-center justify-center md:justify-start ${NAME_CELL}`}
-                  >
-                    {backer.logo ? (
-                      <Image
-                        src={backer.logo.src}
-                        width={backer.logo.width}
-                        height={backer.logo.height}
-                        alt={name}
-                        className={`${LOGO_HEIGHT} w-auto`}
-                      />
-                    ) : (
-                      /*
-                        Weight 300: the hero's voice, which is Helvetica Neue
-                        Light on the Latin and Hiragino Sans W3 on the kanji.
-
-                        The size follows the name as it is written in this
-                        language, so "Kyoto University" is set as the Latin
-                        wordmark it is, at ANOBAKA's size. palt and
-                        break-keep are for the kanji and do nothing to a
-                        Latin name, which breaks only at its spaces anyway.
-                      */
-                      <span
-                        className={`font-light leading-[1.1] tracking-[-0.015em] text-balance break-keep text-ink [font-feature-settings:'palt'_1] ${
-                          isLatin(name)
-                            ? WORDMARK_SIZE.latin
-                            : WORDMARK_SIZE.japanese
-                        }`}
-                      >
-                        {name}
-                      </span>
-                    )}
-                  </dt>
-                  <dd className={SCOPE_CLASS[locale]}>
-                    <ScopeLine text={backer.scope[locale]} />
-                  </dd>
-                </motion.div>
-              );
-            })}
-          </dl>
-        </motion.div>
-      </Container>
-    </section>
-  );
+  return <BackingBand locale={locale} label={LABEL} backers={backers} />;
 }

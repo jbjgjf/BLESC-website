@@ -4,15 +4,43 @@ import { Drift } from "@/components/flourish/Drift";
 import { Markdown } from "@/components/news/Markdown";
 import { TRUST_TYPE } from "@/components/trust/TrustSections";
 import { Container, Icon } from "@/components/ui";
+import { localePath, type Locale } from "@/lib/i18n";
 import { formatNewsDate } from "@/lib/news";
-import type { NewsArticle } from "@/lib/newsArticles";
+import type { LocalizedArticle } from "@/lib/newsArticles";
 import { sectionHref } from "@/lib/site";
 
 /**
- * The 安全とプライバシー page's Japanese type: the h1 here is set exactly as
- * that page's is, so the site's two text pages read as one family.
+ * The page's own strings: what stands for a draft's date (drafts show on
+ * the dev server only), and the way back to the list.
  */
-const TYPE = TRUST_TYPE.ja;
+const COPY = {
+  ja: { undated: "日付未定", back: "ニュース一覧へ戻る" },
+  en: { undated: "Date to be set", back: "Back to news" },
+} as const satisfies Record<Locale, { undated: string; back: string }>;
+
+/**
+ * The title: the 安全とプライバシー page's h1 in the article's language
+ * (TRUST_TYPE, set exactly as TrustPage sets it), so the site's text pages
+ * read as one family. An article's title runs to two or three lines where
+ * 安全とプライバシー takes one, so two things are added for the lines in
+ * Japanese: auto-phrase breaks it between phrases rather than between any
+ * two characters, as the footer's and the adoption note's paragraphs do,
+ * and text-balance evens the lines so a title does not end on a lone word.
+ * The English h1 is balanced already, and breaks at its spaces.
+ *
+ * wrap-anywhere is the fallback the News register's names carry for the
+ * same reason: auto-phrase does not break inside a phrase, and at 320px the
+ * h1's 28px leaves room for about ten characters a line, so a longer phrase
+ * — a katakana compound such as スタートアップカンファレンス — would run
+ * past the edge and be clipped by the page's overflow-x-clip. It changes
+ * nothing for a title whose phrases (or, in English, words) fit.
+ *
+ * Whole class strings, because Tailwind only generates what it can read.
+ */
+const TITLE: Record<Locale, string> = {
+  ja: `mt-4 text-balance font-light tracking-[-0.02em] text-ink wrap-anywhere [word-break:auto-phrase] md:mt-5 ${TRUST_TYPE.ja.h1}`,
+  en: `mt-4 font-light tracking-[-0.02em] text-ink wrap-anywhere md:mt-5 ${TRUST_TYPE.en.h1}`,
+};
 
 /**
  * The footer's quiet link (QUIET_LINK in components/Footer), written out
@@ -24,11 +52,12 @@ const QUIET_LINK =
   "text-[0.9rem] text-muted transition-colors duration-300 [@media(hover:hover)_and_(pointer:fine)]:hover:text-ink";
 
 /**
- * One news article, /news/<slug>: the date and category, the title, the
- * body, and the way back to the list.
+ * One news article, /news/<slug> or /en/news/<slug>: the date and
+ * category, the title, the body, and the way back to the list.
  *
- * Japanese only — the articles have no English (lib/newsArticles) — so
- * there is no `locale` prop and every string here is Japanese.
+ * The article arrives in one language (lib/newsArticles, LocalizedArticle),
+ * and the page speaks that language: the date is formatNewsDate's for it,
+ * and the two strings this file owns are COPY's.
  *
  * The shell is the 安全とプライバシー page's (components/trust/TrustPage),
  * which is the site's model for a page of text: the same pale flower off
@@ -47,7 +76,10 @@ const QUIET_LINK =
  * A div, not an <article> wrapped in a <main>: the root layout already
  * wraps every page in <main>, and the page is the one article.
  */
-export function NewsArticlePage({ article }: { article: NewsArticle }) {
+export function NewsArticlePage({ article }: { article: LocalizedArticle }) {
+  const { locale } = article;
+  const copy = COPY[locale];
+
   return (
     <div className="relative overflow-x-clip bg-canvas">
       {/*
@@ -74,55 +106,40 @@ export function NewsArticlePage({ article }: { article: NewsArticle }) {
             The separator is the " · " the site's other bylines use, and is
             hidden from a screen reader, which reads the two as a pair.
 
-            日付未定 only ever shows on the dev server: an article without a
-            date is a draft, and a production build gives it no page.
+            COPY's undated label only ever shows on the dev server: an
+            article without a date is a draft, and a production build gives
+            it no page.
           */}
           <p className="text-[0.85rem] text-muted">
             {article.date ? (
               <time dateTime={article.date} className="tabular-nums">
-                {formatNewsDate(article.date, "ja")}
+                {formatNewsDate(article.date, locale)}
               </time>
             ) : (
-              "日付未定"
+              copy.undated
             )}
             <span aria-hidden> · </span>
             {article.category}
           </p>
 
-          {/*
-            TrustPage's h1. An article's title runs to two or three lines
-            where 安全とプライバシー takes one, so two things are added for
-            the lines: auto-phrase breaks the Japanese between phrases
-            rather than between any two characters, as the footer's and the
-            adoption note's paragraphs do, and text-balance evens the lines
-            so a title does not end on a lone word.
-
-            wrap-anywhere is the fallback the News register's names carry
-            for the same reason: auto-phrase does not break inside a phrase,
-            and at 320px the h1's 28px leaves room for about ten characters
-            a line, so a longer phrase — a katakana compound such as
-            スタートアップカンファレンス — would run past the edge and be
-            clipped by the page's overflow-x-clip. It changes nothing for a
-            title whose phrases fit.
-          */}
-          <h1
-            className={`mt-4 text-balance font-light tracking-[-0.02em] text-ink wrap-anywhere [word-break:auto-phrase] md:mt-5 ${TYPE.h1}`}
-          >
-            {article.title}
-          </h1>
+          {/* TrustPage's h1, with what TITLE adds for a longer title. */}
+          <h1 className={TITLE[locale]}>{article.title}</h1>
         </header>
 
         {/*
-          The body, at the measure of TrustPage's opening paragraph (40rem):
-          Japanese text read at length wants a line of about forty
-          characters, not the Container's full 68rem. The type, the
-          headings, lists and tables are Markdown's own.
+          The body, at the measure of TrustPage's Japanese opening paragraph
+          (40rem): Japanese text read at length wants a line of about forty
+          characters, not the Container's full 68rem. The same 40rem holds
+          English at 17–18px to about seventy-five characters, inside the
+          English opening paragraph's 46rem. The type, the headings, lists
+          and tables are Markdown's own.
         */}
         <div className="mt-10 max-w-[40rem] md:mt-14">
           <Markdown
             source={article.body}
-            file={`content/news/${article.slug}.md`}
+            file={article.file}
             lineOffset={article.lineOffset}
+            locale={locale}
           />
         </div>
       </Container>
@@ -132,19 +149,21 @@ export function NewsArticlePage({ article }: { article: NewsArticle }) {
         here, back to the list. The footer's quiet link with an icon before
         it, as the footer sets its mail link, so it reads as a link without
         competing with the text above it. A plain anchor, like every link
-        between pages on this site, to /#news by the same helper the nav's
-        and the footer's section links use off the home page (sectionHref
-        in lib/site) — the same full load they make from /safety.
+        between pages on this site, to the News section of the home page in
+        the article's language — /#news or /en#news — by the same helper the
+        nav's and the footer's section links use off the home page
+        (sectionHref in lib/site, with localePath's home page): the same full
+        load they make from /safety.
       */}
       <Container className="relative">
         <div className="relative pt-[clamp(2.5rem,5vw,3.5rem)] pb-[clamp(4rem,9vw,7rem)]">
           <DrawnRule className="top-0" />
           <a
-            href={sectionHref("news", false)}
+            href={sectionHref("news", false, localePath(locale, "/"))}
             className={`inline-flex items-center gap-2 ${QUIET_LINK}`}
           >
             <Icon name="arrow_back" size={18} className="shrink-0" />
-            ニュース一覧へ戻る
+            {copy.back}
           </a>
         </div>
       </Container>

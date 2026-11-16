@@ -23,7 +23,8 @@ const PAGES = [
  * /contact — in Japanese and in English, which is six entries and not a
  * list of `#section` anchors: a fragment is not a separate URL and Google
  * drops sitemaps that claim otherwise. After them come the news articles
- * (newsEntries, below), each a page of its own.
+ * (newsEntries, below), each a page of its own in Japanese, and in English
+ * as well once it has been translated.
  *
  * Each of those six names its counterpart: `alternates.languages` is the
  * same hreflang set the page's own <head> carries (languageAlternates in
@@ -41,19 +42,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
   const pages = PAGES.flatMap(({ path, changeFrequency, priority }) => {
-    const languages = languageAlternates(path);
-
-    /* Relative in the page metadata, absolute here: a sitemap has no base. */
-    const alternates = {
-      languages: {
-        ja: absoluteUrl(languages.ja),
-        en: absoluteUrl(languages.en),
-        "x-default": absoluteUrl(languages["x-default"]),
-      },
-    };
+    const alternates = absoluteAlternates(path);
 
     return LOCALES.map((locale) => ({
-      url: absoluteUrl(languages[locale]),
+      url: alternates.languages[locale],
       lastModified,
       changeFrequency,
       /*
@@ -68,20 +60,40 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [...pages, ...newsEntries()];
 }
 
+/**
+ * A page's hreflang set, as languageAlternates in lib/seo writes it into the
+ * page's own <head> — relative there, absolute here: a sitemap has no base.
+ */
+function absoluteAlternates(path: string) {
+  const languages = languageAlternates(path);
+  return {
+    languages: {
+      ja: absoluteUrl(languages.ja),
+      en: absoluteUrl(languages.en),
+      "x-default": absoluteUrl(languages["x-default"]),
+    },
+  };
+}
+
 /** A date with its day: YYYY-MM-DD, not the month-only YYYY-MM. */
 const FULL_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
- * One entry per published news article, /news/<slug>.
+ * One entry per published news article and language: /news/<slug>, and
+ * /en/news/<slug> when the article has an English version.
  *
  * The articles the site shows — visibleArticles in lib/newsArticles, the
- * same list the article route builds its pages from — so an article dated
- * TODO, which has no page, is not listed either. (The dev server shows
- * drafts and so lists them too; nothing crawls that.)
+ * same list the article routes build their pages from — so an article
+ * dated TODO, which has no page, is not listed either. (The dev server
+ * shows drafts and so lists them too; nothing crawls that.)
  *
- * Japanese only, unlike the pages above: an article has no English page,
- * so it names no alternates. A pair with one end missing would point a
- * crawler at a 404.
+ * An article in both languages is listed twice, each entry naming the
+ * pair as the pages above do — the same set its two pages carry in their
+ * <head> (components/news/articleRoute). One in Japanese alone is listed
+ * once and names no alternates: a pair with one end missing would point a
+ * crawler at a 404. The English page exists exactly when the Japanese one
+ * is listed and has an English version (`bilingual`), since the date that
+ * publishes both is the Japanese file's.
  *
  * lastModified is the article's date, not the build time: an article does
  * not change when the site is redeployed, and a date that moved on every
@@ -95,10 +107,19 @@ const FULL_DATE = /^\d{4}-\d{2}-\d{2}$/;
  * step under the two short pages, because each is one item from a list.
  */
 function newsEntries(): MetadataRoute.Sitemap {
-  return visibleArticles().map(({ slug, date }) => ({
-    url: absoluteUrl(articlePath(slug)),
-    ...(date && FULL_DATE.test(date) ? { lastModified: date } : null),
-    changeFrequency: "yearly" as const,
-    priority: 0.6,
-  }));
+  return visibleArticles("ja").flatMap(({ slug, date, bilingual }) => {
+    const entry = {
+      ...(date && FULL_DATE.test(date) ? { lastModified: date } : null),
+      changeFrequency: "yearly" as const,
+      priority: 0.6,
+    };
+    if (!bilingual) return [{ url: absoluteUrl(articlePath(slug)), ...entry }];
+
+    const alternates = absoluteAlternates(articlePath(slug));
+    return LOCALES.map((locale) => ({
+      url: alternates.languages[locale],
+      ...entry,
+      alternates,
+    }));
+  });
 }

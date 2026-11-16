@@ -24,14 +24,14 @@ const COPY = {
     lead: "教員に届くのは、観測と根拠だけ。",
     captionLead: "日記の本文は共有されません",
     caption:
-      "自分のタイミングで書いた日記にAIが問いをひとつ返します。教員に届くのは観測された記述とその時刻・根拠だけで、心理的リスクの判定は行いません。",
+      "毎日、ホームルームの数分で書いた日記にAIが問いをひとつ返します。教員に届くのは観測された記述とその時刻・根拠だけで、心理的リスクの判定は行いません。",
   },
   en: {
     title: "Product",
     lead: "Teachers receive only observations and their basis.",
     captionLead: "The diary text is not shared.",
     caption:
-      "Students write a diary in their own time, and the AI replies with one follow-up question. Teachers receive only what was observed in the writing, with its time and basis. Blesc does not assess psychological risk.",
+      "Students write a diary each day during a few minutes of homeroom, and the AI replies with one follow-up question. Teachers receive only what was observed in the writing, with its time and basis. Blesc does not assess psychological risk.",
   },
 } as const;
 

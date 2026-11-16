@@ -43,11 +43,14 @@ import {
  *     sourced; how far it steers the product is claim ③, which is open.
  *   - It says association, not cause. Every sourced relation in the seed is
  *     `association`; the old "因果連鎖" and "因果リンク" wording claimed more
- *     than any of its sources do.
+ *     than the seed records for any of them.
  *   - It says what the seed RECORDS about a source (「出典として関連を記録」,
- *     「出典：」), never that WHO or NICE "reports" a relation. Whether a
- *     source bears a relation out is the curator's reading, and a spot check
- *     found the WHO fact sheet silent on two relations the seed cites it for
+ *     「出典：」), never that a source "reports" a relation. Whether a source
+ *     bears a relation out is a reading of it: on 2026-11-16 every citation
+ *     was checked against its source, and most of them pointed at a source
+ *     that said less than the relation or nothing about it. The snapshot's
+ *     citations were corrected — the MHLW sleep guide came in, and two
+ *     relations lost theirs — so the page now differs from upstream's seed
  *     (see the header of lib/ontologySeed.ts).
  *   - It says the unsourced relations are marked as having no published
  *     source — which is how upstream's registry defines expert_judgement —
@@ -109,8 +112,10 @@ import {
  *   - 社内の判断 is "our own judgment" — the authors', not an expert's.
  *   - 参照 is "consulted", against 出典, "source": a guideline that was read
  *     for a link and does not state it is not that link's source.
- *   - 準備しています is "we are preparing": the clinical review has not
- *     happened, and the English must not read as if it had.
+ *   - 予定しています is "we are planning": the clinical review has not
+ *     happened, and the English must not read as if it had. The words are
+ *     the company's (2026-11), and the FAQ says the same (lib/seo.ts,
+ *     lib/faqEn.ts); no reviewer is named yet.
  *   - The FAQ says the same things about the graph (lib/faqEn.ts), and the
  *     two use one set of words for them: 整理 is "organize", まとめる is
  *     "compile", 公開資料に照らして is "checking them against published
@@ -161,6 +166,13 @@ type Copy = {
   unsupportedNote: (citing: number, consulted: readonly string[]) => string;
   /** The sources beside a relation: its own, or the ones only consulted. */
   refs: (refs: readonly string[], supported: boolean) => string;
+  /**
+   * What the arrows are. It used to say no source supports a direction;
+   * the MHLW sleep guide does state one (sleep deprivation affects attention
+   * and judgement, p.1), so it now says what the seed records instead — in
+   * the FAQ's own words for it (「出典のあるつながりも関連として記録したもので」,
+   * "Even the links that have a source are recorded as associations").
+   */
   directionNote: string;
 };
 
@@ -173,7 +185,7 @@ const COPY: Record<Locale, Copy> = {
       "これとは別に、心と生活のつながりを公開資料に照らして整理しています。睡眠・社会的ひきこもり・学業上の負荷の3領域について、気分や行動、学校での出来事などの概念どうしのつながりを知識グラフ（オントロジー）にまとめています。つながりの一本ずつに、裏付けとなる公開資料があるかどうかを記録しています。",
     counts: { subgraphs: "領域", concepts: "概念", relations: "つながり" },
     sourced: (supported) =>
-      `このうち${supported}のつながりは、公開資料を出典として記録しています。出典のないつながりは社内の判断として区別して明記し、臨床の専門家によるレビューを準備しています。`,
+      `このうち${supported}のつながりは、公開資料を出典として記録しています。出典のないつながりは社内の判断として区別して明記し、臨床の専門家によるレビューを予定しています。`,
     exampleHeading: "つながりの一例",
     exampleSource: (from, to, refs) => [
       "",
@@ -200,7 +212,7 @@ const COPY: Record<Locale, Copy> = {
     refs: (refs, supported) =>
       supported ? refs.join("・") : `参照：${refs.join("・")}`,
     directionNote:
-      "矢印はグラフ上の向きです。どの出典も、向き（どちらが原因か）までは裏付けていません。",
+      "矢印はグラフ上の向きです。出典のあるつながりも関連として記録したもので、向き（どちらが原因か）を示すものではありません。",
   },
   en: {
     title: "Technology",
@@ -210,7 +222,7 @@ const COPY: Record<Locale, Copy> = {
       "Separately, we organize the links between mind and daily life, checking them against published sources. We compile the links between concepts such as mood, behavior, and events at school into a knowledge graph (an ontology), covering three areas: sleep, social withdrawal, and academic pressure. For each link, we record whether a published source supports it.",
     counts: { subgraphs: "Areas", concepts: "Concepts", relations: "Links" },
     sourced: (supported) =>
-      `Of these, ${supported} links are recorded with a published source. Links without a source are marked separately as our own judgment, and we are preparing a review by clinical experts.`,
+      `Of these, ${supported} links are recorded with a published source. Links without a source are marked separately as our own judgment, and we are planning a review by clinical experts.`,
     exampleHeading: "An example of these links",
     exampleSource: (from, to, refs) => [
       refs.length > 1 ? "Sources" : "Source",
@@ -238,7 +250,7 @@ const COPY: Record<Locale, Copy> = {
     refs: (refs, supported) =>
       supported ? refs.join(", ") : `Consulted: ${refs.join(", ")}`,
     directionNote:
-      "Arrows show the direction in the graph. No source goes as far as supporting the direction (which one is the cause).",
+      "Arrows show the direction in the graph. Even the links that have a source are recorded as associations, and do not show the direction (which one is the cause).",
   },
 };
 
@@ -492,7 +504,7 @@ export function Technology({ locale }: { locale: Locale }) {
  * that it eases it. The verb sits on the arrow, between the two concepts,
  * so it reads subject–verb–object and cannot be taken as describing the
  * second concept alone. `causes` is the bare arrow — the graph's direction,
- * which the note under the list says no source establishes — and
+ * which the note under the list says no link's source is recorded for — and
  * `co_occurs` has no head, because it has no direction.
  *
  * `mark` is drawn and hidden from assistive tech; `spoken` is what a screen
@@ -547,11 +559,13 @@ const consulted = (locale: Locale) =>
  * words of its title.
  *
  * `by` is the publisher by the name a teacher knows it by — WHO, NICE,
- * 文部科学省 — rather than the full 世界保健機関（WHO）, plus the document's
- * type or number where the title alone would not say which document it is.
- * That makes every short name the example path cites (「出典：WHO
- * ファクトシート」, 「NICE NG134」, …) findable in the strip: the first two
- * are the prefix, and mhGAP and 生徒指導提要 are in the titles.
+ * 厚生労働省, 文部科学省 — rather than the full 世界保健機関（WHO）, plus the
+ * document's type or number where the title alone would not say which
+ * document it is. That makes every short name the path and the list cite
+ * (「出典：厚生労働省 睡眠ガイド」, 「WHO ファクトシート」, 「NICE NG134」, …)
+ * findable in the strip: 「WHO ファクトシート」 and 「NICE NG134」 are the
+ * prefix, mhGAP and 生徒指導提要 are in the titles, and 厚生労働省 is the
+ * prefix with 睡眠ガイド in the title.
  *
  * `label` is what is shown of the title, and it must be the title's own
  * opening words — the check below fails the build otherwise. The rest of the
@@ -560,16 +574,20 @@ const consulted = (locale: Locale) =>
  * which is also what lets a voice-control user say the link). A reader
  * searching for the document can search for the words they see.
  *
- * In English `by` is the same name in English — "WHO fact sheet", and MEXT
- * spelled out, since the abbreviation means little outside Japan — and the
- * titles stay as they are: a document is cited under its own title. The one
- * Japanese title is the exception a reader of English needs: the strip shows
- * the seed's gloss of it (title_en) and the link keeps 生徒指導提要（改訂版）
+ * In English `by` is the same name in English — "WHO fact sheet", and MHLW
+ * and MEXT spelled out, since the abbreviations mean little outside Japan,
+ * each shortened as English usually shortens it ("Ministry of Health",
+ * "Ministry of Education") so the first column of the strip stays narrow —
+ * and the titles stay as they are: a document is cited under its own title.
+ * The two Japanese titles are the exception a reader of English needs: the
+ * strip shows the seed's English title for each (title_en — MHLW's own for
+ * its guide, a gloss for 生徒指導提要) and the link keeps the Japanese title
  * after it, visually hidden and marked as Japanese, so the name a screen
  * reader hears still holds the words on screen and the title to search for.
  * The short names the path and the list cite are findable the same way:
  * "WHO fact sheet" and "NICE NG134" are prefixes, mhGAP is in its title,
- * and "MEXT Student Guidance Guidelines" is its prefix and its gloss.
+ * "MHLW Sleep Guide" is its prefix and the start of its English title, and
+ * "MEXT Student Guidance Guidelines" is its prefix and its gloss.
  */
 const CITE: Record<
   PublishedSourceId,
@@ -587,6 +605,10 @@ const CITE: Record<
     by: { ja: "WHO", en: "WHO" },
     label: "mhGAP Intervention Guide",
   },
+  mhlw_sleep_guide: {
+    by: { ja: "厚生労働省", en: "MHLW (Japan’s Ministry of Health)" },
+    label: "健康づくりのための睡眠ガイド2023",
+  },
   mext_seitoshido: {
     by: { ja: "文部科学省", en: "MEXT (Japan’s Ministry of Education)" },
     label: "生徒指導提要（改訂版）",
@@ -602,21 +624,30 @@ for (const s of SOURCES) {
 }
 
 /*
- * The sources as a citation strip, not a list: the four of them were a
- * bordered list of full titles and full publisher names, about 375px tall
- * at desktop, and the section's claim is carried by the graph and the
- * counts above, not by the bibliography. Two columns of two lines each —
- * publisher and year small and muted, the title as the link — about 93px;
- * one column on a phone.
+ * The sources as a citation strip, not a list: as a bordered list of full
+ * titles and full publisher names, the four there were then stood about
+ * 375px tall at desktop, and the section's claim is carried by the graph
+ * and the counts above, not by the bibliography. Two columns of entries of
+ * two lines each — publisher and year small and muted, the title as the
+ * link — in three rows now that there are five, about 147px; one column on
+ * a phone.
  *
  * The item's type size is set on the <li>, not only on the link: the link
  * is inline, and an inline box cannot make its line shorter than the
  * block's own strut, which would otherwise be the body's 18px at 1.6.
  *
  * The first column is `auto`, sized to its entries, so the second gets the
- * rest of the row: NICE's is the longest title shown, and that is what
- * keeps it on one line down to about the narrowest desktop width (it wraps
- * a word early where a scrollbar takes its 15px there, which is harmless).
+ * rest of the row: NICE's is the longest title shown, and the MHLW guide's
+ * the longest Japanese one, and both sit in the second column (SOURCES is
+ * ordered for it). On the Japanese page the first column is as narrow as it
+ * was with four, and NICE's title keeps to one line down to about the
+ * narrowest desktop width (it wraps a word early where a scrollbar takes its
+ * 15px there, which is harmless). On the English page the first column now
+ * also holds the gloss of 生徒指導提要, about 60px wider than what was there,
+ * and at desktop widths, where the strip shares its row with the heading,
+ * that leaves the second column too narrow to keep NICE's title, and at the
+ * narrower widths MHLW's, on one line (estimated from font metrics, not
+ * seen): they take a second line, the last word keeping the arrow with it.
  *
  * Links open in a new tab, and say so to a screen reader: the reader is
  * checking a claim and should not lose their place on the page to do it.

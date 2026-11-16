@@ -91,12 +91,12 @@ const STEPS: Step[] = [
     mock: DiaryMock,
     ja: {
       title: "日記を書く",
-      body: "好きなときに、内容も長さも自由に書けます。",
+      body: "毎日、ホームルームの数分で、内容も長さも自由に書けます。",
       view: "生徒の画面",
     },
     en: {
       title: "Write a diary",
-      body: "Students can write in their own time, about anything and at any length.",
+      body: "Every day, during a few minutes of homeroom, students write about anything, at any length.",
       view: "Student’s screen",
     },
   },

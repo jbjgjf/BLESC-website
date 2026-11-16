@@ -1,5 +1,5 @@
 ---
-date: TODO
+date: 2026-07-03
 category: 登壇
 title: IVSでピッチしました
 summary: 日本最大級のスタートアップカンファレンス「IVS」にてピッチを行いました。
