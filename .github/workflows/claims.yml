@@ -27,3 +27,10 @@ jobs:
       # that nobody is tempted to skip it.
       - name: Check LP claims against docs/claims.md
         run: node scripts/check-claims.mjs
+
+      # The crisis line the site promises must be the one the product shows
+      # (jbjgjf/BLESC#465). Reads the product's crisisContacts.ts from the
+      # public BLESC repository and fails on any difference, or if it cannot
+      # read it.
+      - name: Check the crisis line against the product
+        run: node scripts/check-sos-dial.mjs
